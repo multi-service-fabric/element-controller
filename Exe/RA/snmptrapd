@@ -1,0 +1,120 @@
+#!/bin/sh
+#
+# Copyright(c) 2016 Nippon Telegraph and Telephone Corporation
+#
+
+#######################################
+#             setting                 #
+#######################################
+
+
+
+#######################################################################
+# Initialization
+
+: ${OCF_FUNCTIONS=/lib/ocf/resource.d/heartbeat/.ocf-shellfuncs}
+. ${OCF_FUNCTIONS}
+: ${__OCF_ACTION=$1}
+
+
+#######################################################################
+
+#meta_data
+meta_data() {
+        cat <<END
+<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+<resource-agent name="SNMPTrapd Resource Agent">
+<version>0.1</version>
+<longdesc lang="en">
+    This script manages SNMPTrapd as an OCF resource in a high-availability setup.
+</longdesc>
+<shortdesc lang="en">Manages a highly available SNMPTrapd instance</shortdesc>
+
+<!--
+<parameters>
+    <parameter name="EC_CONTROL_SHELL" unique="0" required="0">
+        <longdesc lang="en">
+            Full path to the ec control shell
+            For example, "/usr/ec_main/ec_ctl.sh".
+        </longdesc>
+        <shortdesc lang="en">Full path to the ec conttol shell</shortdesc>
+        <content type="string" default="$EC_CONTROL_SHELL_PATH" />
+    </parameter>
+</parameters>
+-->
+
+<actions>
+    <action name="start"   timeout="30s" />
+    <action name="stop"    timeout="30s" />
+    <action name="monitor" depth="0"  timeout="60s" interval="10s" />
+    <action name="meta-data"  timeout="5s" />
+</actions>
+</resource-agent>
+END
+}
+#######################################################################
+
+trapd_usage() {
+    USAGE="Usage: $0 {start|stop|monitor|meta-data}"
+    echo "$USAGE" >&2
+}
+
+trapd_start() {
+    systemctl start snmptrapd.service
+    result=$?
+    if [ $result = $OCF_SUCCESS ]; then
+        ocf_log info "SNMPTRAPD START SUCCESSFULLY"
+    else
+        ocf_log warn "SNMPTRAPD START FAILURE"
+        result=$OCF_ERR_GENERIC
+    fi
+    return $result
+}
+
+trapd_stop() {
+    systemctl stop snmptrapd.service
+    result=$?
+    if [ $result = $OCF_SUCCESS ]; then
+        ocf_log info "SNMPTRAPD STOP SUCCESSFULLY"
+    else
+        ocf_log warn "SNMPTRAPD STOP FAILURE"
+        result=$OCF_ERR_GENERIC
+    fi
+    return $result
+}
+
+trapd_monitor() {
+    st=`systemctl status snmptrapd.service | awk 'NR==3 {print substr($3, 2, length($3)-2)}'`
+    if [ "$st" == "running" ]; then
+        ocf_log info "SNMPTRAPD MONITOR SUCCESSFULLY"
+        result=$OCF_SUCCESS
+    else
+        ocf_log err "SNMPTRAPD MONITOR NOT RUNNING"
+        result=$OCF_NOT_RUNNING
+    fi
+    return $result
+}
+
+case $__OCF_ACTION in
+meta-data)
+    meta_data
+    exit $OCF_SUCCESS
+    ;;
+start)
+    trapd_start
+    ;;
+stop)
+    trapd_stop
+    ;;
+monitor)
+    trapd_monitor
+    ;;
+usage|help)
+    trapd_usage
+    exit $OCF_SUCCESS
+    ;;
+*)
+    trapd_usage
+    exit $OCF_ERR_UNIMPLECENTED
+esac

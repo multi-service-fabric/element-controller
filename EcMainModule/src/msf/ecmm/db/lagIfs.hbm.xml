@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+
+<hibernate-mapping>
+        <class name="msf.ecmm.db.pojo.LagIfs" table="lag_ifs" lazy="true">
+            <composite-id>
+                <key-many-to-one name="nodes" class="msf.ecmm.db.pojo.Nodes">
+                    <column name="node_type" not-null="true"/>
+                    <column name="node_id" not-null="true"/>
+                </key-many-to-one>
+                <key-property name="lag_if_id" type="text">
+                    <column name="lag_if_id" not-null="true" />
+                </key-property>
+                <generator class="assigned"/>
+            </composite-id>
+            <property name="if_name" type="text" />
+
+            <set name="internalLinkIfsList" table="internal_link_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
+                <key>
+                    <column name="node_type"/>
+                    <column name="node_id"/>
+                    <column name="lag_if_id"/>
+                </key>
+                <one-to-many class="msf.ecmm.db.pojo.InternalLinkIfs" />
+            </set>
+        </class>
+        <query name="selectLagIfs">
+            <![CDATA[
+                from msf.ecmm.db.pojo.LagIfs as lagIfs where node_type = :key1 and node_id = :key2 and lag_if_id = :key3
+             ]]>
+        </query>
+        <query name="selectLagIfsByNode">
+            <![CDATA[
+                from msf.ecmm.db.pojo.LagIfs as lagIfs where node_type = :key1 and node_id = :key2
+             ]]>
+        </query>
+        <query name="deleteLagIfs">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.LagIfs as lagIfs where node_type = :key1 and node_id = :key2 and lag_if_id = :key3
+             ]]>
+        </query>
+        <query name="deleteLagIfsByNode">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.LagIfs as lagIfs where node_type = :key1 and node_id = :key2
+             ]]>
+        </query>
+</hibernate-mapping>

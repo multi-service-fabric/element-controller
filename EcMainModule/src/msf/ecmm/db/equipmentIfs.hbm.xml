@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+
+<hibernate-mapping>
+        <class name="msf.ecmm.db.pojo.EquipmentIfs" table="equipment_ifs" lazy="true">
+            <composite-id>
+                <key-many-to-one name="equipments" class="msf.ecmm.db.pojo.Equipments">
+                    <column name="equipment_type_id" not-null="true"/>
+                </key-many-to-one>
+                <key-property name="physical_if_id" type="text">
+                    <column name="physical_if_id" not-null="true"/>
+                </key-property>
+                <generator class="assigned"/>
+            </composite-id>
+            <property name="if_slot" type="text" not-null="true"/>
+        </class>
+        <query name="deleteEquipmentIfs">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.EquipmentIfs as equipmentIfs where equipment_type_id = :key
+             ]]>
+        </query>
+</hibernate-mapping>

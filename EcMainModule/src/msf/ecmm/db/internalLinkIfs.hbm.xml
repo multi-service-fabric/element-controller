@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+
+<hibernate-mapping>
+        <class name="msf.ecmm.db.pojo.InternalLinkIfs" table="internal_link_ifs" lazy="true">
+            <composite-id>
+                <key-property name="internal_link_if_id" type="text">
+                    <column name="internal_link_if_id" not-null="true" />
+                </key-property>
+                <generator class="assigned"/>
+            </composite-id>
+            <many-to-one name="nodes" class="msf.ecmm.db.pojo.Nodes" insert="false" update="false">
+                <column name="node_type" not-null="true"/>
+                <column name="node_id" not-null="true"/>
+            </many-to-one>
+            <many-to-one name="lagIfs" class="msf.ecmm.db.pojo.LagIfs" >
+                <column name="node_type" not-null="true"/>
+                <column name="node_id" not-null="true"/>
+                <column name="lag_if_id" not-null="true"/>
+            </many-to-one>
+        </class>
+        <query name="selectInternalLinkIfs">
+            <![CDATA[
+                from msf.ecmm.db.pojo.InternalLinkIfs as internalLinkIfs where internal_link_if_id = :key1
+             ]]>
+        </query>
+        <query name="selectInternalLinkIfsByNode">
+            <![CDATA[
+                from msf.ecmm.db.pojo.InternalLinkIfs as internalLinkIfs where node_type = :key1 and node_id = :key2
+             ]]>
+        </query>
+                <query name="deleteInternalLinkIfs">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.InternalLinkIfs as internalLinkIfs where internal_link_if_id = :key1
+             ]]>
+        </query>
+        <query name="deleteInternalLinkIfsByNode">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.InternalLinkIfs as internalLinkIfs where node_type = :key1 and node_id = :key2
+             ]]>
+        </query>
+        <query name="deleteInternalLinkIfsByLagIF">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.InternalLinkIfs as internalLinkIfs where node_type = :key1 and node_id = :key2 and lag_if_id = :key3
+             ]]>
+        </query>
+</hibernate-mapping>

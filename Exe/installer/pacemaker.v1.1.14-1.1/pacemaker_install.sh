@@ -1,0 +1,33 @@
+#! /usr/bin/sh
+rpm -Uvh psmisc-22.20-9.el7.x86_64.rpm
+rpm -Uvh libqb-1.0-1.el7.x86_64.rpm
+rpm -Uvh libyaml-0.1.4-11.el7_0.x86_64.rpm
+rpm -Uvh ruby*
+rpm -Uvh libtool-ltdl-2.4.2-21.el7_2.x86_64.rpm
+rpm -Uvh cluster-glue-libs-1.0.12-2.el7.x86_64.rpm
+rpm -Uvh corosync-2.3.5-1.el7.x86_64.rpm corosynclib-2.3.5-1.el7.x86_64.rpm
+rpm -Uvh libxslt-1.1.28-5.el7.x86_64.rpm
+rpm -Uvh pacemaker-libs-1.1.14-1.el7.x86_64.rpm 
+rpm -Uvh pacemaker-cluster-libs-1.1.14-1.el7.x86_64.rpm
+rpm -Uvh resource-agents-3.9.7-1.2.6f56.el7.x86_64.rpm
+rpm -Uvh OpenIPMI-modalias-2.0.19-11.el7.x86_64.rpm
+rpm -Uvh OpenIPMI-libs-2.0.19-11.el7.x86_64.rpm
+rpm -Uvh openhpi-libs-3.4.0-2.el7.x86_64.rpm
+rpm -Uvh perl-TimeDate-2.30-2.el7.noarch.rpm
+rpm -Uvh cluster-glue-1.0.12-2.el7.x86_64.rpm
+rpm -Uvh pacemaker-cli-1.1.14-1.el7.x86_64.rpm
+rpm -Uvh pacemaker-1.1.14-1.el7.x86_64.rpm
+rpm -Uvh nano-2.3.1-10.el7.x86_64.rpm
+rpm -Uvh python-lxml-3.2.1-4.el7.x86_64.rpm
+rpm -Uvh python-clufter-0.50.4-1.el7.x86_64.rpm
+rpm -Uvh pcs-0.9.143-15.el7.x86_64.rpm
+rpm -Uvh pm_extras-2.2-1.el7.x86_64.rpm
+rpm -Uvh ipmitool-1.8.13-9.el7_2.x86_64.rpm
+rpm -Uvh pm_diskd-2.2-1.el7.x86_64.rpm
+rpm -Uvh python-dateutil-1.5-7.el7.noarch.rpm
+rpm -Uvh pm_crmgen-2.1-1.el7.noarch.rpm
+rpm -Uvh pssh-2.3.1-5.el7.noarch.rpm
+rpm -Uvh python-lxml-3.2.1-4.el7.x86_64.rpm
+rpm -Uvh crmsh-2.1.5-1.el7.x86_64.rpm
+rpm -Uvh pm_logconv-cs-2.2-1.el7.noarch.rpm
+rpm -Uvh pacemaker-all-1.1.14-1.1.el7.noarch.rpm

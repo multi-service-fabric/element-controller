@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+
+<hibernate-mapping >
+        <class name="msf.ecmm.db.pojo.Equipments" table="equipments" lazy="false">
+            <id name="equipment_type_id" type="text">
+                <column name="equipment_type_id" sql-type="TEXT" not-null="true"/>
+                <generator class="assigned"/>
+            </id>
+            <property name="lag_prefix" type="text" not-null="true"/>
+            <property name="unit_connector" type="string" not-null="true"/>
+            <property name="if_name_oid" type="text" not-null="true"/>
+            <property name="snmptrap_if_name_oid" type="text" />
+            <property name="max_repetitions" type="int" not-null="true"/>
+            <set name="equipmentIfsList" table="equipment_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
+                <key>
+                    <column name="equipment_type_id"/>
+                </key>
+                <one-to-many class="msf.ecmm.db.pojo.EquipmentIfs" />
+            </set>
+            <set name="ifNameRulesList" table="if_name_rules" lazy="true" inverse="true" cascade="all-delete-orphan">
+                <key>
+                    <column name="equipment_type_id"/>
+                </key>
+                <one-to-many class="msf.ecmm.db.pojo.IfNameRules" />
+            </set>
+        </class>
+        <query name="deleteEquipments">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.Equipments as equipments where equipment_type_id = :key
+             ]]>
+        </query>
+</hibernate-mapping>

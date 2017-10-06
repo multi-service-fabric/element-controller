@@ -1,0 +1,192 @@
+
+package msf.ecmm.ope.execute.constitution.device;
+
+import static msf.ecmm.common.CommonDefinitions.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.convert.DbMapper;
+import msf.ecmm.convert.EmMapper;
+import msf.ecmm.db.pojo.Nodes;
+import msf.ecmm.emctrl.EmController;
+import msf.ecmm.emctrl.EmctrlException;
+import msf.ecmm.emctrl.pojo.AbstractMessage;
+import msf.ecmm.emctrl.pojo.InternalLinkLagAddDelete;
+import msf.ecmm.emctrl.pojo.LeafAddDelete;
+import msf.ecmm.ope.execute.OperationType;
+import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
+import msf.ecmm.ope.receiver.pojo.CheckDataException;
+import msf.ecmm.ope.receiver.pojo.DeleteLeaf;
+import msf.ecmm.ope.receiver.pojo.parts.OppositeNodeDeleteNode;
+
+public class LeafRemove extends NodeRemove {
+
+	private static final String ERROR_CODE_080102 = "080102";
+	private static final String ERROR_CODE_080201 = "080201";
+	private static final String ERROR_CODE_800401 = "800401";
+	private static final String ERROR_CODE_800403 = "800403";
+	private static final String ERROR_CODE_800405 = "800405";
+	private static final String ERROR_CODE_800408 = "800408";
+	private static final String ERROR_CODE_900410 = "900410";
+
+	public LeafRemove(AbstractRestMessage idt, HashMap<String, String> ukm) {
+		super(idt, ukm);
+		super.setOperationType(OperationType.LeafRemove);
+	}
+
+	@Override
+	protected boolean checkInData() {
+		logger.trace(CommonDefinitions.START);
+
+		boolean checkResult = true;
+
+		DeleteLeaf deleteLeafRest = (DeleteLeaf) getInData();
+
+		if (!getUriKeyMap().containsKey(KEY_NODE_ID)) {
+			checkResult = false;
+		} else {
+			try {
+				deleteLeafRest.check(getOperationType());
+			} catch (CheckDataException e) {
+				logger.warn("check error :", e);
+				checkResult = false;
+			}
+		}
+
+		logger.trace(CommonDefinitions.END);
+		return checkResult;
+	}
+
+	@Override
+	protected int getNodeType() {
+		return CommonDefinitions.NODE_TYPE_LEAF;
+	}
+
+	@Override
+	protected int getOppoNodeType() {
+		return CommonDefinitions.NODE_TYPE_SPINE;
+	}
+
+	@Override
+	protected List<Nodes> toNodeOppositeNodesReduced() {
+		return DbMapper.toLeafOppositeNodesReduced((DeleteLeaf) getInData());
+	}
+
+	@Override
+	protected ArrayList<String> getOppositeNodeIdList() {
+		logger.trace(CommonDefinitions.START);
+		DeleteLeaf deleteLeafRest = (DeleteLeaf) getInData();
+		ArrayList<String> oppositeNodeIdList = new ArrayList<String>();
+		ArrayList<OppositeNodeDeleteNode> oppositeNodeDeleteNodeList = deleteLeafRest.getOppositeNodes();
+		for (OppositeNodeDeleteNode oppositeNodeDeleteNode : oppositeNodeDeleteNodeList) {
+			oppositeNodeIdList.add(oppositeNodeDeleteNode.getNodeId());
+		}
+		logger.trace(CommonDefinitions.END);
+		return oppositeNodeIdList;
+	}
+
+	@Override
+	protected boolean executeDeleteNode(Nodes targetNodeDb) throws EmctrlException {
+		logger.trace(CommonDefinitions.START);
+
+		LeafAddDelete leafDeleteEm = EmMapper.toLeafInfoNodeDelete(targetNodeDb.getNode_name());
+
+		EmController emController = EmController.getInstance();
+		AbstractMessage ret = emController.request(leafDeleteEm, false);
+
+		logger.trace(CommonDefinitions.END);
+		return ret.isResult();
+	}
+
+	@Override
+	protected boolean executeDeleteLag(ArrayList<Nodes> oppoNodeList) throws EmctrlException, IllegalArgumentException {
+		logger.trace(CommonDefinitions.START);
+
+		InternalLinkLagAddDelete internalLagDelEm = EmMapper
+				.toLeafInfoLagDelete((DeleteLeaf) getInData(), oppoNodeList);
+
+		EmController emController = EmController.getInstance();
+		AbstractMessage ret = emController.request(internalLagDelEm, false);
+
+		logger.trace(CommonDefinitions.END);
+		return ret.isResult();
+	}
+
+	@Override
+	protected boolean isOppositeNodesInfo() {
+		return !((DeleteLeaf) getInData()).getOppositeNodes().isEmpty();
+	}
+
+	@Override
+	protected String getInputDataErrorCode() {
+		return ERROR_CODE_080101;
+	}
+
+	@Override
+	protected String getNotFoundSubDataErrorCode() {
+		return ERROR_CODE_080102;
+	}
+
+	@Override
+	protected String getNotFoundDataErrorCode() {
+		return ERROR_CODE_080201;
+	}
+
+	@Override
+	protected String getExsistCpErrorCode() {
+		return ERROR_CODE_800303;
+	}
+
+	@Override
+	protected String getDhcpStopErrorCode() {
+		return ERROR_CODE_800401;
+	}
+
+	@Override
+	protected String getSyslogStopErrorCode() {
+		return ERROR_CODE_800402;
+	}
+
+	@Override
+	protected String getEm1ToErrorCode() {
+		return ERROR_CODE_800403;
+	}
+
+	@Override
+	protected String getEm1ErrorCode() {
+		return ERROR_CODE_080404;
+	}
+
+	@Override
+	protected String getEm2ToErrorCode() {
+		return ERROR_CODE_800405;
+	}
+
+	@Override
+	protected String getEm2ErrorCode() {
+		return ERROR_CODE_080406;
+	}
+
+	@Override
+	protected String getDbErrorCode() {
+		return ERROR_CODE_800408;
+	}
+
+	@Override
+	protected String getEmLockErrorCode() {
+		return ERROR_CODE_800409;
+	}
+
+	@Override
+	protected String getCommitErrorCode() {
+		return ERROR_CODE_900410;
+	}
+
+	@Override
+	protected String getInconsistentErrorCode() {
+		return ERROR_CODE_800103;
+	}
+}

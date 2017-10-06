@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+
+<hibernate-mapping>
+        <class name="msf.ecmm.db.pojo.L3Cps" table="l3_cps" lazy="true">
+            <composite-id>
+                <key-property name="slice_id" type="text">
+                    <column name="slice_id" not-null="true" />
+                </key-property>
+                <key-property name="cp_id" type="text">
+                    <column name="cp_id" not-null="true" />
+                </key-property>
+                <generator class="assigned"/>
+            </composite-id>
+
+            <many-to-one name="nodes" class="msf.ecmm.db.pojo.Nodes">
+                <column name="node_type" not-null="true"/>
+                <column name="node_id" not-null="true" />
+            </many-to-one>
+
+            <property name="base_physical_if_id" type="text" />
+            <property name="base_lag_if_id" type="text" />
+            <property name="if_name" type="text" not-null="true"/>
+            <property name="vlan_id" type="int" not-null="true"/>
+        </class>
+        <query name="selectL3Cps">
+            <![CDATA[
+                from msf.ecmm.db.pojo.L3Cps as l3Cps where slice_id = :key1 and cp_id = :key2
+             ]]>
+        </query>
+        <query name="selectL3CpsByNode">
+            <![CDATA[
+                from msf.ecmm.db.pojo.L3Cps as l3Cps where node_type = :key1 and node_id = :key2
+             ]]>
+        </query>
+        <query name="selectL3CpsByNodeAndIf">
+            <![CDATA[
+                from msf.ecmm.db.pojo.L3Cps as l3Cps where node_type = :key1 and node_id = :key2 and if_name = :key3
+             ]]>
+        </query>
+        <query name="deleteL3Cps">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.L3Cps as l3Cps where slice_id = :key1 and cp_id = :key2
+             ]]>
+        </query>
+</hibernate-mapping>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+        <property name="connection.url">jdbc:postgresql://10.34.131.64:5432/msf_ec_ut</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password"></property>
+        <property name="hibernate.connection.pool_size">200</property>
+        <property name="hibernate.temp.use_jdbc_metadata_defaults">false</property>
+
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">20</property>
+        <property name="hibernate.c3p0.timeout">1800</property>
+        <property name="hibernate.c3p0.max_statements">50</property>
+
+
+        <!-- Miscellaneous Settings  -->
+        <property name="hibernate.show_sql">true</property>
+        <!--  <property name="hibernate.format_sql">true</property>  -->
+
+        <!-- DB Schema -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- Mapping files -->
+        <mapping resource="msf/ecmm/db/equipments.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/equipmentIfs.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/ifNameRules.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/nodes.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/physicalIfs.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/l2Cps.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/l3Cps.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/lagIfs.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/internalLinkIfs.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/systemStatus.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/nodesStartupNotification.hbm.xml"/>
+
+    </session-factory>
+</hibernate-configuration>

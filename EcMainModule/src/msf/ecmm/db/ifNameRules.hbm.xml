@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+
+<hibernate-mapping>
+        <class name="msf.ecmm.db.pojo.IfNameRules" table="if_name_rules" lazy="true">
+            <composite-id>
+                <key-many-to-one name="equipments" class="msf.ecmm.db.pojo.Equipments">
+                    <column name="equipment_type_id" not-null="true"/>
+                </key-many-to-one>
+                <key-property name="speed" type="text">
+                    <column name="speed" not-null="true" />
+                </key-property>
+                <generator class="assigned"/>
+            </composite-id>
+            <property name="port_prefix" type="text" not-null="true"/>
+        </class>
+        <query name="deleteIfNameRules">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.IfNameRules as ifNameRules where equipment_type_id = :key
+             ]]>
+        </query>
+</hibernate-mapping>

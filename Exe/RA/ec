@@ -1,0 +1,128 @@
+#!/bin/sh
+#
+# Copyright(c) 2016 Nippon Telegraph and Telephone Corporation
+#
+
+#######################################
+#             setting             #
+# EC Control Shell Install Full Path
+# ex. /usr/ec_main/bin/ec_ctl.sh
+EC_CONTROL_SHELL_PATH="/usr/ec_main/bin/ec_ctl.sh"
+#######################################
+
+
+
+#######################################################################
+# Initialization
+
+: ${OCF_FUNCTIONS=/lib/ocf/resource.d/heartbeat/.ocf-shellfuncs}
+. ${OCF_FUNCTIONS}
+: ${__OCF_ACTION=$1}
+
+: ${OCF_RESKEY_EC_CONTROL_SHELL=$EC_CONTROL_SHELL_PATH}
+
+#######################################################################
+
+#meta_data
+meta_data() {
+        cat <<END
+<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+<resource-agent name="EC Resource Agent">
+<version>0.1</version>
+<longdesc lang="en">
+    This script manages EC as an OCF resource in a high-availability setup.
+</longdesc>
+<shortdesc lang="en">Manages a highly available EC instance</shortdesc>
+
+<parameters>
+    <parameter name="EC_CONTROL_SHELL" unique="0" required="0">
+        <longdesc lang="en">
+            Full path to the ec control shell
+            For example, "/usr/ec_main/ec_ctl.sh".
+        </longdesc>
+        <shortdesc lang="en">Full path to the ec conttol shell</shortdesc>
+        <content type="string" default="$EC_CONTROL_SHELL_PATH" />
+    </parameter>
+</parameters>
+
+<actions>
+    <action name="start"   timeout="30s" />
+    <action name="stop"    timeout="30s" />
+    <action name="monitor" depth="0"  timeout="60s" interval="10s" />
+    <action name="meta-data"  timeout="5s" />
+</actions>
+</resource-agent>
+END
+}
+#######################################################################
+
+ec_usage() {
+    USAGE="Usage: $0 {start|stop|monitor|meta-data}"
+    echo "$USAGE" >&2
+}
+
+ec_start() {
+    echo $OCF_RESKEY_EC_CONTROL_SHELL
+    bash $OCF_RESKEY_EC_CONTROL_SHELL start
+    result=$?
+    if [ $result = $OCF_SUCCESS ]; then
+        ocf_log info "EC START SUCCESSFULLY"
+    else
+        ocf_log warn "EC START FAILURE"
+        result=$OCF_ERR_GENERIC
+    fi
+    return $result
+}
+
+ec_stop() {
+    bash $OCF_RESKEY_EC_CONTROL_SHELL stop
+    result=$?
+    if [ $result = $OCF_SUCCESS ]; then
+        ocf_log info "EC STOP SUCCESSFULLY"
+    elif [ $result = $OCF_NOT_RUNNING ]; then
+        ocf_log info "EC ALREADY STOPPED"
+        result=$OCF_SUCCESS
+    else
+        ocf_log warn "EC STOP FAILURE"
+        result=$OCF_ERR_GENERIC
+    fi
+    return $result
+}
+
+ec_monitor() {
+    bash $OCF_RESKEY_EC_CONTROL_SHELL status
+    result=$?
+    if [ $result = $OCF_SUCCESS ]; then
+        ocf_log info "EC MONITOR SUCCESSFULLY"
+    elif [ $result = $OCF_NOT_RUNNING ]; then
+        ocf_log info "EC RESOURCE NOT RUNNING"
+    else
+        ocf_log err "EC MONITOR FAILURE"
+        result=$OCF_ERR_GENERIC
+    fi
+    return $result
+}
+
+case $__OCF_ACTION in
+meta-data)
+    meta_data
+    exit $OCF_SUCCESS
+    ;;
+start)
+    ec_start
+    ;;
+stop)
+    ec_stop
+    ;;
+monitor)
+    ec_monitor
+    ;;
+usage|help)
+    ec_usage
+    exit $OCF_SUCCESS
+    ;;
+*)
+    ec_usage
+    exit $OCF_ERR_UNIMPLECENTED
+esac

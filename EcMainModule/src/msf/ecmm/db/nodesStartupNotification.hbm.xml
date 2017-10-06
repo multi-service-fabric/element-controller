@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+
+<hibernate-mapping >
+        <class name="msf.ecmm.db.pojo.NodesStartupNotification" table="nodes_startup_notification" lazy="true">
+            <composite-id>
+                <key-many-to-one name="nodes" class="msf.ecmm.db.pojo.Nodes">
+                    <column name="node_type" not-null="true"/>
+                    <column name="node_id" not-null="true"/>
+                </key-many-to-one>
+                <generator class="assigned"/>
+            </composite-id>
+            <property name="notification_reception_status" type="int"  not-null="true"/>
+        </class>
+        <query name="selectNodesStartupNotification">
+            <![CDATA[
+                from msf.ecmm.db.pojo.NodesStartupNotification as nodes_startup_notification where node_type = :key1 and node_id = :key2
+             ]]>
+        </query>
+        <query name="selectNodesStartupNotificationAll">
+            <![CDATA[
+                from msf.ecmm.db.pojo.NodesStartupNotification as nodes_startup_notification
+             ]]>
+        </query>
+        <query name="deleteNodesStartupNotification">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.NodesStartupNotification as nodes_startup_notification where node_type = :key1 and node_id = :key2
+             ]]>
+        </query>
+         <query name="deleteNodesStartupNotificationAllList">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.NodesStartupNotification as nodes_startup_notification
+             ]]>
+        </query>
+</hibernate-mapping>

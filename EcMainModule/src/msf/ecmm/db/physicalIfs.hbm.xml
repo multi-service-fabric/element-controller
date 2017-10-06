@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+
+<hibernate-mapping>
+        <class name="msf.ecmm.db.pojo.PhysicalIfs" table="physical_ifs" lazy="true">
+            <composite-id>
+                <key-many-to-one name="nodes" class="msf.ecmm.db.pojo.Nodes">
+                    <column name="node_type" not-null="true"/>
+                    <column name="node_id" not-null="true"/>
+                </key-many-to-one>
+                <key-property name="physical_if_id" type="text">
+                    <column name="physical_if_id" not-null="true" />
+                </key-property>
+                <generator class="assigned"/>
+            </composite-id>
+            <property name="if_name" type="text" />
+        </class>
+        <query name="selectPhysicalIfs">
+            <![CDATA[
+                from msf.ecmm.db.pojo.PhysicalIfs as physicalIfs where node_type = :key1 and node_id = :key2 and physical_if_id = :key3
+             ]]>
+        </query>
+        <query name="selectPhysicalIfsByNode">
+            <![CDATA[
+                from msf.ecmm.db.pojo.PhysicalIfs as physicalIfs where node_type = :key1 and node_id = :key2
+             ]]>
+        </query>
+        <query name="deletePhysicalIfsByNode">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.PhysicalIfs as physicalIfs where node_type = :key1 and node_id = :key2
+             ]]>
+        </query>
+        <query name="updatePhysicalIfs">
+            <![CDATA[
+                update msf.ecmm.db.pojo.PhysicalIfs as physicalIfs set if_name = :key4 where node_type = :key1 and node_id = :key2 and physical_if_id = :key3
+             ]]>
+        </query>
+</hibernate-mapping>

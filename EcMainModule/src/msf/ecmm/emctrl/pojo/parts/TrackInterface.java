@@ -1,28 +1,57 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo.parts;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Tracking IF Information Class
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "interface")
 public class TrackInterface {
 
-	public TrackInterface() {
-		super();
-	}
+  /** IF Name */
+  private String name = null;
 
-	public String getName() {
-		return name;
-	}
+  /**
+   * Generating new instance.
+   */
+  public TrackInterface() {
+    super();
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * Getting IF name.
+   *
+   * @return IF name
+   */
+  public String getName() {
+    return name;
+  }
 
-	@Override
-	public String toString() {
-		return "TrackInterface [name=" + name + "]";
-	}
+  /**
+   * Setting IF name.
+   *
+   * @param name
+   *          IF name
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "TrackInterface [name=" + name + "]";
+  }
 
 }

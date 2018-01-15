@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo.parts;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -5,36 +9,74 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Leaf Extention-L3VPN Accommodation Leaf Basic Configuration Class
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name="l3-vpn")
+@XmlRootElement(name = "l3-vpn")
 public class L3Vpn {
 
-	@XmlElement (name="as")
-	private L3VpnAs l3VpnAs=null;
+  /** BGP Configuration Information */
+  @XmlElement(name = "bgp")
+  private L2L3VpnBgp bgp = null;
 
-	public L3Vpn() {
-		super();
-	}
+  /** AS Configuration Information */
+  @XmlElement(name = "as")
+  private L2L3VpnAs as = null;
 
-	public L3VpnBgp getL3VpnBgp() {
-	    return l3VpnBgp;
-	}
+  /**
+   * Generating new instance.
+   */
+  public L3Vpn() {
+    super();
+  }
 
-	public void setL3VpnBgp(L3VpnBgp l3VpnBgp) {
-	    this.l3VpnBgp = l3VpnBgp;
-	}
+  /**
+   * Getting BGP configuration information.
+   *
+   * @return BGP configuration information
+   */
+  public L2L3VpnBgp getBgp() {
+    return bgp;
+  }
 
-	public L3VpnAs getL3VpnAs() {
-	    return l3VpnAs;
-	}
+  /**
+   * Setting BGP configuration information.
+   *
+   * @param bgp
+   *          BGP configuration information
+   */
+  public void setBgp(L2L3VpnBgp bgp) {
+    this.bgp = bgp;
+  }
 
-	public void setL3VpnAs(L3VpnAs l3VpnAs) {
-	    this.l3VpnAs = l3VpnAs;
-	}
+  /**
+   * Getting AS configuration information.
+   *
+   * @return AS configuration information
+   */
+  public L2L3VpnAs getAs() {
+    return as;
+  }
 
-	@Override
-	public String toString() {
-		return "L3Vpn [l3VpnBgp=" + l3VpnBgp + ", l3VpnAs=" + l3VpnAs + "]";
-	}
+  /**
+   * Setting AS configuration information.
+   *
+   * @param as
+   *          AS configuration information
+   */
+  public void setAs(L2L3VpnAs as) {
+    this.as = as;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "L3Vpn [l3VpnBgp=" + bgp + ", l3VpnAs=" + as + "]";
+  }
+
 }
-

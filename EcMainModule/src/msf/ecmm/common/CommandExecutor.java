@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.common;
 
 import java.io.IOException;
@@ -6,73 +10,99 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Command execution class
+ */
 public class CommandExecutor {
 
-	public static int exec(String[] params, List<String> stdList, List<String> errList) {
+  /** Logger. */
+  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Commend execution method.
+   *
+   * @param params
+   *          text array includes execution command parameters
+   * @param stdList
+   *          standard output acquisition list
+   * @param errList
+   *          error output acquisition list
+   * @return execution result 0:success, Others:error
+   */
+  public static int exec(String[] params, List<String> stdList, List<String> errList) {
 
-		final int error = 1;
+    logger.trace(CommonDefinitions.START);
 
-		if ((params == null) || (params.length == 0)) {
-			return error;
-		}
-		for (int i = 0; i < params.length; i++) {
-			logger.debug("args[" + params[i] + "]");
-		}
+    final int error = 1;
 
-		ProcessBuilder pb = new ProcessBuilder(params);
+    if ((params == null) || (params.length == 0)) {
+      return error;
+    }
+    for (int i = 0; i < params.length; i++) {
+      logger.debug("args[" + params[i] + "]");
+    }
 
-		int retVal = 0;
-		Process process = null;
-		InputStreamThread it = null;
-		InputStreamThread et = null;
+    ProcessBuilder pb = new ProcessBuilder(params);
 
-		String charCode = "Shift_JIS";
-		try {
+    int retVal = 0;
+    Process process = null;
+    InputStreamThread it = null;
+    InputStreamThread et = null;
 
-			process = pb.start();
+    String charCode = "Shift_JIS";
+    try {
 
-			it = new InputStreamThread(process.getInputStream(), charCode);
-			it.start();
+      process = pb.start();
 
-			et = new InputStreamThread(process.getErrorStream(), charCode);
-			et.start();
+      it = new InputStreamThread(process.getInputStream(), charCode);
+      it.start();
 
-			process.waitFor();
+      et = new InputStreamThread(process.getErrorStream(), charCode);
+      et.start();
 
-			it.join();
-			et.join();
+      process.waitFor();
 
-			for (String s : it.getStringList()) {
-				stdList.add(s);
-			}
-			for (String s : et.getStringList()) {
-				errList.add(s);
-			}
+      it.join();
+      et.join();
 
-			retVal = process.exitValue();
+      for (String s : it.getStringList()) {
+        stdList.add(s);
+      }
+      for (String s : et.getStringList()) {
+        errList.add(s);
+      }
 
-		} catch (IOException ioex) {
-			logger.error("IOException", ioex);
-			errList.add(ioex.getLocalizedMessage());
-			retVal = error;
-		} catch (InterruptedException iex) {
-			logger.error("InterruptedException", iex);
-			errList.add(iex.getLocalizedMessage());
-			retVal = error;
-		}
+      retVal = process.exitValue();
 
-		logger.debug("retVal=" + retVal + ", ret=" + stdList);
-		return retVal;
-	}
+    } catch (IOException ioex) {
+      logger.error("IOException", ioex);
+      errList.add(ioex.getLocalizedMessage());
+      retVal = error;
+    } catch (InterruptedException iex) {
+      logger.error("InterruptedException", iex);
+      errList.add(iex.getLocalizedMessage());
+      retVal = error;
+    }
 
-	public static boolean contain(List<String> strs, String key) {
-		for (String str : strs) {
-			if (str.matches(".*" + key + ".*"))
-				return true;
-		}
-		return false;
-	}
+    logger.debug("retVal=" + retVal + ", ret=" + stdList);
+    return retVal;
+  }
+
+  /**
+   * search for a keyword in text strings.
+   *
+   * @param strs
+   *          standard output
+   * @param key
+   *          keyword
+   * @return true: the text contains specified keyword
+   */
+  public static boolean contain(List<String> strs, String key) {
+    for (String str : strs) {
+      if (str.matches(".*" + key + ".*"))
+        return true;
+    }
+    return false;
+  }
 
 }

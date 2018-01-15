@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+    <!-- VRRP Option Information Class -->
+
+<hibernate-mapping>
+    <class name="msf.ecmm.db.pojo.VRRPOptions" table="vrrp_option" lazy="true">
+        <composite-id>
+            <key-property name="vrrp_id" type="text">
+                <column name="vrrp_id" not-null="true" />
+            </key-property>
+            <generator class="assigned"/>
+        </composite-id>
+        <property name="vrrp_group_id" type="int" />
+        <property name="vrrp_role" type="int" />
+        <property name="vrrp_virtual_ipv4_address" type="string" />
+        <property name="vrrp_virtual_ipv6_address" type="string" />
+        <property name="node_id" not-null="true" type="string" />
+        <property name="vlan_if_id" not-null="true" type="string" />
+    </class>
+    <query name="selectVRRPOptions">
+        <![CDATA[
+            from msf.ecmm.db.pojo.VRRPOptions as vrrp_option where vrrp_id = :key1
+        ]]>
+    </query>
+    <query name="selectVRRPOptionsByVlanIfId">
+        <![CDATA[
+            from msf.ecmm.db.pojo.VRRPOptions as vrrp_option where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+    <query name="deleteVRRPOptions">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.VRRPOptions as vrrp_option where vrrp_id = :key1
+        ]]>
+    </query>
+    <query name="deleteVRRPOptionsByVlanIfId">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.VRRPOptions as vrrp_option where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+</hibernate-mapping>

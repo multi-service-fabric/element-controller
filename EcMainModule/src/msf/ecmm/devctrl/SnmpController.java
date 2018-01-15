@@ -1,19 +1,13 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.devctrl;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import msf.ecmm.common.CommonDefinitions;
-import msf.ecmm.common.CommonUtil;
-import msf.ecmm.common.LogFormatter;
-import msf.ecmm.config.EcConfiguration;
-import msf.ecmm.db.pojo.Equipments;
-import msf.ecmm.db.pojo.Nodes;
-import msf.ecmm.devctrl.pojo.SnmpIfOperStatus;
-import msf.ecmm.devctrl.pojo.SnmpIfTraffic;
-import msf.ecmm.ope.receiver.pojo.parts.Varbind;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,272 +23,432 @@ import org.snmp4j.smi.UdpAddress;
 import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.CommonUtil;
+import msf.ecmm.common.LogFormatter;
+import msf.ecmm.config.EcConfiguration;
+import msf.ecmm.db.pojo.Equipments;
+import msf.ecmm.db.pojo.Nodes;
+import msf.ecmm.devctrl.pojo.SnmpIfOperStatus;
+import msf.ecmm.devctrl.pojo.SnmpIfTraffic;
+import msf.ecmm.ope.receiver.pojo.parts.Varbind;
+
+/**
+ * SNMP Related Operations
+ */
 public class SnmpController {
 
-	private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  /**
+   * logger
+   */
+  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-	private static final String OID_ifOperStatus = ".1.3.6.1.2.1.2.2.1.8";
+  /** SNMP Port Number */
+  private static final int SNMP_PORT = 161;
 
-	private static final String OID_ifxEntry = ".1.3.6.1.2.1.31.1.1.1";
+  /** ifOperStatus */
+  private static final String OID_ifOperStatus = ".1.3.6.1.2.1.2.2.1.8";
 
-	private static final String OID_ifHCOutOctets = ".1.3.6.1.2.1.31.1.1.1.10";
+  /** ospfNbrState */
+  private static final String OID_ospfNbrState = ".1.3.6.1.2.1.14.10.1.6";
 
-	@SuppressWarnings("unused")
-	private static final String OID_linkUp = ".1.3.6.1.6.3.1.1.5.4";
+  /** ifxEntry */
+  private static final String OID_ifxEntry = ".1.3.6.1.2.1.31.1.1.1";
 
-	private static final int OSPF_NEIGHBOR_FULL = 8;
+  /** ifHCInOctets */
+  private static final String OID_ifHCInOctets = ".1.3.6.1.2.1.31.1.1.1.6";
 
-	public SnmpController() {
+  /** ifHCOutOctets */
+  private static final String OID_ifHCOutOctets = ".1.3.6.1.2.1.31.1.1.1.10";
 
-	}
+  /** linkDown Trap */
+  @SuppressWarnings("unused")
+  private static final String OID_linkDown = ".1.3.6.1.6.3.1.1.5.3";
 
-	public ArrayList<SnmpIfOperStatus> getIfOperStatus(Equipments eq, Nodes node) throws DevctrlException {
-		logger.debug("start eq=" + eq + " node=" + node);
+  /** linkUp Trap */
+  @SuppressWarnings("unused")
+  private static final String OID_linkUp = ".1.3.6.1.6.3.1.1.5.4";
 
-		HashMap<Integer, String> ifMap = getIfMap(eq, node);
+  /** ifIndex Trap */
+  private static final String OID_ifIndex = ".1.3.6.1.2.1.2.2.1.1";
 
-		ArrayList<VariableBinding> vars = getbulk(eq, node, OID_ifOperStatus);
+  /** OSPF Neibghbor State Full */
+  private static final int OSPF_NEIGHBOR_FULL = 8;
 
-		ArrayList<SnmpIfOperStatus> ret = new ArrayList<>();
-		for (VariableBinding varbind : vars) {
-			ret.add(new SnmpIfOperStatus(ifMap.get(varbind.getOid().get(varbind.getOid().size()-1)),
-					varbind.getVariable().toInt()));
-		}
+  /** ifIndex not found */
+  public static final int IFINDEX_NOT_FOUND = -1;
 
-		logger.trace("ret=" + ret);
-		return ret;
-	}
+  /**
+   * Constructor
+   */
+  public SnmpController() {
 
-	public String getIfName(Equipments eq, Nodes node, int ifIndex) throws DevctrlException {
-		logger.debug("start eq=" + eq + " node=" + node + " ifIndex=" + ifIndex);
-		VariableBinding varbind = get(node, toDotted(eq.getIf_name_oid()) + "." + ifIndex);
-		return varbind.getVariable().toString();
-	}
+  }
 
-	public boolean isOspfNeighborFull(Equipments eq, Nodes node, ArrayList<String> neighbors) throws DevctrlException {
-		logger.debug("start eq=" + eq + " node=" + node + " neighbors=" + neighbors);
+  /**
+   * Getting SNMP Information (IF status)
+   *
+   * @param eq
+   *          model information
+   * @param node
+   *          device information
+   * @return list of the status of each acquired IF
+   * @throws DevctrlException
+   *           error has occurred in SNMP communication
+   */
+  public ArrayList<SnmpIfOperStatus> getIfOperStatus(Equipments eq, Nodes node) throws DevctrlException {
+    logger.debug("start eq=" + eq + " node=" + node);
 
-		int retryNum = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.OSPF_NEIGHBOR_RETRY_NUM);
-		int retryInt = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.OSPF_NEIGHBOR_RETRY_INTERVAL);
+    HashMap<Integer, String> ifMap = getIfMap(eq, node);
 
-		for (int i = 0; i <= retryNum; i++) {
-			@SuppressWarnings("unchecked")
-			ArrayList<String> chkList = (ArrayList<String>) neighbors.clone();
+    ArrayList<VariableBinding> vars = getbulk(eq, node, OID_ifOperStatus);
 
-			ArrayList<VariableBinding> vars = null ;
-			try{
-				vars = getbulk(eq, node, OID_ospfNbrState);
-			}catch(DevctrlException de){
-				logger.debug("getbulk() fail.",de);
-				CommonUtil.sleep(retryInt);
-				continue ;
-			}
+    ArrayList<SnmpIfOperStatus> ret = new ArrayList<>();
+    for (VariableBinding varbind : vars) {
+      ret.add(new SnmpIfOperStatus(ifMap.get(varbind.getOid().get(varbind.getOid().size() - 1)),
+          varbind.getVariable().toInt()));
+    }
 
-			for (VariableBinding varbind : vars) {
+    logger.trace("ret=" + ret);
+    return ret;
+  }
 
-				if (varbind.getVariable().toInt() == OSPF_NEIGHBOR_FULL) {
-					String addr = varbind.getOid().toString().substring(OID_ospfNbrState.length(),varbind.getOid().toString().length()-2);
-					chkList.remove(addr);
-				}
-			}
+  /**
+   * Getting SNMP Information (IF name)
+   *
+   * @param eq
+   *          model information
+   * @param node
+   *          device information
+   * @param ifIndex
+   *          ifIndex
+   * @return IF name
+   * @throws DevctrlException
+   *           error has occurred in SNMP communication
+   */
+  public String getIfName(Equipments eq, Nodes node, int ifIndex) throws DevctrlException {
+    logger.debug("start eq=" + eq + " node=" + node + " ifIndex=" + ifIndex);
+    VariableBinding varbind = get(node, toDotted(eq.getIf_name_oid()) + "." + ifIndex);
+    return varbind.getVariable().toString();
+  }
 
-			if (chkList.size() == 0) {
-				logger.debug("OspfNeighborFull complete.");
-				return true;
-			}
+  /**
+   * OSPF Neighbor UP Confirmation
+   *
+   * @param eq
+   *          model information
+   * @param node
+   *          device information
+   * @param neighbors
+   *          list of neighbors
+   * @return result of UP -> true: UP
+   * @throws DevctrlException
+   *           error has occurred in SNMP communication
+   */
+  public boolean isOspfNeighborFull(Equipments eq, Nodes node, ArrayList<String> neighbors) throws DevctrlException {
+    logger.debug("start eq=" + eq + " node=" + node + " neighbors=" + neighbors);
 
-			CommonUtil.sleep(retryInt);
+    int retryNum = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.OSPF_NEIGHBOR_RETRY_NUM);
+    int retryInt = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.OSPF_NEIGHBOR_RETRY_INTERVAL);
 
-		}
-		return false;
-	}
+    for (int i = 0; i <= retryNum; i++) {
+      @SuppressWarnings("unchecked")
+      ArrayList<String> chkList = (ArrayList<String>) neighbors.clone();
 
-	public ArrayList<SnmpIfTraffic> getTraffic(Equipments eq, Nodes node) throws DevctrlException {
-		logger.debug("start eq=" + eq + " node=" + node);
+      ArrayList<VariableBinding> vars = null;
+      try {
+        vars = getbulk(eq, node, OID_ospfNbrState);
+      } catch (DevctrlException de) {
+        logger.debug("getbulk() fail.", de);
+        CommonUtil.sleep(retryInt);
+        continue;
+      }
 
-		HashMap<Integer, String> ifMap = getIfMap(eq, node);
+      for (VariableBinding varbind : vars) {
 
-		ArrayList<VariableBinding> vars = getbulk(eq, node, OID_ifxEntry);
+        if (varbind.getVariable().toInt() == OSPF_NEIGHBOR_FULL) {
+          String addr = varbind.getOid().toString().substring(OID_ospfNbrState.length(),
+              varbind.getOid().toString().length() - 2);
+          chkList.remove(addr);
+        }
+      }
 
-		HashMap<Integer, SnmpIfTraffic> traffic = new HashMap<>();
-		for (VariableBinding varbind : vars) {
+      if (chkList.size() == 0) {
+        logger.debug("OspfNeighborFull complete.");
+        return true;
+      }
 
-			if (varbind.getOid().toString().startsWith(OID_ifHCInOctets.substring(1))) {
-				int ifIndex = varbind.getOid().get(varbind.getOid().size()-1);
-				SnmpIfTraffic data = traffic.get(ifIndex);
-				if (data == null) {
-					data = new SnmpIfTraffic(ifMap.get(ifIndex), 0, 0);
-					traffic.put(ifIndex, data);
-				}
-				data.setInOctets(((Counter64) varbind.getVariable()).toLong());
-			}
+      CommonUtil.sleep(retryInt);
 
-			if (varbind.getOid().toString().startsWith(OID_ifHCOutOctets.substring(1))) {
-				int ifIndex = varbind.getOid().get(varbind.getOid().size()-1);
-				SnmpIfTraffic data = traffic.get(ifIndex);
-				if (data == null) {
-					data = new SnmpIfTraffic(ifMap.get(ifIndex), 0, 0);
-					traffic.put(ifIndex, data);
-				}
-				data.setOutOctets(((Counter64) varbind.getVariable()).toLong());
-			}
-		}
+    }
+    return false;
+  }
 
-		ArrayList<SnmpIfTraffic> ret = new ArrayList<>();
-		traffic.forEach((k, v) -> ret.add(v));
+  /**
+   * Getting Traffic Information
+   *
+   * @param eq
+   *          model information
+   * @param node
+   *          device information
+   * @return Traffic information
+   * @throws DevctrlException
+   *           error has occurred in SNMP communication
+   */
+  public ArrayList<SnmpIfTraffic> getTraffic(Equipments eq, Nodes node) throws DevctrlException {
+    logger.debug("start eq=" + eq + " node=" + node);
+    logger.trace("Traffic Periodic Collection SNMP Process Start");
+    HashMap<Integer, String> ifMap = getIfMap(eq, node);
 
-		logger.debug("traffic : " + ret);
+    ArrayList<VariableBinding> vars = getbulk(eq, node, OID_ifxEntry);
 
-		return ret;
-	}
+    HashMap<Integer, SnmpIfTraffic> traffic = new HashMap<>();
+    for (VariableBinding varbind : vars) {
 
-	public static int getIfIndexForTrap(List<Varbind> varBinds){
-		for(Varbind vb : varBinds){
-			if(vb.getOid().startsWith(OID_ifIndex)){
-				return Integer.parseInt(vb.getValue());
-			}
-		}
-		return IFINDEX_NOT_FOUND ;
-	}
+      if (varbind.getOid().toString().startsWith(OID_ifHCInOctets.substring(1))) {
+        int ifIndex = varbind.getOid().get(varbind.getOid().size() - 1);
+        SnmpIfTraffic data = traffic.get(ifIndex);
+        if (data == null) {
+          data = new SnmpIfTraffic(ifMap.get(ifIndex), 0, 0);
+          traffic.put(ifIndex, data);
+        }
+        data.setInOctets(((Counter64) varbind.getVariable()).toLong());
+      }
 
-	public static String getIfNameForTrap(List<Varbind> varBinds , String ifNameOid){
-		for(Varbind vb : varBinds){
-			if(vb.getOid().startsWith(toDotted(ifNameOid))){
-				return vb.getValue();
-			}
-		}
-		return null ;
-	}
+      if (varbind.getOid().toString().startsWith(OID_ifHCOutOctets.substring(1))) {
+        int ifIndex = varbind.getOid().get(varbind.getOid().size() - 1);
+        SnmpIfTraffic data = traffic.get(ifIndex);
+        if (data == null) {
+          data = new SnmpIfTraffic(ifMap.get(ifIndex), 0, 0);
+          traffic.put(ifIndex, data);
+        }
+        data.setOutOctets(((Counter64) varbind.getVariable()).toLong());
+      }
+    }
 
-	private CommunityTarget init(Nodes node) {
-		CommunityTarget target = new CommunityTarget();
-		target.setAddress(new UdpAddress(node.getManagement_if_address() + "/" + SNMP_PORT));
-		target.setCommunity(new OctetString(node.getSnmp_community()));
-		target.setTimeout(EcConfiguration.getInstance().get(Integer.class, EcConfiguration.DEVICE_SNMP_TIMEOUT) * 1000);
-		target.setRetries(1);
-		target.setVersion(SnmpConstants.version2c);
-		return target;
-	}
+    ArrayList<SnmpIfTraffic> ret = new ArrayList<>();
+    traffic.forEach((k, v) -> ret.add(v));
+    logger.trace("Traffic Periodic Collection SNMP Process End");
+    logger.debug("traffic : " + ret);
 
-	private ArrayList<VariableBinding> getbulk(Equipments eq, Nodes node, String oid) throws DevctrlException {
-		logger.debug("start eq=" + eq + " node" + node + " oid=" + oid);
+    return ret;
+  }
 
-		ArrayList<VariableBinding> ret = new ArrayList<>();
+  /**
+   * Getting ifIndex from Trap
+   *
+   * @param varBinds
+   *          list of VarBind in Trap
+   * @return ifIndex -1 was returned but couldn't find ifIndex
+   */
+  public static int getIfIndexForTrap(List<Varbind> varBinds) {
+    for (Varbind vb : varBinds) {
+      if (vb.getOid().startsWith(OID_ifIndex)) {
+        return Integer.parseInt(vb.getValue());
+      }
+    }
+    return IFINDEX_NOT_FOUND;
+  }
 
-		CommunityTarget target = init(node);
+  /**
+   * Getting IfName from Trap
+   *
+   * @param varBinds
+   *          list of VarBind in Trap
+   * @param ifNameOid
+   *          IF name acquisition MIB information in SNMPTrap
+   * @return ifName
+   */
+  public static String getIfNameForTrap(List<Varbind> varBinds, String ifNameOid) {
+    for (Varbind vb : varBinds) {
+      if (vb.getOid().startsWith(toDotted(ifNameOid))) {
+        return vb.getValue();
+      }
+    }
+    return null;
+  }
 
-		OID nextOID = new OID(oid);
+  /**
+   * Generating CommunityTarget
+   *
+   * @param node
+   *          device information
+   * @return instance
+   */
+  private CommunityTarget init(Nodes node) {
+    CommunityTarget target = new CommunityTarget();
+    target.setAddress(new UdpAddress(node.getManagement_if_address() + "/" + SNMP_PORT));
+    target.setCommunity(new OctetString(node.getSnmp_community()));
+    target.setTimeout(EcConfiguration.getInstance().get(Integer.class, EcConfiguration.DEVICE_SNMP_TIMEOUT) * 1000);
+    target.setRetries(1);
+    target.setVersion(SnmpConstants.version2c);
+    return target;
+  }
 
-		Snmp snmp = null;
-		try {
-			DefaultUdpTransportMapping utm = new DefaultUdpTransportMapping();
-			snmp = new Snmp(utm);
-			snmp.listen();
+  /**
+   * getbulk
+   *
+   * @param eq
+   *          model information
+   * @param node
+   *          device information
+   * @param oid
+   *          OID
+   * @return list of VarBind
+   * @throws DevctrlException
+   *           error has occurred in SNMP communication
+   */
+  private ArrayList<VariableBinding> getbulk(Equipments eq, Nodes node, String oid) throws DevctrlException {
+    logger.debug("start eq=" + eq + " node" + node + " oid=" + oid);
 
-			for (;;) {
+    ArrayList<VariableBinding> ret = new ArrayList<>();
 
-				PDU pdu = new PDU();
-				pdu.setType(PDU.GETBULK);
-				pdu.setMaxRepetitions(eq.getMax_repetitions());
-				pdu.setNonRepeaters(0);
-				pdu.add(new VariableBinding(nextOID));
+    CommunityTarget target = init(node);
 
-				ResponseEvent response = snmp.getBulk(pdu, target);
-				PDU resPdu = response.getResponse();
+    OID nextOID = new OID(oid);
 
-				if (resPdu != null && resPdu.getErrorStatus() == SnmpConstants.SNMP_ERROR_NO_SUCH_NAME) {
-					logger.debug("SNMP GETBULK(NoSuchName)={"+ret+"}");
-					return ret;
-				}
+    Snmp snmp = null;
+    try {
+      DefaultUdpTransportMapping utm = new DefaultUdpTransportMapping();
+      snmp = new Snmp(utm);
+      snmp.listen();
 
-				if (resPdu != null && resPdu.getErrorStatus() == SnmpConstants.SNMP_ERROR_SUCCESS) {
-					for (int i = 0; i < resPdu.size(); i++) {
-							ret.add(resPdu.get(i));
-						} else {
-							logger.debug("SNMP GETBULK={"+ret+"}");
-							return ret;
-						}
-					}
+      for (;;) {
 
-					if (resPdu.size() ==0) {
-						logger.debug("SNMP GETBULK (size=0)={"+ret+"}");
-						return ret;
-					}
+        PDU pdu = new PDU();
+        pdu.setType(PDU.GETBULK);
+        pdu.setMaxRepetitions(eq.getMax_repetitions());
+        pdu.setNonRepeaters(0);
+        pdu.add(new VariableBinding(nextOID));
 
-					nextOID = resPdu.get(resPdu.size() - 1).getOid();
+        ResponseEvent response = snmp.getBulk(pdu, target);
+        PDU resPdu = response.getResponse();
 
-				} else {
-					logger.error(LogFormatter.out.format(LogFormatter.MSG_505027, resPdu));
-					throw new DevctrlException("GetBulk fail.");
-				}
-			}
+        if (resPdu != null && resPdu.getErrorStatus() == SnmpConstants.SNMP_ERROR_NO_SUCH_NAME) {
+          logger.debug("SNMP GETBULK(NoSuchName)={" + ret + "}");
+          return ret;
+        }
 
-		} catch (IOException e) {
-			logger.error(LogFormatter.out.format(LogFormatter.MSG_505027, e));
-			throw new DevctrlException("GetBulk fail.");
-		} finally {
-			try {
-				if (snmp != null)
-					snmp.close();
-			} catch (IOException e) {
-			}
-		}
+        if (resPdu != null && resPdu.getErrorStatus() == SnmpConstants.SNMP_ERROR_SUCCESS) {
+          for (int i = 0; i < resPdu.size(); i++) {
+            if (resPdu.get(i).getOid().toString().startsWith(oid.substring(1))) { 
+              ret.add(resPdu.get(i));
+            } else {
+              logger.debug("SNMP GETBULK={" + ret + "}");
+              return ret;
+            }
+          }
 
-	}
+          if (resPdu.size() == 0) {
+            logger.debug("SNMP GETBULK (size=0)={" + ret + "}");
+            return ret;
+          }
 
-	private HashMap<Integer, String> getIfMap(Equipments eq, Nodes node) throws DevctrlException {
-		HashMap<Integer, String> map = new HashMap<>();
-		ArrayList<VariableBinding> vars = getbulk(eq, node, toDotted(eq.getIf_name_oid()));
-		for (VariableBinding varbind : vars) {
-			map.put(varbind.getOid().get(varbind.getOid().size()-1), varbind.getVariable().toString());
-		}
-		return map;
-	}
+          nextOID = resPdu.get(resPdu.size() - 1).getOid();
 
-	private VariableBinding get(Nodes node, String oid) throws DevctrlException {
-		logger.debug("start node" + node + " oid=" + oid);
+        } else {
+          logger.error(LogFormatter.out.format(LogFormatter.MSG_505027, resPdu));
+          throw new DevctrlException("GetBulk fail.");
+        }
+      }
 
-		CommunityTarget target = init(node);
+    } catch (IOException e) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_505027, e));
+      throw new DevctrlException("GetBulk fail.");
+    } finally {
+      try {
+        if (snmp != null) {
+          snmp.close();
+        }
+      } catch (IOException e) {
+        logger.trace("Error occurred in SNMP Termination Process");
+      }
+    }
 
-		PDU pdu = new PDU();
-		pdu.setType(PDU.GET);
-		pdu.add(new VariableBinding(new OID(oid)));
+  }
 
-		Snmp snmp = null;
+  /**
+   * Creating hash map of ifIndex and ifName
+   *
+   * @param eq
+   *          model information
+   * @param node
+   *          device information
+   * @return hash map
+   * @throws DevctrlException
+   */
+  private HashMap<Integer, String> getIfMap(Equipments eq, Nodes node) throws DevctrlException {
+    HashMap<Integer, String> map = new HashMap<>();
+    ArrayList<VariableBinding> vars = getbulk(eq, node, toDotted(eq.getIf_name_oid()));
+    for (VariableBinding varbind : vars) {
+      map.put(varbind.getOid().get(varbind.getOid().size() - 1), varbind.getVariable().toString());
+    }
+    return map;
+  }
 
-		try {
-			DefaultUdpTransportMapping utm = new DefaultUdpTransportMapping();
-			snmp = new Snmp(utm);
-			snmp.listen();
+  /**
+   * get
+   *
+   * @param node
+   *          device information
+   * @param oid
+   * @return VarBind
+   * @throws DevctrlException
+   *           error has occurred in SNMP communication
+   */
+  private VariableBinding get(Nodes node, String oid) throws DevctrlException {
+    logger.debug("start node" + node + " oid=" + oid);
 
-			ResponseEvent response = snmp.get(pdu, target);
+    CommunityTarget target = init(node);
 
-			PDU resPdu = response.getResponse();
-			if (resPdu != null && resPdu.getErrorStatus() == SnmpConstants.SNMP_ERROR_SUCCESS) {
-				logger.debug("SNMP GET={"+resPdu.get(0)+"}");
-				return resPdu.get(0);
-			} else {
-				logger.error(LogFormatter.out.format(LogFormatter.MSG_505027, resPdu));
-				throw new DevctrlException("Get fail.");
-			}
-		} catch (IOException e) {
-			logger.error(LogFormatter.out.format(LogFormatter.MSG_505027, e));
-			throw new DevctrlException("Get fail.");
-		} finally {
-			try {
-				if (snmp != null)
-					snmp.close();
-			} catch (IOException e) {
-			}
-		}
+    PDU pdu = new PDU();
+    pdu.setType(PDU.GET);
+    pdu.add(new VariableBinding(new OID(oid)));
 
-	}
+    Snmp snmp = null;
 
-	static private String toDotted(String val) {
-		if(!val.startsWith(".")){
-			return "."+val ;
-		}else{
-			return val ;
-		}
-	}
+    try {
+      DefaultUdpTransportMapping utm = new DefaultUdpTransportMapping();
+      snmp = new Snmp(utm);
+      snmp.listen();
+
+      ResponseEvent response = snmp.get(pdu, target);
+
+      PDU resPdu = response.getResponse();
+      if (resPdu != null && resPdu.getErrorStatus() == SnmpConstants.SNMP_ERROR_SUCCESS) {
+        logger.debug("SNMP GET={" + resPdu.get(0) + "}");
+        return resPdu.get(0);
+      } else {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_505027, resPdu));
+        throw new DevctrlException("Get fail.");
+      }
+    } catch (IOException e) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_505027, e));
+      throw new DevctrlException("Get fail.");
+    } finally {
+      try {
+        if (snmp != null) {
+          snmp.close();
+        }
+      } catch (IOException e) {
+        logger.trace("Error occurred in SNMP Termination Process");
+      }
+    }
+
+  }
+
+  /**
+   * Unify the OIDs with a period in the head
+   *
+   * @param val
+   *          OID string
+	* @return return value (OID with a period)
+   */
+  static private String toDotted(String val) {
+    if (!val.startsWith(".")) {
+      return "." + val;
+    } else {
+      return val;
+    }
+  }
 }

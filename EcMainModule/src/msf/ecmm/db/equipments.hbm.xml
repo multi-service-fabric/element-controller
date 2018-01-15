@@ -3,18 +3,34 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
+<!-- Model Information Class -->
 
 <hibernate-mapping >
         <class name="msf.ecmm.db.pojo.Equipments" table="equipments" lazy="false">
             <id name="equipment_type_id" type="text">
-                <column name="equipment_type_id" sql-type="TEXT" not-null="true"/>
-                <generator class="assigned"/>
+                <column name="equipment_type_id" sql-type="TEXT" not-null="true" />
+                <generator class="assigned" />
             </id>
             <property name="lag_prefix" type="text" not-null="true"/>
             <property name="unit_connector" type="string" not-null="true"/>
             <property name="if_name_oid" type="text" not-null="true"/>
             <property name="snmptrap_if_name_oid" type="text" />
             <property name="max_repetitions" type="int" not-null="true"/>
+            <property name="platform_name" type="text" not-null="true"/>
+            <property name="os_name" type="text" not-null="true"/>
+            <property name="firmware_version" type="text" not-null="true"/>
+            <property name="router_type" type="int" not-null="true"/>
+            <property name="core_router_physical_if_name_format" type="text" />
+            <property name="breakout_if_name_syntax" type="text" />
+            <property name="breakout_if_name_suffix_list" type="text" />
+            <property name="dhcp_template" type="text" not-null="true"/>
+            <property name="config_template" type="text" not-null="true"/>
+            <property name="initial_config" type="text" not-null="true"/>
+            <property name="boot_complete_msg" type="text" not-null="true"/>
+            <property name="evpn_capability" type="boolean" not-null="true"/>
+            <property name="l2vpn_capability" type="boolean" not-null="true"/>
+            <property name="l3vpn_capability" type="boolean" not-null="true"/>
+
             <set name="equipmentIfsList" table="equipment_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
                 <key>
                     <column name="equipment_type_id"/>
@@ -27,10 +43,26 @@
                 </key>
                 <one-to-many class="msf.ecmm.db.pojo.IfNameRules" />
             </set>
+            <set name="bootErrorMessagesList" table="boot_error_msgs" lazy="true" inverse="true" cascade="all-delete-orphan">
+                <key>
+                    <column name="equipment_type_id"/>
+                </key>
+                <one-to-many class="msf.ecmm.db.pojo.BootErrorMessages" />
+            </set>
         </class>
-        <query name="deleteEquipments">
+        <query name="selectEquipments">
             <![CDATA[
-                delete from msf.ecmm.db.pojo.Equipments as equipments where equipment_type_id = :key
+                from msf.ecmm.db.pojo.Equipments as equipments where equipment_type_id = :key1
+             ]]>
+        </query>
+        <query name="selectEquipmentsAll">
+            <![CDATA[
+                from msf.ecmm.db.pojo.Equipments as equipments
+             ]]>
+        </query>
+         <query name="deleteEquipments">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.Equipments as equipments where equipment_type_id = :key1
              ]]>
         </query>
 </hibernate-mapping>

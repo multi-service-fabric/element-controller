@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.emctrl;
 
@@ -10,6 +13,10 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
@@ -19,171 +26,276 @@ import net.juniper.netconf.Device;
 import net.juniper.netconf.NetconfException;
 import net.juniper.netconf.XML;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
-
+/**
+ * Doing transmission control to EM
+ */
 public class EmController {
 
-	private final String XML_NETCONF_HEADER = "<rpc message-id=\"";
-	private final String XML_NETCONF_HEADER_FIN = "</rpc>";
-	private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  /** XML Header Part */
+  private final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  /** NETCONF Header Part */
+  private final String XML_NETCONF_HEADER = "<rpc message-id=\"";
+  /** NETCONF Header Attribute Part */
+  private final String XML_NETCONF_HEADER_ATTR = "\" xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">";
+  /** NETCONF End Tag */
+  private final String XML_NETCONF_HEADER_FIN = "</rpc>";
+  /** NETCONF Message End Tag */
+  private final String XML_FIN = "\n]]>]]>";
 
-	private static EmController me = new EmController();
+  /**
+   * logger
+   */
+  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-	private String address;
+  /** Sending Queue */
+  private List<RequestQueueEntry> queue;
 
-	private int port;
+  /** Its Own Instance (signleton) */
+  private static EmController me = new EmController();
 
-	private int emTimeout;
+  /** Device of Netconf */
+  private Device device;
 
-	private int count = 0;
+  /** EM Address */
+  private String address;
 
-	private EmController() {
+  /** EM Password */
+  private String passwrd;
 
-	}
+  /** EM Port */
+  private int port;
 
-	public static EmController getInstance() {
-		return me;
-	}
+  /** Timeout Value of the Queue */
+  private int queueTimeout;
 
-	public boolean initialize() {
+  /** EM Timeout Value */
+  private int emTimeout;
 
-		logger.trace(CommonDefinitions.START);
+  /** EM Account */
+  private String user;
 
-		address = EcConfiguration.getInstance().get(String.class, EcConfiguration.EM_ADDRESS);
-		passwrd = EcConfiguration.getInstance().get(String.class, EcConfiguration.EM_PASSWORD);
-		port = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.EM_PORT);
-		queueTimeout = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.EM_QUEUE_TIMEOUT);
-		emTimeout = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.EM_TIMEOUT);
-		user = EcConfiguration.getInstance().get(String.class, EcConfiguration.EM_USER);
+  /** Message ID (increment on each request) */
+  private int count = 0;
 
-		try {
-			ArrayList<String> capabilities = new ArrayList<String>();
-			capabilities.add("urn:ietf:params:netconf:base:1.0");
-			capabilities.add("urn:ietf:params:netconf:capability:candidate:1.0");
-			capabilities.add("urn:ietf:params:netconf:capability:confirmed-commit:1.0");
-			capabilities.add("urn:ietf:params:netconf:capability:validate:1.0");
+  /**
+   * Constructor
+   */
+  private EmController() {
 
-			device = new Device(address, user, passwrd, null, port, capabilities);
-			device.setTimeOut(emTimeout * 1000);
-		} catch (NetconfException | ParserConfigurationException e) {
-			logger.error(LogFormatter.out.format(LogFormatter.MSG_504023, e));
-			return false;
-		}
+  }
 
-		queue = Collections.synchronizedList(new LinkedList<RequestQueueEntry>());
-		logger.trace(CommonDefinitions.END);
+  /**
+   * Getting Instance
+   *
+   * @return self
+   */
+  public static EmController getInstance() {
+    return me;
+  }
 
-		return true;
-	}
+  /**
+   * Initialization
+   *
+   * @return Success/fail of initialization -> true: success
+   */
+  public boolean initialize() {
 
-	public AbstractMessage request(AbstractMessage message, boolean autoLock) throws EmctrlException {
-		return requestAtManualLock(message, autoLock);
-	}
+    logger.trace(CommonDefinitions.START);
 
-	public AbstractMessage request(AbstractMessage message) throws EmctrlException {
-		return requestAtManualLock(message, true);
-	}
+    address = EcConfiguration.getInstance().get(String.class, EcConfiguration.EM_ADDRESS);
+    passwrd = EcConfiguration.getInstance().get(String.class, EcConfiguration.EM_PASSWORD);
+    port = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.EM_PORT);
+    queueTimeout = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.EM_QUEUE_TIMEOUT);
+    emTimeout = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.EM_TIMEOUT);
+    user = EcConfiguration.getInstance().get(String.class, EcConfiguration.EM_USER);
 
-	private AbstractMessage requestAtManualLock(AbstractMessage message, boolean autoLock) throws EmctrlException {
-		logger.debug("EM Request :" + message);
+    try {
+      ArrayList<String> capabilities = new ArrayList<String>();
+      capabilities.add("urn:ietf:params:netconf:base:1.0");
+      capabilities.add("urn:ietf:params:netconf:capability:candidate:1.0");
+      capabilities.add("urn:ietf:params:netconf:capability:confirmed-commit:1.0");
+      capabilities.add("urn:ietf:params:netconf:capability:validate:1.0");
 
-		RequestQueueEntry entry = null;
-		if (autoLock == true) {
-			entry = lock(message);
-		}
+      device = new Device(address, user, passwrd, null, port, capabilities);
+      device.setTimeOut(emTimeout * 1000);
+    } catch (NetconfException | ParserConfigurationException e) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_504023, e));
+      return false;
+    }
 
-		try {
-			device.connect();
-		} catch (IOException e) {
-			logger.error(LogFormatter.out.format(LogFormatter.MSG_504023, e));
-			device.close();
-			if (autoLock == true) {
-				unlock(entry);
-			}
-			throw new EmctrlException(entry + " connect fail.");
-		}
+    queue = Collections.synchronizedList(new LinkedList<RequestQueueEntry>());
+    logger.trace(CommonDefinitions.END);
 
-		try {
-			StringBuilder buf = new StringBuilder();
-			buf.append(XML_HEADER);
-			buf.append(XML_NETCONF_HEADER);
-			buf.append(getMessageId());
-			buf.append(XML_NETCONF_HEADER_ATTR);
-			buf.append(message.decode());
-			buf.append(XML_NETCONF_HEADER_FIN);
-			buf.append(XML_FIN);
+    return true;
+  }
 
-			logger.debug("EM Request[XML] :" + buf.toString());
+  /**
+   * EM Request (doing exclusive control by itself)
+   *
+   * @param message
+   *          request message to be sent to EM
+   * @param autoLock
+   *          doing exclusive control automatically
+   * @return response from EM
+   * @throws EmctrlException
+   *           error has occurred in accessing EM device
+   */
+  public AbstractMessage request(AbstractMessage message, boolean autoLock) throws EmctrlException {
+    return requestAtManualLock(message, autoLock);
+  }
 
-			XML xml = device.executeRPC(buf.toString());
+  /**
+   * EM Request (Auto Exclusive Control)
+   *
+   * @param message
+   *          request message to be sent to EM
+   * @return response from EM
+   * @throws EmctrlException
+   *           error has occurred in accessing EM device
+   */
+  public AbstractMessage request(AbstractMessage message) throws EmctrlException {
+    return requestAtManualLock(message, true);
+  }
 
-			message.encode(xml.toString());
+  /**
+   * EM Request
+   *
+   * @param message
+   *          request message to be sent to EM
+   * @param autoLock
+   *          doing exclusive control automatically
+   * @return response from EM
+   * @throws EmctrlException
+   *           error has occurred in accessing EM device
+   */
+  private AbstractMessage requestAtManualLock(AbstractMessage message, boolean autoLock) throws EmctrlException {
+    logger.debug("EM Request :" + message);
 
-			logger.debug("EM Response[XML] :" + xml);
+    RequestQueueEntry entry = null;
+    if (autoLock == true) {
+      entry = lock(message);
+    }
 
-			if (!message.isResult()) {
-				logger.error(LogFormatter.out.format(LogFormatter.MSG_504024, message));
-			}
+    try {
+      device.connect();
+    } catch (IOException e) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_504023, e));
+      device.close();
+      if (autoLock == true) {
+        unlock(entry);
+      }
+      throw new EmctrlException(entry + " connect fail.");
+    }
 
-		} catch (SAXException | IOException e) {
-			logger.error(LogFormatter.out.format(LogFormatter.MSG_504026, e), e);
-			throw new EmctrlException(entry + " send fail.");
+    try {
+      StringBuilder buf = new StringBuilder();
+      buf.append(XML_HEADER);
+      buf.append(XML_NETCONF_HEADER);
+      buf.append(getMessageId());
+      buf.append(XML_NETCONF_HEADER_ATTR);
+      buf.append(message.decode());
+      buf.append(XML_NETCONF_HEADER_FIN);
+      buf.append(XML_FIN);
 
-		} finally {
-			device.close();
-			if (autoLock == true) {
-				unlock(entry);
-			}
-		}
+      logger.debug("EM Request[XML] :" + buf.toString());
 
-		return message;
+      XML xml = device.executeRPC(buf.toString());
 
-	}
+      message.encode(xml.toString());
 
-	public RequestQueueEntry lock(AbstractMessage request) throws EmctrlException {
-		logger.trace(CommonDefinitions.START);
+      logger.debug("EM Response[XML] :" + xml);
 
-		RequestQueueEntry entry = new RequestQueueEntry(request);
+      if (!message.isResult()) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_504024, message));
+      }
 
-		queue.add(entry);
+      try {
+        device.closeSession(getMessageId());
+      } catch (Throwable e) {
+        logger.debug("close-session NG", e);
+      }
 
-		for (;;) {
-			Date now = new Date();
-			if (now.getTime() - entry.getRequestTime().getTime() > queueTimeout * 1000) {
-				queue.remove(entry);
+    } catch (SAXException | IOException e) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_504026, e), e);
+      throw new EmctrlException(entry + " send fail.");
 
-				logger.error(LogFormatter.out.format(LogFormatter.MSG_504023, entry));
-				throw new EmctrlException(entry + " is timeout.");
-			}
+    } finally {
+      device.close();
+      if (autoLock == true) {
+        unlock(entry);
+      }
+    }
 
-				break;
-			}
+    return message;
 
-			CommonUtil.sleep();
+  }
 
-		}
+  /**
+   * Exclusive Control with EM
+   *
+   * @param request
+   *          REST request message
+   * @return queue entry key
+   * @throws EmctrlException
+   *           EM access exception
+   */
+  public RequestQueueEntry lock(AbstractMessage request) throws EmctrlException {
+    logger.trace(CommonDefinitions.START);
 
-		logger.trace(CommonDefinitions.END);
+    RequestQueueEntry entry = new RequestQueueEntry(request);
 
-		return entry;
-	}
+    queue.add(entry);
 
-	public void unlock(RequestQueueEntry entry) {
-		logger.trace(CommonDefinitions.START);
-		queue.remove(entry);
-		logger.trace(CommonDefinitions.END);
-	}
+    for (;;) {
+      Date now = new Date();
+      if (now.getTime() - entry.getRequestTime().getTime() > queueTimeout * 1000) {
+        queue.remove(entry);
 
-	private long getMessageId() {
-		return this.count++ % Integer.MAX_VALUE;
-	}
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_504023, entry));
+        throw new EmctrlException(entry + " is timeout.");
+      }
 
-	public void close() {
-		logger.trace(CommonDefinitions.START);
-		device.close();
-		logger.trace(CommonDefinitions.END);
-	}
+      if (queue.get(0) == entry) { 
+        break;
+      }
+
+      CommonUtil.sleep();
+
+    }
+
+    logger.trace(CommonDefinitions.END);
+
+    return entry;
+  }
+
+  /**
+   * Exclusive Control with EM (Unlock)
+   *
+   * @param entry
+   *          queue entry
+   */
+  public void unlock(RequestQueueEntry entry) {
+    logger.trace(CommonDefinitions.START);
+    queue.remove(entry);
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Getting message ID (incremented)
+   *
+   * @return message ID
+   **/
+  private long getMessageId() {
+    return this.count++ % Integer.MAX_VALUE;
+  }
+
+  /**
+   * Terminating EM Communication
+   */
+  public void close() {
+    logger.trace(CommonDefinitions.START);
+    device.close();
+    logger.trace(CommonDefinitions.END);
+  }
 
 }

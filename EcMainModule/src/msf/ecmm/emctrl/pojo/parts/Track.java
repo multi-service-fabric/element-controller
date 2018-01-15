@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo.parts;
 
 import java.util.List;
@@ -6,23 +10,49 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
+/**
+ * Tracking IF Configuration Information
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Track {
 
-	public Track() {
-		super();
-	}
+  /** Tracking IF Information List */
+  @XmlElement(name = "interface")
+  List<TrackInterface> TrackInterfaceList = null;
 
-	public List<TrackInterface> getTrackInterfaceList() {
-	    return TrackInterfaceList;
-	}
+  /**
+   * Generating new instance.
+   */
+  public Track() {
+    super();
+  }
 
-	public void setTrackInterfaceList(List<TrackInterface> TrackInterfaceList) {
-	    this.TrackInterfaceList = TrackInterfaceList;
-	}
+  /**
+   * Getting tracking IF information list.
+   *
+   * @return tracking IF information list
+   */
+  public List<TrackInterface> getTrackInterfaceList() {
+    return TrackInterfaceList;
+  }
 
-	@Override
-	public String toString() {
-		return "Track [TrackInterfaceList=" + TrackInterfaceList + "]";
-	}
+  /**
+   * Setting tracking IF information list.
+   *
+   * @param TrackInterfaceList
+   *          tracking IF information list
+   */
+  public void setTrackInterfaceList(List<TrackInterface> TrackInterfaceList) {
+    this.TrackInterfaceList = TrackInterfaceList;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "Track [TrackInterfaceList=" + TrackInterfaceList + "]";
+  }
 }

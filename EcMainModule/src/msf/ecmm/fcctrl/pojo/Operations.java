@@ -1,37 +1,66 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.fcctrl.pojo;
 
+/**
+ * Process Execution Request.
+ */
 public class Operations extends AbstractRequest {
 
-	private GetLogicalIfStatusRequest getLogicalIfStatusOption;
+  /** Process Request Type. */
+  private String action;
 
-	public String getAction() {
-		return action;
-	}
+  /** Optional Information for Logical IF Status Update Process Request. */
+  private UpdateLogicalIfStatus updateLogicalIfStatusOption;
 
-	public void setAction(String action) {
-		this.action = action;
-	}
+  /**
+   * Getting process request type.
+   *
+   * @return process request type
+   */
+  public String getAction() {
+    return action;
+  }
 
-	public GetLogicalIfStatusRequest getGetLogicalIfStatusOption() {
-	    return getLogicalIfStatusOption;
-	}
+  /**
+   * Setting process request type.
+   *
+   * @param action
+   *          process request type
+   */
+  public void setAction(String action) {
+    this.action = action;
+  }
 
-	public void setGetLogicalIfStatusOption(GetLogicalIfStatusRequest getLogicalIfStatusOption) {
-	    this.getLogicalIfStatusOption = getLogicalIfStatusOption;
-	}
+  /**
+   * Getting optional information for logical IF status update process request.
+   *
+   * @return optional information for logical IF status update process request
+   */
+  public UpdateLogicalIfStatus getUpdateLogicalIfStatusOption() {
+    return updateLogicalIfStatusOption;
+  }
 
-	public UpdateLogicalIfStatus getUpdateLogicalIfStatusOption() {
-		return updateLogicalIfStatusOption;
-	}
+  /**
+   * Setting optional information for logical IF status update process request.
+   *
+   * @param updateLogicalIfStatusOption
+   *          optional information for logical IF status update process request
+   */
+  public void setUpdateLogicalIfStatusOption(UpdateLogicalIfStatus updateLogicalIfStatusOption) {
+    this.updateLogicalIfStatusOption = updateLogicalIfStatusOption;
+  }
 
-	public void setUpdateLogicalIfStatusOption(UpdateLogicalIfStatus updateLogicalIfStatusOption) {
-		this.updateLogicalIfStatusOption = updateLogicalIfStatusOption;
-	}
-
-	@Override
-	public String toString() {
-		return "Operations [action=" + action + ", getLogicalIfStatusOption=" + getLogicalIfStatusOption
-				+ ", updateLogicalIfStatusOption=" + updateLogicalIfStatusOption + "]";
-	}
+  /**
+   * Stringizing Instance.
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "Operations [action=" + action + ", updateLogicalIfStatusOption=" + updateLogicalIfStatusOption + "]";
+  }
 
 }

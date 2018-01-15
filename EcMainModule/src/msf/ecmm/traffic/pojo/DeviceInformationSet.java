@@ -1,72 +1,167 @@
+﻿/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.traffic.pojo;
 
 import java.util.HashMap;
 
+import msf.ecmm.db.pojo.BreakoutIfs;
 import msf.ecmm.db.pojo.Equipments;
-import msf.ecmm.db.pojo.InternalLinkIfs;
-import msf.ecmm.db.pojo.L2Cps;
-import msf.ecmm.db.pojo.L3Cps;
+import msf.ecmm.db.pojo.LagIfs;
 import msf.ecmm.db.pojo.Nodes;
+import msf.ecmm.db.pojo.PhysicalIfs;
+import msf.ecmm.db.pojo.VlanIfs;
 
+/**
+ * Device Information Set Class Definition. Stores information set for a node.
+ */
 public class DeviceInformationSet {
 
-	private Nodes equipmentsData = null;
+  /** Model Information */
+  private Equipments equipmentsType = null;
 
-	private HashMap<SliceKeySet,L3Cps> l3SliceData = null;
+  /** Device Information */
+  private Nodes equipmentsData = null;
 
-	public DeviceInformationSet() {
-		super();
-	}
+  /** VLAN IF Information */
+  private HashMap<Integer, VlanIfs> vlanIfData = null;
 
-	public Equipments getEquipmentsType() {
-		return equipmentsType;
-	}
+  /** LAG IF Information */
+  private HashMap<Integer, LagIfs> lagIfData = null;
 
-	public void setEquipmentsType(Equipments equipmentsType) {
-		this.equipmentsType = equipmentsType;
-	}
+  /** Physical IF Information */
+  private HashMap<Integer, PhysicalIfs> physicalIfData = null;
 
-	public Nodes getEquipmentsData() {
-		return equipmentsData;
-	}
+  /** breakout IF Information */
+  private HashMap<String, BreakoutIfs> breakoutIfData = null;
 
-	public void setEquipmentsData(Nodes equipmentsData) {
-		this.equipmentsData = equipmentsData;
-	}
+  /**
+   * Generating new instance.
+   */
+  public DeviceInformationSet() {
+    super();
+  }
 
-	public HashMap<SliceKeySet, L2Cps> getL2SliceData() {
-		return l2SliceData;
-	}
+  /**
+   * Getting model information.
+   *
+   * @return model information
+   */
+  public Equipments getEquipmentsType() {
+    return equipmentsType;
+  }
 
-	public void setL2SliceData(HashMap<SliceKeySet, L2Cps> l2SliceData) {
-		this.l2SliceData = l2SliceData;
-	}
+  /**
+   * Setting model information.
+   *
+   * @param equipmentsType
+   *          model information
+   */
+  public void setEquipmentsType(Equipments equipmentsType) {
+    this.equipmentsType = equipmentsType;
+  }
 
-	public HashMap<SliceKeySet, L3Cps> getL3SliceData() {
-		return l3SliceData;
-	}
+  /**
+   * Getting device information.
+   *
+   * @return device information
+   */
+  public Nodes getEquipmentsData() {
+    return equipmentsData;
+  }
 
-	public void setL3SliceData(HashMap<SliceKeySet, L3Cps> l3SliceData) {
-		this.l3SliceData = l3SliceData;
-	}
+  /**
+   * Setting device information.
+   *
+   * @param equipmentsData
+   *          device information
+   */
+  public void setEquipmentsData(Nodes equipmentsData) {
+    this.equipmentsData = equipmentsData;
+  }
 
-	public HashMap<Integer, InternalLinkIfs> getInternalLinkIfData() {
-		return internalLinkIfData;
-	}
+  /**
+   * Getting VLAN IF information.
+   *
+   * @return VLAN IF information
+   */
+  public HashMap<Integer, VlanIfs> getVlanIfData() {
+    return vlanIfData;
+  }
 
-	public void setInternalLinkIfData(
-			HashMap<Integer, InternalLinkIfs> internalLinkIfData) {
-		this.internalLinkIfData = internalLinkIfData;
-	}
+  /**
+   * Setting VLAN IF information.
+   *
+   * @param vlanIfData
+   *          VLAN IF information
+   */
+  public void setVlanIfData(HashMap<Integer, VlanIfs> vlanIfData) {
+    this.vlanIfData = vlanIfData;
+  }
 
-	@Override
-	public String toString() {
-		return "DeviceInformationSet [equipmentsType=" + equipmentsType
-				+ ", equipmentsData=" + equipmentsData + ", l2SliceData="
-				+ l2SliceData + ", l3SliceData=" + l3SliceData
-				+ ", internalLinkIfData=" + internalLinkIfData + "]";
-	}
+  /**
+   * Getting LAG IF information.
+   *
+   * @return LAG IF information
+   */
+  public HashMap<Integer, LagIfs> getLagIfData() {
+    return lagIfData;
+  }
 
+  /**
+   * Setting LAG IF information.
+   *
+   * @param lagIfData
+   *          LAG IF information
+   */
+  public void setLagIfData(HashMap<Integer, LagIfs> lagIfData) {
+    this.lagIfData = lagIfData;
+  }
 
+  /**
+   * Getting physical IF information.
+   *
+   * @return physical IF information
+   */
+  public HashMap<Integer, PhysicalIfs> getPhysicalIfData() {
+    return physicalIfData;
+  }
+
+  /**
+   * Setting physical IF information.
+   *
+   * @param physicalIfData
+   *          physical IF information
+   */
+  public void setPhysicalIfData(HashMap<Integer, PhysicalIfs> physicalIfData) {
+    this.physicalIfData = physicalIfData;
+  }
+
+  /**
+   * Getting breakout IF information.
+   *
+   * @return breakout IF information
+   */
+  public HashMap<String, BreakoutIfs> getBreakoutIfData() {
+    return breakoutIfData;
+  }
+
+  /**
+   * Setting breakout IF information.
+   *
+   * @param breakoutIfData
+   *          breakout IF information
+   */
+  public void setBreakoutIfData(HashMap<String, BreakoutIfs> breakoutIfData) {
+    this.breakoutIfData = breakoutIfData;
+  }
+
+  @Override
+  public String toString() {
+    return "DeviceInformationSet [equipmentsType=" + equipmentsType + ", equipmentsData=" + equipmentsData
+        + ", vlanIfData=" + vlanIfData + ", lagIfData=" + lagIfData + ", physicalIfData=" + physicalIfData
+        + ", breakoutIfData=" + breakoutIfData + "]";
+  }
 
 }

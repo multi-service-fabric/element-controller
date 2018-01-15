@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo.parts;
 
 import java.util.List;
@@ -7,56 +11,119 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * LAG IF Configuration Informatoin for CE Class
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name="ce-lag-interface")
+@XmlRootElement(name = "ce-lag-interface")
 public class CeLagInterface {
 
-	@XmlElement (name="minimum-links")
-	private Long minimumLinks=null;
+  /** LAG IF Configuration Name */
+  private String name = null;
 
-	@XmlElement (name="leaf-interface")
-	private List<LeafInterface> leafInterfaceList=null;
+  /** The Number of LAG Members */
+  @XmlElement(name = "minimum-links")
+  private Long minimumLinks = null;
 
-	public CeLagInterface() {
-		super();
-	}
+  /** Line Speed (only for LagIF Generation) */
+  @XmlElement(name = "link-speed")
+  private String linkSpeed = null;
 
-	public String getName() {
-	    return name;
-	}
+  /** Physical IF Information List for CE */
+  @XmlElement(name = "leaf-interface")
+  private List<LeafInterface> leafInterfaceList = null;
 
-	public void setName(String name) {
-	    this.name = name;
-	}
+  /**
+   * Generating new instance.
+   */
+  public CeLagInterface() {
+    super();
+  }
 
-	public Long getMinimumLinks() {
-	    return minimumLinks;
-	}
+  /**
+   * Getting LAG IF configuration name.
+   *
+   * @return LAG IF configuration name
+   */
+  public String getName() {
+    return name;
+  }
 
-	public void setMinimumLinks(Long minimumLinks) {
-	    this.minimumLinks = minimumLinks;
-	}
+  /**
+   * Setting LAG IF configuration name.
+   *
+   * @param name
+   *          LAG IF configuration name
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	public String getLinkSpeed() {
-	    return linkSpeed;
-	}
+  /**
+   * Getting the number of LAG members.
+   *
+   * @return the number of LAG members
+   */
+  public Long getMinimumLinks() {
+    return minimumLinks;
+  }
 
-	public void setLinkSpeed(String linkSpeed) {
-	    this.linkSpeed = linkSpeed;
-	}
+  /**
+   * Setting the number of LAG members.
+   *
+   * @param minimumLinks
+   *          the number of LAG members
+   */
+  public void setMinimumLinks(Long minimumLinks) {
+    this.minimumLinks = minimumLinks;
+  }
 
-	public List<LeafInterface> getLeafInterfaceList() {
-	    return leafInterfaceList;
-	}
+  /**
+   * Getting line speed (only for LagIF generation).
+   *
+   * @return line speed
+   */
+  public String getLinkSpeed() {
+    return linkSpeed;
+  }
 
-	public void setLeafInterfaceList(List<LeafInterface> leafInterfaceList) {
-	    this.leafInterfaceList = leafInterfaceList;
-	}
+  /**
+   * Setting line speed (only for LagIF generation)
+   *
+   * @param linkSpeed
+   *          line speed
+   */
+  public void setLinkSpeed(String linkSpeed) {
+    this.linkSpeed = linkSpeed;
+  }
 
-	@Override
-	public String toString() {
-		return "CeLagInterface [name=" + name + ", minimumLinks="
-				+ minimumLinks + ", linkSpeed=" + linkSpeed
-				+ ", leafInterfaceList=" + leafInterfaceList + "]";
-	}
+  /**
+   * Getting physical IF information list for CE.
+   *
+   * @return physical IF information list for CE
+   */
+  public List<LeafInterface> getLeafInterfaceList() {
+    return leafInterfaceList;
+  }
+
+  /**
+   * Setting physical IF information list for CE.
+   *
+   * @param leafInterfaceList
+   *          physical IF information list for CE
+   */
+  public void setLeafInterfaceList(List<LeafInterface> leafInterfaceList) {
+    this.leafInterfaceList = leafInterfaceList;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "CeLagInterface [name=" + name + ", minimumLinks=" + minimumLinks + ", linkSpeed=" + linkSpeed
+        + ", leafInterfaceList=" + leafInterfaceList + "]";
+  }
 }

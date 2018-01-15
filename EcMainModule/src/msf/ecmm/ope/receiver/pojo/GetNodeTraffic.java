@@ -1,59 +1,112 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo;
 
-import java.util.ArrayList;
-
 import msf.ecmm.ope.receiver.pojo.parts.SwitchTraffic;
 
+/**
+ * Traffic Information Acquisition.
+ */
 public class GetNodeTraffic extends AbstractResponseMessage {
 
-	private Boolean isSuccess;
+  /** Acquisition Success/Fail. */
+  private Boolean isSuccess;
 
-	private Integer interval;
+  /** MIB Acquisition Date and Time. */
+  private String time;
 
-	public String getClusterId() {
-		return clusterId;
-	}
+  /** TM Presumption Execution Cycle (Traffic Information Collection Cycle). */
+  private Integer interval;
 
-	public void setClusterId(String clusterId) {
-		this.clusterId = clusterId;
-	}
+  /** Traffic Information for each device. */
+  private SwitchTraffic switchTraffic;
 
-	public Boolean getIsSuccess() {
-		return isSuccess;
-	}
+  /**
+   * Getting acquisition success/fail.
+   *
+   * @return acquisition success/fail
+   */
+  public Boolean getIsSuccess() {
+    return isSuccess;
+  }
 
-	public void setIsSuccess(Boolean isSuccess) {
-		this.isSuccess = isSuccess;
-	}
+  /**
+   * Setting acquisition success/fail.
+   *
+   * @param isSuccess
+   *          acquisition success/fail
+   */
+  public void setIsSuccess(Boolean isSuccess) {
+    this.isSuccess = isSuccess;
+  }
 
-	public String getTime() {
-		return time;
-	}
+  /**
+   * Getting MIB acquisition date and time.
+   *
+   * @return MIB acquisition date and time
+   */
+  public String getTime() {
+    return time;
+  }
 
-	public void setTime(String time) {
-		this.time = time;
-	}
+  /**
+   * Setting MIB acquisition date and time.
+   *
+   * @param time
+   *          MIB acquisition date and time
+   */
+  public void setTime(String time) {
+    this.time = time;
+  }
 
-	public Integer getInterval() {
-		return interval;
-	}
+  /**
+   * Getting TM presumption execution cycle (traffic information collection cycle).
+   *
+   * @return TM presumption execution cycle (traffic information collection cycle)
+   */
+  public Integer getInterval() {
+    return interval;
+  }
 
-	public void setInterval(Integer interval) {
-		this.interval = interval;
-	}
+  /**
+   * Setting TM presumption execution cycle (traffic information collection cycle).
+   *
+   * @param interval
+   *          TM presumption execution cycle (traffic information collection cycle)
+   */
+  public void setInterval(Integer interval) {
+    this.interval = interval;
+  }
 
-	public ArrayList<SwitchTraffic> getSwitchTraffic() {
-		return switchTraffic;
-	}
+  /**
+   * Getting traffic information for each device.
+   *
+   * @return traffic information for each device
+   */
+  public SwitchTraffic getSwitchTraffic() {
+    return switchTraffic;
+  }
 
-	public void setSwitchTraffic(ArrayList<SwitchTraffic> switchTraffic) {
-		this.switchTraffic = switchTraffic;
-	}
+  /**
+   * Setting traffic information for each device.
+   *
+   * @param switchTraffic
+   *          traffic information for each device
+   */
+  public void setSwitchTraffic(SwitchTraffic switchTraffic) {
+    this.switchTraffic = switchTraffic;
+  }
 
-	@Override
-	public String toString() {
-		return "GetNodeTraffic [clusterId=" + clusterId + ", isSuccess=" + isSuccess + ", time=" + time + ", interval="
-				+ interval + ", switchTraffic=" + switchTraffic + "]";
-	}
+  /**
+   * Stringizing Instance.
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "GetNodeTraffic [isSuccess=" + isSuccess + ", time=" + time + ", interval=" + interval + ", switchTraffic="
+        + switchTraffic + "]";
+  }
 }

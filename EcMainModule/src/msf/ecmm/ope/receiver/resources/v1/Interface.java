@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.resources.v1;
 
@@ -22,202 +25,355 @@ import msf.ecmm.ope.receiver.pojo.CreateLagInterface;
 import msf.ecmm.ope.receiver.pojo.UpdatePhysicalInterface;
 import msf.ecmm.ope.receiver.resources.BaseResource;
 
+/**
+ * Interface Information Resource.
+ *
+ */
 @Path("/v1/internal/nodes")
 public class Interface extends BaseResource {
 
-	private static final String ERROR_CODE_170399 = "170399";
+  /** IF Information List Acquisition - operation execution preparation failure. */
+  private static final String ERROR_CODE_170201 = "170201";
+  /** IF Information List Acquisition - other exceptions. */
+  private static final String ERROR_CODE_170399 = "170399";
 
-	private static final String ERROR_CODE_180399 = "180399";
+  /** Physical IF Information List Acquisition - operation execution preparation failure. */
+  private static final String ERROR_CODE_180201 = "180201";
+  /** Physical IF Information List Acquisition - other exceptions. */
+  private static final String ERROR_CODE_180399 = "180399";
 
-	private static final String ERROR_CODE_190499 = "190499";
+  /** Physical IF Information Acquisition - operation execution preparation failure. */
+  private static final String ERROR_CODE_190301 = "190301";
+  /** Physical IF Information Acquisition - other exceptions. */
+  private static final String ERROR_CODE_190499 = "190499";
 
-	private static final String ERROR_CODE_200301 = "200301";
-	private static final String ERROR_CODE_230101 = "230101";
-	private static final String ERROR_CODE_230399 = "230399";
+  /** Physical IF Information Change - input data check result is NG (json error). */
+  private static final String ERROR_CODE_200101 = "200101";
+  /** Physical IF Information Change - operation execution preparation failure. */
+  private static final String ERROR_CODE_200301 = "200301";
+  /** Physical IF Information Change - other exceptions. */
+  private static final String ERROR_CODE_200499 = "200499";
 
-	private static final String ERROR_CODE_240399 = "240399";
+  /** LagIF Generation - input data check result is NG (json error). */
+  private static final String ERROR_CODE_230101 = "230101";
+  /** LagIF Generation - operation execution preparation failure. */
+  private static final String ERROR_CODE_230202 = "230202";
+  /** LagIF Generation - other exceptions. */
+  private static final String ERROR_CODE_230399 = "230399";
 
-	private static final String ERROR_CODE_250499 = "250499";
+  /** LagIF Information List Acquisition - operation execution preparation failure. */
+  private static final String ERROR_CODE_240201 = "240201";
+  /** LagIF Information List Acquisition - other exceptions. */
+  private static final String ERROR_CODE_240399 = "240399";
 
-	private static final String ERROR_CODE_260499 = "260499";
+  /** LagIF Information Acquisition - operation execution preparation failure. */
+  private static final String ERROR_CODE_250301 = "250301";
+  /** LagIF Information Acquisition - other exceptions. */
+  private static final String ERROR_CODE_250499 = "250499";
 
-	@GET
-	@Path("{fabric_type}/{node_id}/interfaces")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getInterfaceList(@PathParam("fabric_type") String fabricType, @PathParam("node_id") String nodeId) {
+  /** LagIF Deletion - operation execution preparation failure. */
+  private static final String ERROR_CODE_260301 = "260301";
+  /** LagIF Deletion - other exceptions. */
+  private static final String ERROR_CODE_260499 = "260499";
 
-		logger.trace(CommonDefinitions.START);
+  /** BreakoutIF Information Acquisition - operation execution preparation failure. */
+  private static final String ERROR_CODE_350301 = "350301";
+  /** BreakoutIF Information Acquisition - other exceptions. */
+  private static final String ERROR_CODE_350499 = "350499";
 
-		operationType = OperationType.AllIfInfoAcquisition;
+  /** BreakoutIF Information List Acquisition - operation execution preparation failure. */
+  private static final String ERROR_CODE_340201 = "340201";
+  /** BreakoutIF Information List Acquisition - other exceptions. */
+  private static final String ERROR_CODE_340399 = "340399";
 
-		setErrorCode("", ERROR_CODE_170201, ERROR_CODE_170399);
+  /**
+   * IF Information List Acquisition.
+   *
+   * @param nodeId
+   *          device ID
+   * @return REST response
+   */
+  @GET
+  @Path("{node_id}/interfaces")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getInterfaceList(@PathParam("node_id") String nodeId) {
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_FABRIC_TYPE, fabricType);
-		uriKeyMap.put(KEY_NODE_ID, nodeId);
+    logger.trace(CommonDefinitions.START);
 
-		Response response = executeOperation(uriKeyMap, null);
+    operationType = OperationType.AllIfInfoAcquisition;
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    setErrorCode("", ERROR_CODE_170201, ERROR_CODE_170399);
 
-	@GET
-	@Path("{fabric_type}/{node_id}/interfaces/physical-ifs")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getPhysicalInterfaceList(@PathParam("fabric_type") String fabricType,
-			@PathParam("node_id") String nodeId) {
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
 
-		logger.trace(CommonDefinitions.START);
+    Response response = executeOperation(uriKeyMap, null);
 
-		operationType = OperationType.AllPhysicalIfInfoAcquisition;
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		setErrorCode("", ERROR_CODE_180201, ERROR_CODE_180399);
+  /**
+   * Physical IF Information List Acquisition.
+   *
+   * @param nodeId
+   *          device ID
+   * @return REST response
+   */
+  @GET
+  @Path("{node_id}/interfaces/physical-ifs")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getPhysicalInterfaceList(@PathParam("node_id") String nodeId) {
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_FABRIC_TYPE, fabricType);
-		uriKeyMap.put(KEY_NODE_ID, nodeId);
+    logger.trace(CommonDefinitions.START);
 
-		Response response = executeOperation(uriKeyMap, null);
+    operationType = OperationType.AllPhysicalIfInfoAcquisition;
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    setErrorCode("", ERROR_CODE_180201, ERROR_CODE_180399);
 
-	@GET
-	@Path("{fabric_type}/{node_id}/interfaces/physical-ifs/{physical_if_id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getPhysicalInterface(@PathParam("fabric_type") String fabricType,
-			@PathParam("node_id") String nodeId, @PathParam("physical_if_id") String physicalIfId) {
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
 
-		logger.trace(CommonDefinitions.START);
+    Response response = executeOperation(uriKeyMap, null);
 
-		operationType = OperationType.PhysicalIfInfoAcquisition;
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		setErrorCode("", ERROR_CODE_190301, ERROR_CODE_190499);
+  /**
+   * Physical IF Information Acquisition.
+   *
+   * @param nodeId
+   *          device ID
+   * @param physicalIfId
+   *          physical IF-ID
+   * @return REST response
+   */
+  @GET
+  @Path("{node_id}/interfaces/physical-ifs/{physical_if_id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getPhysicalInterface(@PathParam("node_id") String nodeId,
+      @PathParam("physical_if_id") String physicalIfId) {
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_FABRIC_TYPE, fabricType);
-		uriKeyMap.put(KEY_NODE_ID, nodeId);
-		uriKeyMap.put(KEY_PHYSICAL_IF_ID, physicalIfId);
+    logger.trace(CommonDefinitions.START);
 
-		Response response = executeOperation(uriKeyMap, null);
+    operationType = OperationType.PhysicalIfInfoAcquisition;
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    setErrorCode("", ERROR_CODE_190301, ERROR_CODE_190499);
 
-	@PUT
-	@Path("{fabric_type}/{node_id}/interfaces/physical-ifs/{physical_if_id}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response updatePhysicalInterface(@PathParam("fabric_type") String fabricType,
-			@PathParam("node_id") String nodeId, @PathParam("physical_if_id") String physicalIfId) {
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+    uriKeyMap.put(KEY_PHYSICAL_IF_ID, physicalIfId);
 
-		logger.trace(CommonDefinitions.START);
+    Response response = executeOperation(uriKeyMap, null);
 
-		operationType = OperationType.PhysicalIfInfoChange;
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		setErrorCode(ERROR_CODE_200101, ERROR_CODE_200301, ERROR_CODE_200499);
+  /**
+   * Physical IF Information Change.
+   *
+   * @param nodeId
+   *          device ID
+   * @param physicalIfId
+   *          physical IF-ID
+   * @return REST response
+   */
+  @PUT
+  @Path("{node_id}/interfaces/physical-ifs/{physical_if_id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response updatePhysicalInterface(@PathParam("node_id") String nodeId,
+      @PathParam("physical_if_id") String physicalIfId) {
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_FABRIC_TYPE, fabricType);
-		uriKeyMap.put(KEY_NODE_ID, nodeId);
-		uriKeyMap.put(KEY_PHYSICAL_IF_ID, physicalIfId);
+    logger.trace(CommonDefinitions.START);
 
-		Response response = executeOperation(uriKeyMap, UpdatePhysicalInterface.class);
+    operationType = OperationType.PhysicalIfInfoChange;
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    setErrorCode(ERROR_CODE_200101, ERROR_CODE_200301, ERROR_CODE_200499);
 
-	@POST
-	@Path("{fabric_type}/{node_id}/interfaces/lag-ifs")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response createLagInterface(@PathParam("fabric_type") String fabricType, @PathParam("node_id") String nodeId) {
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+    uriKeyMap.put(KEY_PHYSICAL_IF_ID, physicalIfId);
 
-		logger.trace(CommonDefinitions.START);
+    Response response = executeOperation(uriKeyMap, UpdatePhysicalInterface.class);
 
-		operationType = OperationType.LagCreate;
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		setErrorCode(ERROR_CODE_230101, ERROR_CODE_230202, ERROR_CODE_230399);
+  /**
+   * LagIF Generation.
+   *
+   * @param nodeId
+   *          device ID
+   * @return REST response
+   */
+  @POST
+  @Path("{node_id}/interfaces/lag-ifs")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response createLagInterface(@PathParam("node_id") String nodeId) {
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_FABRIC_TYPE, fabricType);
-		uriKeyMap.put(KEY_NODE_ID, nodeId);
+    logger.trace(CommonDefinitions.START);
 
-		Response response = executeOperation(uriKeyMap, CreateLagInterface.class);
+    operationType = OperationType.LagCreate;
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    setErrorCode(ERROR_CODE_230101, ERROR_CODE_230202, ERROR_CODE_230399);
 
-	@GET
-	@Path("{fabric_type}/{node_id}/interfaces/lag-ifs")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLagInterfaceList(@PathParam("fabric_type") String fabricType, @PathParam("node_id") String nodeId) {
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
 
-		logger.trace(CommonDefinitions.START);
+    Response response = executeOperation(uriKeyMap, CreateLagInterface.class);
 
-		operationType = OperationType.AllLagInfoAcquisition;
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		setErrorCode("", ERROR_CODE_240201, ERROR_CODE_240399);
+  /**
+   * LagIF Information List Acquisition.
+   *
+   * @param nodeId
+   *          device ID
+   * @return REST response
+   */
+  @GET
+  @Path("{node_id}/interfaces/lag-ifs")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getLagInterfaceList(@PathParam("node_id") String nodeId) {
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_FABRIC_TYPE, fabricType);
-		uriKeyMap.put(KEY_NODE_ID, nodeId);
+    logger.trace(CommonDefinitions.START);
 
-		Response response = executeOperation(uriKeyMap, null);
+    operationType = OperationType.AllLagInfoAcquisition;
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    setErrorCode("", ERROR_CODE_240201, ERROR_CODE_240399);
 
-	@GET
-	@Path("{fabric_type}/{node_id}/interfaces/lag-ifs/{lag_if_id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getLagInterface(@PathParam("fabric_type") String fabricType,
-			@PathParam("node_id") String nodeId, @PathParam("lag_if_id") String lagIfId) {
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
 
-		logger.trace(CommonDefinitions.START);
+    Response response = executeOperation(uriKeyMap, null);
 
-		operationType = OperationType.LagInfoAcquisition;
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		setErrorCode("", ERROR_CODE_250301, ERROR_CODE_250499);
+  /**
+   * LagIF Information Acquisition.
+   *
+   * @param nodeId
+   *          device ID
+   * @param lagIfId
+   *          LagIF-ID
+   * @return REST response
+   */
+  @GET
+  @Path("{node_id}/interfaces/lag-ifs/{lag_if_id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getLagInterface(@PathParam("node_id") String nodeId, @PathParam("lag_if_id") String lagIfId) {
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_FABRIC_TYPE, fabricType);
-		uriKeyMap.put(KEY_NODE_ID, nodeId);
-		uriKeyMap.put(KEY_LAG_IF_ID, lagIfId);
+    logger.trace(CommonDefinitions.START);
 
-		Response response = executeOperation(uriKeyMap, null);
+    operationType = OperationType.LagInfoAcquisition;
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    setErrorCode("", ERROR_CODE_250301, ERROR_CODE_250499);
 
-	@DELETE
-	@Path("{fabric_type}/{node_id}/interfaces/lag-ifs/{lag_if_id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteLagInterface(@PathParam("fabric_type") String fabricType,
-			@PathParam("node_id") String nodeId, @PathParam("lag_if_id") String lagIfId) {
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+    uriKeyMap.put(KEY_LAG_IF_ID, lagIfId);
 
-		logger.trace(CommonDefinitions.START);
+    Response response = executeOperation(uriKeyMap, null);
 
-		operationType = OperationType.LagRemove;
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		setErrorCode("", ERROR_CODE_260301, ERROR_CODE_260499);
+  /**
+   * LagIF Deletion.
+   *
+   * @param nodeId
+   *          device ID
+   * @param lagIfId
+   *          LagIF-ID
+   * @return REST resonse
+   */
+  @DELETE
+  @Path("{node_id}/interfaces/lag-ifs/{lag_if_id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteLagInterface(@PathParam("node_id") String nodeId, @PathParam("lag_if_id") String lagIfId) {
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_FABRIC_TYPE, fabricType);
-		uriKeyMap.put(KEY_NODE_ID, nodeId);
-		uriKeyMap.put(KEY_LAG_IF_ID, lagIfId);
+    logger.trace(CommonDefinitions.START);
 
-		Response response = executeOperation(uriKeyMap, null);
+    operationType = OperationType.LagRemove;
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    setErrorCode("", ERROR_CODE_260301, ERROR_CODE_260499);
 
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+    uriKeyMap.put(KEY_LAG_IF_ID, lagIfId);
+
+    Response response = executeOperation(uriKeyMap, null);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
+  /**
+   * BreakoutIF Information List Acquisition.
+   *
+   * @param nodeId
+   *          device ID
+   * @return REST response
+   */
+  @GET
+  @Path("{node_id}/interfaces/breakout-ifs")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getBreakoutInterfaceList(@PathParam("node_id") String nodeId) {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.AllBreakoutIfInfoAcquisition;
+
+    setErrorCode("", ERROR_CODE_340201, ERROR_CODE_340399);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+
+    Response response = executeOperation(uriKeyMap, null);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
+  /**
+   * BreakoutIF Information Acquisition.
+   *
+   * @param nodeId
+   *          device ID
+   * @param breakoutIfId
+   *          breakoutIFID
+   *
+   * @return REST response
+   */
+  @GET
+  @Path("{node_id}/interfaces/breakout-ifs/{breakout_if_id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getBreakoutInterface(@PathParam("node_id") String nodeId,
+      @PathParam("breakout_if_id") String breakoutIfId) {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.BreakoutIfInfoAcquisition;
+
+    setErrorCode("", ERROR_CODE_350301, ERROR_CODE_350499);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+    uriKeyMap.put(KEY_BREAKOUT_IF_ID, breakoutIfId);
+
+    Response response = executeOperation(uriKeyMap, null);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 }

@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo.parts;
 
@@ -6,73 +9,155 @@ import java.util.ArrayList;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.CheckDataException;
 
+/**
+ * Model Information for Device Registration
+ */
 public class EquipmentRegisterNode {
 
-	private String configTemplate;
+  /** Device ID */
+  private String equipmentTypeId;
 
-	private String bootCompleteMsg;
+  /** dhcp.conf Template File Path */
+  private String configTemplate;
 
-	public String getEquipmentTypeId() {
-		return equipmentTypeId;
-	}
+  /** Device Initial Injection Configuration File Path */
+  private String initialConfig;
 
-	public void setEquipmentTypeId(String equipmentTypeId) {
-		this.equipmentTypeId = equipmentTypeId;
-	}
+  /** Start-up Completion Determination Message */
+  private String bootCompleteMsg;
 
-	public String getConfigTemplate() {
-		return configTemplate;
-	}
+  /** Start-up Failure Determination Message List */
+  private ArrayList<String> bootErrorMsgs = new ArrayList<String>();
 
-	public void setConfigTemplate(String configTemplate) {
-		this.configTemplate = configTemplate;
-	}
+  /**
+   * Getting device ID.
+   *
+   * @return device ID
+   */
+  public String getEquipmentTypeId() {
+    return equipmentTypeId;
+  }
 
-	public String getInitialConfig() {
-		return initialConfig;
-	}
+  /**
+   * Setting device ID.
+   *
+   * @param equipmentTypeId
+   *          device ID
+   */
+  public void setEquipmentTypeId(String equipmentTypeId) {
+    this.equipmentTypeId = equipmentTypeId;
+  }
 
-	public void setInitialConfig(String initialConfig) {
-		this.initialConfig = initialConfig;
-	}
+  /**
+   * Getting dhcp.conf template file path.
+   *
+   * @return dhcp.conf template file path
+   */
+  public String getConfigTemplate() {
+    return configTemplate;
+  }
 
-	public String getBootCompleteMsg() {
-		return bootCompleteMsg;
-	}
+  /**
+   * Setting dhcp.conf template file path.
+   *
+   * @param configTemplate
+   *          dhcp.conf template file path
+   */
+  public void setConfigTemplate(String configTemplate) {
+    this.configTemplate = configTemplate;
+  }
 
-	public void setBootCompleteMsg(String bootCompleteMsg) {
-		this.bootCompleteMsg = bootCompleteMsg;
-	}
+  /**
+   * Getting device initial injection configuration file path.
+   *
+   * @return device initial injection configuration file path
+   */
+  public String getInitialConfig() {
+    return initialConfig;
+  }
 
-	public ArrayList<String> getBootErrorMsgs() {
-		return bootErrorMsgs;
-	}
+  /**
+   * Setting device initial injection configuration file path.
+   *
+   * @param initialConfig
+   *          device initial injection configuration file path
+   */
+  public void setInitialConfig(String initialConfig) {
+    this.initialConfig = initialConfig;
+  }
 
-	public void setBootErrorMsgs(ArrayList<String> bootErrorMsgs) {
-		this.bootErrorMsgs = bootErrorMsgs;
-	}
+  /**
+   * Getting start-up completion determination message.
+   *
+   * @return start-up completion determination message
+   */
+  public String getBootCompleteMsg() {
+    return bootCompleteMsg;
+  }
 
-	@Override
-	public String toString() {
-		return "EquipmentRegisterNode [equipmentTypeId=" + equipmentTypeId + ", configTemplate=" + configTemplate
-				+ ", initialConfig=" + initialConfig + ", bootCompleteMsg=" + bootCompleteMsg + ", bootErrorMsgs="
-				+ bootErrorMsgs + "]";
-	}
+  /**
+   * Setting start-up completion determination message
+   *
+   * @param bootCompleteMsg
+   *          start-up completion determination message
+   */
+  public void setBootCompleteMsg(String bootCompleteMsg) {
+    this.bootCompleteMsg = bootCompleteMsg;
+  }
 
-	public void check(OperationType ope) throws CheckDataException {
+  /**
+   * Getting start-up failure determination message list.
+   *
+   * @return start-up failure determination message list
+   */
+  public ArrayList<String> getBootErrorMsgs() {
+    return bootErrorMsgs;
+  }
 
-		if (equipmentTypeId == null) {
-			throw new CheckDataException();
-		}
-		if (configTemplate == null) {
-			throw new CheckDataException();
-		}
-		if (initialConfig == null) {
-			throw new CheckDataException();
-		}
-		if (bootCompleteMsg == null) {
-			throw new CheckDataException();
-		}
-	}
+  /**
+   * Setting start-up failure determination message list.
+   *
+   * @param bootErrorMsgs
+   *          start-up failure determination message list
+   */
+  public void setBootErrorMsgs(ArrayList<String> bootErrorMsgs) {
+    this.bootErrorMsgs = bootErrorMsgs;
+  }
+
+  /**
+   * Stringizing Instance
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "EquipmentRegisterNode [equipmentTypeId=" + equipmentTypeId + ", configTemplate=" + configTemplate
+        + ", initialConfig=" + initialConfig + ", bootCompleteMsg=" + bootCompleteMsg + ", bootErrorMsgs="
+        + bootErrorMsgs + "]";
+  }
+
+  /**
+   * Input Parameter Check
+   *
+   * @param ope
+   *          operation type
+   * @throws CheckDataException
+   *           input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+
+    if (equipmentTypeId == null) {
+      throw new CheckDataException();
+    }
+    if (configTemplate == null) {
+      throw new CheckDataException();
+    }
+    if (initialConfig == null) {
+      throw new CheckDataException();
+    }
+    if (bootCompleteMsg == null) {
+      throw new CheckDataException();
+    }
+  }
 
 }

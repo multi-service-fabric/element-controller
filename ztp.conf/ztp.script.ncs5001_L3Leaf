@@ -1,0 +1,368 @@
+#!/bin/bash
+
+echo "*************** Start of my script via ncs5001_ILeaf_0.8_ztp_init.sh ***************"
+
+source /pkg/bin/ztp_helper.sh
+
+echo 1024 | xrcmd "crypto key generate dsa"
+
+cat >/tmp/config <<%%
+
+!! ZTP init configration 0.8
+
+clock timezone JST Asia/Tokyo
+logging buffered 125000000
+logging buffered debugging
+logging facility local2
+logging 192.168.50.72 vrf default severity info port default
+logging source-interface MgmtEth0/RP0/CPU0/0
+service timestamps log datetime localtime msec show-timezone
+service timestamps debug datetime localtime msec show-timezone
+telnet vrf default ipv4 server max-servers 100
+domain name cisco.com
+username admin
+ group root-lr
+ group cisco-support
+ secret admin
+!
+no tpa
+line default
+ password 7 02050D480809
+ exec-timeout 0 0
+ session-limit 0
+ session-timeout 0
+!
+vty-pool default 0 99
+snmp-server host 192.168.50.72 traps version 2c dhcp-provisioning-only
+snmp-server host 192.168.50.72 traps version 2c ntt-msf
+snmp-server community dhcp-provisioning-only
+snmp-server community ntt-msf
+snmp-server traps rf
+snmp-server traps aps
+snmp-server traps bfd
+snmp-server traps ethernet cfm
+snmp-server traps ntp
+snmp-server traps ethernet oam events
+snmp-server traps copy-complete
+snmp-server traps snmp
+snmp-server traps snmp linkup
+snmp-server traps snmp linkdown
+snmp-server traps snmp coldstart
+snmp-server traps snmp warmstart
+snmp-server traps snmp authentication
+snmp-server traps flash removal
+snmp-server traps flash insertion
+snmp-server traps config
+snmp-server traps entity
+snmp-server traps selective-vrf-download role-change
+snmp-server traps syslog
+snmp-server traps system
+snmp-server traps bridgemib
+snmp-server traps optical
+snmp-server traps addrpool low
+snmp-server traps addrpool high
+snmp-server traps entity-state operstatus
+snmp-server traps entity-state switchover
+snmp-server traps entity-redundancy all
+snmp-server traps entity-redundancy status
+snmp-server traps entity-redundancy switchover
+ntp
+ server 192.168.111.100
+ source MgmtEth0/RP0/CPU0/0
+ update-calendar
+!
+ipv4 access-list ipv4_msf_opscont_classify
+ 10 permit tcp any any eq ftp
+ 20 permit tcp any eq ftp any
+ 30 permit tcp any any eq ftp-data
+ 40 permit tcp any eq ftp-data any
+ 50 permit udp any any eq tftp
+ 60 permit udp any eq tftp any
+ 70 permit tcp any any eq ssh
+ 80 permit tcp any eq ssh any
+ 90 permit tcp any any eq telnet
+ 100 permit tcp any eq telnet any
+ 110 permit udp any any eq snmp
+ 120 permit udp any eq snmp any
+ 130 permit udp any any eq snmptrap
+ 140 permit udp any eq snmptrap any
+ 150 permit udp any any eq ntp
+ 160 permit udp any eq ntp any
+ 170 permit udp any any eq syslog
+ 180 permit udp any eq syslog any
+ 190 permit tcp any any eq 830
+ 200 permit tcp any eq 830 any
+!
+ipv4 access-list ipv4_msf_netcont_classify
+ 10 permit tcp any any eq bgp
+ 20 permit tcp any eq bgp any
+ 30 permit tcp any any eq ldp
+ 40 permit tcp any eq ldp any
+ 50 permit udp any any eq ldp
+ 60 permit udp any eq ldp any
+ 70 permit ospf any any
+!
+class-map match-any in_msf_ef_class
+ match dscp 46 48 56
+ match mpls experimental topmost 5 6 7
+ match access-group ipv4 ipv4_msf_netcont_classify
+ end-class-map
+!
+class-map match-any in_msf_af1_class
+ match dscp 8
+ match mpls experimental topmost 1
+ end-class-map
+!
+class-map match-any in_msf_af2_class
+ match dscp 16
+ match mpls experimental topmost 2
+ end-class-map
+!
+class-map match-any in_msf_af3_class
+ match dscp 24
+ match mpls experimental topmost 3
+ end-class-map
+!
+class-map match-any in_msf_af4_class
+ match dscp 32
+ match mpls experimental topmost 4
+ match access-group ipv4 ipv4_msf_opscont_classify
+ end-class-map
+!
+class-map match-any qos_group_1
+ match qos-group 1
+ end-class-map
+!
+class-map match-any qos_group_2
+ match qos-group 2
+ end-class-map
+!
+class-map match-any qos_group_3
+ match qos-group 3
+ end-class-map
+!
+class-map match-any qos_group_4
+ match qos-group 4
+ end-class-map
+!
+class-map match-any qos_group_5
+ match qos-group 5
+ end-class-map
+!
+class-map match-any qos_group_6_dummy
+ match qos-group 6
+ end-class-map
+!
+class-map match-any qos_group_7_dummy
+ match qos-group 7
+ end-class-map
+!
+policy-map in_msf_policy
+ class in_msf_ef_class
+  set qos-group 1
+  set dscp 46
+ !
+ class in_msf_af1_class
+  set qos-group 2
+  set dscp 8
+ !
+ class in_msf_af2_class
+  set qos-group 3
+  set dscp 16
+ !
+ class in_msf_af3_class
+  set qos-group 4
+  set dscp 24
+ !
+ class in_msf_af4_class
+  set qos-group 5
+  set dscp 32
+ !
+ class class-default
+  set qos-group 0
+  set dscp 0
+ !
+ end-policy-map
+!
+policy-map in_ce_vpnbulk_be_policy
+ class class-default
+  set qos-group 0
+  set dscp 0
+ !
+ end-policy-map
+!
+policy-map out_msf_policy_scheduling
+ class qos_group_1
+  priority level 1
+ !
+ class qos_group_2
+  bandwidth remaining percent 10
+ !
+ class qos_group_3
+  bandwidth remaining percent 40
+ !
+ class qos_group_4
+  bandwidth remaining percent 30
+ !
+ class qos_group_5
+  bandwidth remaining percent 15
+ !
+ class qos_group_6_dummy
+  bandwidth remaining percent 1
+ !
+ class qos_group_7_dummy
+  bandwidth remaining percent 1
+ !
+ class class-default
+  bandwidth remaining percent 3
+ !
+ end-policy-map
+!
+policy-map out_ce_pt2_policy
+ class qos_group_1
+  priority level 1
+ !
+ class qos_group_2
+  bandwidth remaining percent 10
+ !
+ class qos_group_3
+  bandwidth remaining percent 30
+ !
+ class qos_group_4
+  bandwidth remaining percent 50
+ !
+ class qos_group_5
+  bandwidth remaining percent 1
+ !
+ class qos_group_6_dummy
+  bandwidth remaining percent 1
+ !
+ class qos_group_7_dummy
+  bandwidth remaining percent 1
+ !
+ class class-default
+  bandwidth remaining percent 7
+ !
+ end-policy-map
+!
+interface MgmtEth0/RP0/CPU0/0
+ ipv4 address 192.168.1.55 255.255.0.0
+ no shutdown
+!
+community-set MSF_belonging_side
+  64050:1
+end-set
+!
+community-set MSF_community
+  64050:*
+end-set
+!
+route-policy VRF_policy
+  pass
+end-policy
+!
+route-policy VPN_export
+  set community MSF_belonging_side additive
+end-policy
+!
+route-policy VPN_import
+  if community matches-any MSF_belonging_side then
+    set local-preference 200
+    pass
+  else
+    set local-preference 50
+    pass
+  endif
+end-policy
+!
+route-policy eBGPv4_To_active-CE_export
+  if community matches-any MSF_community then
+    delete community in MSF_community
+  endif
+  set med 500
+  set origin igp
+  pass
+end-policy
+!
+route-policy eBGPv4_To_standby-CE_export
+  if community matches-any MSF_community then
+    delete community in MSF_community
+  endif
+  set med 1000
+  set origin igp
+  pass
+end-policy
+!
+route-policy eBGPv4_To_CE_import
+  if community matches-any MSF_community then
+    delete community in MSF_community
+  else
+    pass
+  endif
+end-policy
+!
+route-policy v4_Redist_To_BGP_in_VRF
+  set origin igp
+end-policy
+!
+snmp-server traps bgp cbgp2
+snmp-server traps bgp
+snmp-server traps hsrp
+snmp-server traps vrrp events
+snmp-server traps vpls all
+snmp-server traps vpls status
+snmp-server traps vpls full-clear
+snmp-server traps vpls full-raise
+snmp-server traps l2vpn all
+snmp-server traps l2vpn cisco
+snmp-server traps l2vpn vc-up
+snmp-server traps l2vpn vc-down
+snmp-server traps mpls ldp up
+snmp-server traps mpls ldp down
+snmp-server traps mpls ldp threshold
+snmp-server traps mpls l3vpn all
+snmp-server traps mpls l3vpn vrf-up
+snmp-server traps mpls l3vpn vrf-down
+snmp-server traps mpls l3vpn max-threshold-cleared
+snmp-server traps mpls l3vpn max-threshold-exceeded
+snmp-server traps mpls l3vpn mid-threshold-exceeded
+snmp-server traps mpls l3vpn max-threshold-reissue-notif-time 1
+snmp-server traps pim neighbor-change
+snmp-server traps pim invalid-message-received
+snmp-server traps pim rp-mapping-change
+snmp-server traps pim interface-state-change
+snmp-server traps msdp peer-state-change
+snmp-server traps ipsla
+snmp-server traps fru-ctrl
+netconf-yang agent
+ ssh
+ session limit 50
+ session idle-timeout 1440
+ session absolute-timeout 1440
+!
+snmp-server traps ipsec tunnel stop
+snmp-server traps ipsec tunnel start
+snmp-server traps isakmp tunnel stop
+snmp-server traps isakmp tunnel start
+snmp-server traps ospf lsa lsa-maxage
+snmp-server traps ospf lsa lsa-originate
+snmp-server traps ospf errors bad-packet
+snmp-server traps ospf errors authentication-failure
+snmp-server traps ospf errors config-error
+snmp-server traps ospf errors virt-bad-packet
+snmp-server traps ospf errors virt-authentication-failure
+snmp-server traps ospf errors virt-config-error
+snmp-server traps ospf retransmit packets
+snmp-server traps ospf retransmit virt-packets
+snmp-server traps ospf state-change if-state-change
+snmp-server traps ospf state-change neighbor-state-change
+snmp-server traps ospf state-change virtif-state-change
+snmp-server traps ospf state-change virtneighbor-state-change
+ssh server vrf default
+end
+
+%%
+
+xrapply /tmp/config
+
+echo "***************  End of my script via ncs5001_ILeaf_0.8_ztp_init.sh  ***************"

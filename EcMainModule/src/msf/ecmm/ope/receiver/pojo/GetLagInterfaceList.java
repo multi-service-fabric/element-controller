@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo;
 
@@ -5,19 +8,41 @@ import java.util.ArrayList;
 
 import msf.ecmm.ope.receiver.pojo.parts.LagIf;
 
+/**
+ * LagIF Information List Acquisition.
+ */
 public class GetLagInterfaceList extends AbstractResponseMessage {
 
-	public ArrayList<LagIf> getLagIfs() {
-		return lagIfs;
-	}
+  /** LagIF Information List. */
+  private ArrayList<LagIf> lagIfs = new ArrayList<LagIf>();
 
-	public void setLagIfs(ArrayList<LagIf> lagIfs) {
-		this.lagIfs = lagIfs;
-	}
+  /**
+   * Getting LagIF information list.
+   *
+   * @return LagIF information list
+   */
+  public ArrayList<LagIf> getLagIfs() {
+    return lagIfs;
+  }
 
-	@Override
-	public String toString() {
-		return "GetLagInterfaceList [lagIfs=" + lagIfs + "]";
-	}
+  /**
+   * Setting LagIF information list.
+   *
+   * @param lagIfs
+   *          LagIF information list
+   */
+  public void setLagIfs(ArrayList<LagIf> lagIfs) {
+    this.lagIfs = lagIfs;
+  }
+
+  /**
+   * Stringizing Instance.
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "GetLagInterfaceList [lagIfs=" + lagIfs + "]";
+  }
 
 }

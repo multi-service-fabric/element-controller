@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.resources.v1;
 
@@ -20,87 +23,132 @@ import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.RegisterEquipmentType;
 import msf.ecmm.ope.receiver.resources.BaseResource;
 
+/**
+ * Model Information Resource
+ */
 @Path("/v1/internal/equipment-types")
 public class EquipmentType extends BaseResource {
 
-	private static final String ERROR_CODE_020202 = "020202";
-	private static final String ERROR_CODE_030101 = "030101";
-	private static final String ERROR_CODE_040301 = "040301";
-	private static final String ERROR_CODE_050301 = "050301";
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response regiterEquipmentType() {
+  /** Model Information Registration - input data check result is NG (json error) */
+  private static final String ERROR_CODE_290101 = "290101";
+  /** Model Information Registration - operation execution preparation failure */
+  private static final String ERROR_CODE_020202 = "020202";
+  /** Model Information Registration - other exceptions */
+  private static final String ERROR_CODE_020399 = "020399";
 
-		logger.trace(CommonDefinitions.START);
+  /** Model List Information Acquisition - operation execution preparation failure */
+  private static final String ERROR_CODE_030101 = "030101";
+  /** Model List Information Acquisition - other exceptions */
+  private static final String ERROR_CODE_030299 = "030299";
 
-		operationType = OperationType.DeviceInfoRegistration;
+  /** Model Information Acquisition - operation execution preparation failure */
+  private static final String ERROR_CODE_040301 = "040301";
+  /** Model Information Acquisition - other exceptions */
+  private static final String ERROR_CODE_040499 = "040499";
 
-		setErrorCode(ERROR_CODE_290101, ERROR_CODE_020202, ERROR_CODE_020399);
+  /** Model Information Deletion - operation execution preparation failure */
+  private static final String ERROR_CODE_050301 = "050301";
+  /** Model Information Deletion - other exceptions */
+  private static final String ERROR_CODE_050499 = "050499";
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+  /**
+   * Model Information Registration
+   *
+   * @return REST response
+   */
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response regiterEquipmentType() {
 
-		Response response = executeOperation(uriKeyMap, RegisterEquipmentType.class);
+    logger.trace(CommonDefinitions.START);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    operationType = OperationType.DeviceInfoRegistration;
 
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getEquipmentTypeList() {
+    setErrorCode(ERROR_CODE_290101, ERROR_CODE_020202, ERROR_CODE_020399);
 
-		logger.trace(CommonDefinitions.START);
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
 
-		operationType = OperationType.AllDeviceTypeInfoAcquisition;
+    Response response = executeOperation(uriKeyMap, RegisterEquipmentType.class);
 
-		setErrorCode("", ERROR_CODE_030101, ERROR_CODE_030299);
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+  /**
+   * Model List Information Acquisition
+   *
+   * @return REST response
+   */
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getEquipmentTypeList() {
 
-		Response response = executeOperation(uriKeyMap, null);
+    logger.trace(CommonDefinitions.START);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    operationType = OperationType.AllDeviceTypeInfoAcquisition;
 
-	@GET
-	@Path("{equipment_type_id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getEquipmentType(@PathParam("equipment_type_id") String equipmentTypeId) {
+    setErrorCode("", ERROR_CODE_030101, ERROR_CODE_030299);
 
-		logger.trace(CommonDefinitions.START);
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
 
-		operationType = OperationType.DeviceInfoAcquisition;
+    Response response = executeOperation(uriKeyMap, null);
 
-		setErrorCode("", ERROR_CODE_040301, ERROR_CODE_040499);
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_EQUIPMENT_TYPE_ID, equipmentTypeId);
+  /**
+   * Model Information Acquisition
+   *
+   * @param equipmentTypeId
+   *          model ID
+   * @return REST response
+   */
+  @GET
+  @Path("{equipment_type_id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getEquipmentType(@PathParam("equipment_type_id") String equipmentTypeId) {
 
-		Response response = executeOperation(uriKeyMap, null);
+    logger.trace(CommonDefinitions.START);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    operationType = OperationType.DeviceInfoAcquisition;
 
-	@DELETE
-	@Path("{equipment_type_id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response deleteEquipmentType(@PathParam("equipment_type_id") String equipmentTypeId) {
+    setErrorCode("", ERROR_CODE_040301, ERROR_CODE_040499);
 
-		logger.trace(CommonDefinitions.START);
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_EQUIPMENT_TYPE_ID, equipmentTypeId);
 
-		operationType = OperationType.DeviceInfoRemove;
+    Response response = executeOperation(uriKeyMap, null);
 
-		setErrorCode("", ERROR_CODE_050301, ERROR_CODE_050499);
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_EQUIPMENT_TYPE_ID, equipmentTypeId);
+  /**
+   * Model Information Deletion
+   *
+   * @param equipmentTypeId
+   *          model ID
+   * @return REST response
+   */
+  @DELETE
+  @Path("{equipment_type_id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteEquipmentType(@PathParam("equipment_type_id") String equipmentTypeId) {
 
-		Response response = executeOperation(uriKeyMap, null);
+    logger.trace(CommonDefinitions.START);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    operationType = OperationType.DeviceInfoRemove;
+
+    setErrorCode("", ERROR_CODE_050301, ERROR_CODE_050499);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_EQUIPMENT_TYPE_ID, equipmentTypeId);
+
+    Response response = executeOperation(uriKeyMap, null);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 }

@@ -1,11 +1,20 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.traffic;
 
-
-
+/**
+ * IF Status Integrity Monitoring Class Definition. Conducting the monitoring and termination process of IF status integrity.
+ */
 public class IntegrityExecuterWatchDog extends Thread {
 
-	public IntegrityExecuterWatchDog(){}
+  /**
+   * Constructor
+   */
+  public IntegrityExecuterWatchDog() {
+  }
 
-	public void run(){
-	}
+  public void run() {
+  }
 }

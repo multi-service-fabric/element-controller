@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.ope.execute;
 
 import static msf.ecmm.common.CommonDefinitions.*;
@@ -15,122 +19,215 @@ import msf.ecmm.ope.receiver.pojo.CommonResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+* Operation Class Definition. Executing operation. (Abstract Class)
+ *
+ */
 public abstract class Operation {
 
-	protected final static Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  /**
+   * Logger
+   */
+  protected final static Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-	private AbstractRestMessage inData;
+  /** Operation ID. */
+  protected EcSession operationId;
 
-	private HashMap<String,String> uriKeyMap;
+  /** Input Message. */
+  private AbstractRestMessage inData;
 
-	protected String fabricType = "" ;
+  /** Operation Type. */
+  private OperationType operationType = OperationType.None; 
 
-	public Operation(AbstractRestMessage idt,HashMap<String,String> ukm){
-		operationId = new EcSession(-1);
-		inData = idt;
-		uriKeyMap = ukm;
-		if (uriKeyMap != null && uriKeyMap.containsKey(KEY_NODE_ID)) {
-			nodeId = uriKeyMap.get(KEY_NODE_ID);
-		}
-		if (uriKeyMap != null && uriKeyMap.containsKey(KEY_FABRIC_TYPE)) {
-			fabricType = uriKeyMap.get(KEY_FABRIC_TYPE);
-		}
-	}
+  /** URI Key Information. */
+  private HashMap<String, String> uriKeyMap;
 
-	public boolean prepare(){
+  /** node_id to be operated. */
+  protected String nodeId = "";
 
-		logger.trace(CommonDefinitions.START);
 
-		boolean judge = false;
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input message
+   * @param ukm
+   *          URI key information
+   */
+  public Operation(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    operationId = new EcSession(-1);
+    inData = idt;
+    uriKeyMap = ukm;
+    if (uriKeyMap != null && uriKeyMap.containsKey(KEY_NODE_ID)) {
+      nodeId = uriKeyMap.get(KEY_NODE_ID);
+    }
+  }
 
-		synchronized(OperationControlManager.getInstance()){
-			judge = OperationControlManager.getInstance().judgeExecution(operationType);
+  /**
+   * Preparation of Operation Execution<br>
+   * Preparing for operation execution.
+   *
+   * @return execution preparation success/fail
+   */
+  public boolean prepare() {
 
-			if(judge){
-				operationId = OperationControlManager.getInstance().startOperation(this);
+    logger.trace(CommonDefinitions.START);
 
-				if(operationId == null){
-					judge = false;
-				}else{
-				}
-			}else{
-			}
-		}
+    boolean judge = false;
 
-		logger.trace(CommonDefinitions.END + ", return=" + judge);
+    synchronized (OperationControlManager.getInstance()) {
+      judge = OperationControlManager.getInstance().judgeExecution(operationType);
 
-		return judge;
-	}
+      if (judge) {
+        operationId = OperationControlManager.getInstance().startOperation(this);
 
-	public abstract AbstractResponseMessage execute();
+        if (operationId == null) {
+          judge = false;
+        } else {
+        }
+      } else {
+      }
+    }
 
-	public boolean close(){
+    logger.trace(CommonDefinitions.END + ", return=" + judge);
 
-		logger.trace(CommonDefinitions.START);
+    return judge;
+  }
 
-		try{
-			operationId.close();
-		}catch(IllegalArgumentException | InternalError e){
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403042),e);
-			return false;
-		}
+  /**
+   * Operation Execution<br>
+   * Executing the operation.
+   *
+   * @return message for REST response
+   */
+  public abstract AbstractResponseMessage execute();
 
-		logger.trace(CommonDefinitions.END);
+  /**
+   * Operation Execution Termination<br>
+   * Executing the termination process of operation.
+   *
+   * @return execution termination process success/fail
+   */
+  public boolean close() {
 
-		return true;
-	}
+    logger.trace(CommonDefinitions.START);
 
-	abstract protected boolean checkInData();
+    try {
+        operationId.close();
+    } catch (IllegalArgumentException | InternalError exp) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403042), exp);
+      return false;
+    }
 
-	protected AbstractResponseMessage makeSuccessResponse(int rescode,AbstractResponseMessage res){
+    logger.trace(CommonDefinitions.END);
 
-		res.setResponseCode(rescode);
+    return true;
+  }
 
-		return res;
-	}
+  /**
+   * Input Data Check<br>
+   * Determining whether the input value of REST message is right or not.
+   *
+   * @return check result
+   */
+  abstract protected boolean checkInData();
 
-	protected CommonResponse makeFailedResponse(int rescode,String errcode){
+  /**
+   * Generating Normal Response<br>
+   * Generating the instance for creating REST response in successful completion
+   *
+   * @param rescode
+   *          response code
+   * @param res
+   *          instance for responding
+   * @return normal response instance
+   */
+  protected AbstractResponseMessage makeSuccessResponse(int rescode, AbstractResponseMessage res) {
 
-		CommonResponse res = new CommonResponse();
+    res.setResponseCode(rescode);
 
-		res.setErrorCode(errcode);
-		res.setResponseCode(rescode);
+    return res;
+  }
 
-		return res;
-	}
+  /**
+   * Generating Abnormal Response<br>
+   * Generatin the instance for creating REST response in error.
+   *
+   * @param rescode
+   *          response code
+   * @param errcode
+   *          error code
+   * @return abnormal response instance
+   */
+  protected CommonResponse makeFailedResponse(int rescode, String errcode) {
 
-	protected void setOperationType(OperationType operationType) {
-		this.operationType = operationType;
-	}
+    CommonResponse res = new CommonResponse();
 
-	protected EcSession getOperationId() {
-		return operationId;
-	}
+    res.setErrorCode(errcode);
+    res.setResponseCode(rescode);
 
-	protected AbstractRestMessage getInData() {
-		return inData;
-	}
+    return res;
+  }
 
-	public OperationType getOperationType() {
-		return operationType;
-	}
+  /**
+   * Setting opeartion type.
+   *
+   * @param operationType
+   *          operation type
+   */
+  protected void setOperationType(OperationType operationType) {
+    this.operationType = operationType;
+  }
 
-	protected HashMap<String, String> getUriKeyMap() {
-		return uriKeyMap;
-	}
+  /**
+   * Getting operation ID.
+   *
+   * @return operation ID
+   */
+  protected EcSession getOperationId() {
+    return operationId;
+  }
 
-	public String getNodeId(){
-		return nodeId ;
-	}
+  /**
+   * Getting input message.
+   *
+   * @return input message
+   */
+  protected AbstractRestMessage getInData() {
+    return inData;
+  }
 
-	public String getFabricType() {
-		return fabricType;
-	}
+  /**
+   * Getting operation type.
+   *
+   * @return operation type
+   */
+  public OperationType getOperationType() {
+    return operationType;
+  }
 
-	@Override
-	public String toString() {
-		return "Operation [operationId=" + operationId + ", inData=" + inData + ", operationType=" + operationType
-				+ ", uriKeyMap=" + uriKeyMap + ", nodeId=" + nodeId + ", fabricType" + fabricType +"]";
-	}
+  /**
+   * Getting URI key information.
+   *
+   * @return URI key information
+   */
+  protected HashMap<String, String> getUriKeyMap() {
+    return uriKeyMap;
+  }
+
+  /**
+   * node ID to be operated
+   *
+   * @return blank if any node is not specified.
+   */
+  public String getNodeId() {
+    return nodeId;
+  }
+
+  @Override
+  public String toString() {
+    return "Operation [operationId=" + operationId + ", inData=" + inData + ", operationType=" + operationType
+        + ", uriKeyMap=" + uriKeyMap + ", nodeId=" + nodeId + "]";
+  }
 
 }

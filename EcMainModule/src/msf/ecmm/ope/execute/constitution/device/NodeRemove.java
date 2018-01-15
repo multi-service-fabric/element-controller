@@ -1,7 +1,9 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.device;
 
-import static msf.ecmm.common.CommonDefinitions.*;
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
 import java.util.ArrayList;
@@ -10,6 +12,8 @@ import java.util.List;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.convert.DbMapper;
+import msf.ecmm.convert.EmMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.Nodes;
@@ -21,212 +25,324 @@ import msf.ecmm.emctrl.EmController;
 import msf.ecmm.emctrl.EmctrlException;
 import msf.ecmm.emctrl.RequestQueueEntry;
 import msf.ecmm.emctrl.pojo.AbstractMessage;
+import msf.ecmm.emctrl.pojo.InternalLinkAddDelete;
 import msf.ecmm.ope.execute.Operation;
+import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
+import msf.ecmm.ope.receiver.pojo.CheckDataException;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
+import msf.ecmm.ope.receiver.pojo.DeleteNode;
+import msf.ecmm.ope.receiver.pojo.parts.OppositeNodesDeleteNode;
 
+/**
+ * Device Removal/Change Base.
+ */
 public abstract class NodeRemove extends Operation {
 
-	private AbstractResponseMessage response = null;
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_080101 = "080101";
+  /** In case the number of pieces of information for Leaf device extention/removal is zero (Data acquisition from DBs is failed in the previous step of process). */
+  private static final String ERROR_CODE_080102 = "080102";
+  /** Detected inconsistency between input data and DB data. */
+  private static final String ERROR_CODE_800103 = "800103";
+  /** In case the subject to be deleted does not exist. */
+  private static final String ERROR_CODE_080201 = "080201";
+  /** In case CP requiring LAG has not been deleted (80: rollback at FC). */
+  private static final String ERROR_CODE_800303 = "800303";
+  /** DHCP termination failed while in removing (80: rollback at FC). */
+  private static final String ERROR_CODE_800401 = "800401";
+  /** Syslog monitoring termination failed while in removing (80: rollback at FC). */
+  private static final String ERROR_CODE_800402 = "800402";
+  /** Disconnection or connection timeout to EM has occurred in Leaf removal request to EM (80: rollback at FC). */
+  private static final String ERROR_CODE_800403 = "800403";
+  /** Error has occurred in EM at Leaf extention/removal request to EM (error response received). */
+  private static final String ERROR_CODE_080404 = "080404";
+  /** Disconnection or connection timeout to EM has occurred while in requesting LAG deletion for internal link to EM after the completion of Leaf removal to EM (80: rollback at FC). */
+  private static final String ERROR_CODE_800405 = "800405";
+  /** Error has occurred from EM in requesting LAG addition/deletion for internal link to EM after the completion of Leaf extention/removal to EM (error response received). */
+  private static final String ERROR_CODE_080406 = "080406";
+  /** In case error has occurred in DB access (80: rollback at FC). */
+  private static final String ERROR_CODE_800408 = "800408";
+  /** EM access manual lock acquisition failed  (80: rollback at FC). */
+  private static final String ERROR_CODE_800409 = "800409";
+  /** In case DB commitment failed after successful EM access (90: Notify EMEC status unmatch to FC). */
+  private static final String ERROR_CODE_900410 = "900410";
 
-	public NodeRemove(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-	}
+  /**
+   * Having exceptionally in this class for the process to continue processing when removal response EM error response has been received.
+   */
+  private AbstractResponseMessage response = null;
 
-	@Override
-	public AbstractResponseMessage execute() {
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public NodeRemove(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+  }
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, getInputDataErrorCode());
-		}
+  @Override
+  public AbstractResponseMessage execute() {
+    logger.trace(CommonDefinitions.START);
 
-		String nodeId = getUriKeyMap().get(KEY_NODE_ID);
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080101);
+    }
 
-		boolean isOppositeNodesInfoFlag = isOppositeNodesInfo();
+    DeleteNode deleteNodeRest = (DeleteNode) getInData();
 
-		boolean dhcpOkFlag = false;
-		boolean emLockOkFlag = false;
-		boolean em1FinFlag = false;
+    String nodeId = deleteNodeRest.getDeleteNodes().getNodeId();
 
-		try (DBAccessManager session = new DBAccessManager()) {
+    boolean isOppositeNodesInfoFlag = isOppositeNodesInfo();
 
-			DhcpController dhcpController = DhcpController.getInstance();
-			dhcpController.stop(false);
-			dhcpOkFlag = true;
+    boolean dhcpOkFlag = false;
+    boolean emLockOkFlag = false;
+    boolean em1FinFlag = false;
+    boolean needCleanUpFlag = true; 
 
-			SyslogController syslogController = SyslogController.getInstance();
-			syslogController.monitorStop(false);
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			needCleanUpFlag = false;
+      DhcpController dhcpController = DhcpController.getInstance();
+      dhcpController.stop(false);
+      dhcpOkFlag = true;
 
-			Nodes nodesDb = session.searchNodes(getNodeType(), nodeId, null);
-			if (nodesDb == null) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Nodes]"));
-				return makeFailedResponse(RESP_NOTFOUND_404, getNotFoundDataErrorCode());
-			}
+      SyslogController syslogController = SyslogController.getInstance();
+      syslogController.monitorStop(false);
 
-			ArrayList<Nodes> oppoNodeList = new ArrayList<Nodes>();
-			ArrayList<String> oppoIdList = getOppositeNodeIdList();
-			for (String oppoId : oppoIdList) {
-				Nodes oppoNodesDb = session.searchNodes(getOppoNodeType(), oppoId, null);
-				if (oppoNodesDb == null) {
-					logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Nodes]"));
-					return makeFailedResponse(RESP_BADREQUEST_400, getNotFoundSubDataErrorCode());
-				}
-				oppoNodeList.add(oppoNodesDb);
-			}
+      needCleanUpFlag = false;
 
-			session.startTransaction();
+      Nodes nodesDb = session.searchNodes(nodeId, null);
+      if (nodesDb == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Nodes]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_080201);
+      }
 
-			session.deleteNodesRelation(getNodeType(), nodeId);
+      ArrayList<Nodes> oppoNodeList = new ArrayList<Nodes>();
+      ArrayList<String> oppoIdList = getOppositeNodeIdList();
+      for (String oppoId : oppoIdList) {
+        Nodes oppoNodesDb = session.searchNodes(oppoId, null);
+        if (oppoNodesDb == null) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [OppoNodes]"));
+          return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080102);
+        }
+        oppoNodeList.add(oppoNodesDb);
+      }
+      oppoNodeList.toString(); 
 
-			List<Nodes> oppoNodeListFromRestInput = toNodeOppositeNodesReduced();
-			boolean isOppositeEmExecuteFlag = deleteOppositeNodes(session, oppoNodeListFromRestInput);
+      session.startTransaction();
 
-			AbstractMessage lockKey = new AbstractMessage();
-			RequestQueueEntry entry = null;
-			try {
-				entry = EmController.getInstance().lock(lockKey);
-				emLockOkFlag = true;
+      session.deleteNodesRelation(nodeId);
 
-				if (!executeDeleteNode(nodesDb)) {
-					logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed. [Node]"));
-					response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getEm1ErrorCode());
-				}
-				em1FinFlag = true;
+      List<Nodes> oppoNodeListFromRestInput = DbMapper.toNodeOppositeNodesReduced(deleteNodeRest, oppoNodeList);
+      boolean isOppositeEmExecuteFlag = deleteOppositeNodes(session, oppoNodeListFromRestInput);
 
-				if (isOppositeNodesInfoFlag && isOppositeEmExecuteFlag) {
-					if (!executeDeleteLag(oppoNodeList)) {
-						logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041,
-								"Request to EM was failed. [internalLag]"));
-						response = makeFailedResponseWithoutOverwrite(RESP_INTERNALSERVERERROR_500, getEm2ErrorCode());
-					}
-				}
-			} finally {
-				if (entry != null) {
-					EmController.getInstance().unlock(entry);
-				}
-			}
+      boolean doNotNotifyEm = false;
+      if (session.checkClusterType() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
+        if (session.getNodesNum() > 0) {
+          doNotNotifyEm = true; 
+        }
+      }
 
-			session.commit();
+      AbstractMessage lockKey = new AbstractMessage();
+      RequestQueueEntry entry = null;
+      try {
+        entry = EmController.getInstance().lock(lockKey);
+        emLockOkFlag = true;
 
-			if (response == null) {
-				response = makeSuccessResponse(RESP_NOCONTENTS_204, new CommonResponse());
-			}
+        if (doNotNotifyEm == false) {
+          if (!executeDeleteNode(nodesDb)) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed. [Node]"));
+            response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080404);
+          }
+          em1FinFlag = true;
+        }
 
-		} catch (DevctrlException e) {
-			if (dhcpOkFlag == false) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "DHCP stop was failed."), e);
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getDhcpStopErrorCode());
-			} else {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Watch syslog stop was failed."), e);
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getSyslogStopErrorCode());
-			}
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			if (e.getCode() == DBAccessException.RELATIONSHIP_UNCONFORMITY) {
-				response = makeFailedResponse(RESP_CONFLICT_409, getExsistCpErrorCode());
-			} else if (e.getCode() == DBAccessException.NO_DELETE_TARGET) {
-				response = makeFailedResponse(RESP_NOTFOUND_404, getNotFoundDataErrorCode());
-			} else if (e.getCode() == DBAccessException.COMMIT_FAILURE && response == null) {
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getCommitErrorCode());
-			} else {
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getDbErrorCode());
-			}
-		} catch (IllegalArgumentException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."), e);
-			response = makeFailedResponse(RESP_BADREQUEST_400, getInconsistentErrorCode());
-		} catch (EmctrlException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to EM was failed."), e);
-			if (emLockOkFlag == false) {
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getEmLockErrorCode());
-			} else if (em1FinFlag == false) {
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getEm1ToErrorCode());
-			} else {
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getEm2ToErrorCode());
-			}
-		} finally {
-			if (needCleanUpFlag == true) {
-				DevctrlCommon.cleanUp();
-			}
-		}
+        if (isOppositeNodesInfoFlag && isOppositeEmExecuteFlag) {
+          if (!executeDeleteInternalLink(oppoNodeList)) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed. [internalLink]"));
+            response = makeFailedResponseWithoutOverwrite(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080406);
+          }
+        }
+      } finally {
+        if (entry != null) {
+          EmController.getInstance().unlock(entry);
+        }
+      }
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+      session.commit();
 
-	protected CommonResponse makeFailedResponseWithoutOverwrite(int rescode, String errcode) {
-		if (response == null) {
-			response = super.makeFailedResponse(rescode, errcode);
-		}
-	}
+      if (response == null) {
+        response = makeSuccessResponse(RESP_NOCONTENTS_204, new CommonResponse());
+      }
 
-	protected abstract boolean checkInData();
+    } catch (DevctrlException de) {
+      if (dhcpOkFlag == false) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "DHCP stop was failed."), de);
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_800401);
+      } else {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Watch syslog stop was failed."), de);
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_800402);
+      }
+    } catch (DBAccessException dbae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
+      if (dbae.getCode() == DBAccessException.RELATIONSHIP_UNCONFORMITY) {
+        response = makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_800303);
+      } else if (dbae.getCode() == DBAccessException.NO_DELETE_TARGET) {
+        response = makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_080201);
+      } else if (dbae.getCode() == DBAccessException.COMMIT_FAILURE && response == null) {
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_900410);
+      } else {
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_800408);
+      }
+    } catch (IllegalArgumentException iae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."), iae);
+      response = makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_800103);
+    } catch (EmctrlException ee) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to EM was failed."), ee);
+      if (emLockOkFlag == false) {
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_800409);
+      } else if (em1FinFlag == false) {
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_800403);
+      } else {
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_800405);
+      }
+    } finally {
+      if (needCleanUpFlag == true) {
+        DevctrlCommon.cleanUp();
+      }
+    }
 
-	protected abstract int getNodeType();
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-	protected abstract int getOppoNodeType();
+  /**
+   * Error Response Generation (without overwriting).
+   *
+   * @param rescode
+   *          response code
+   * @param errcode
+   *          error code
+   * @return error response generated
+   */
+  protected CommonResponse makeFailedResponseWithoutOverwrite(int rescode, String errcode) {
+    if (response == null) {
+      response = super.makeFailedResponse(rescode, errcode);
+    }
+    return (CommonResponse) response; 
+  }
 
-	protected abstract List<Nodes> toNodeOppositeNodesReduced();
+  /**
+   * Input Check.
+   *
+   * @return check result
+   */
+  protected boolean checkInData() {
+    logger.trace(CommonDefinitions.START);
 
-	protected abstract ArrayList<String> getOppositeNodeIdList();
+    boolean checkResult = true;
 
-	protected abstract boolean executeDeleteNode(Nodes targetNodeDb) throws EmctrlException, IllegalArgumentException;
+    DeleteNode deleteNodeRest = (DeleteNode) getInData();
 
-	protected abstract boolean executeDeleteLag(ArrayList<Nodes> oppoNodeList) throws EmctrlException,
-			IllegalArgumentException;
+    try {
+      deleteNodeRest.check(OperationType.LeafRemove);
+    } catch (CheckDataException cde) {
+      logger.warn("check error :", cde);
+      checkResult = false;
+    }
 
-	protected abstract boolean isOppositeNodesInfo();
+    logger.trace(CommonDefinitions.END);
+    return checkResult;
+  }
 
-	protected abstract String getInputDataErrorCode();
+  /**
+   * Opposing Device ID List Acquisition.
+   *
+   * @return opposing ID list
+   */
+  protected ArrayList<String> getOppositeNodeIdList() {
+    logger.trace(CommonDefinitions.START);
+    DeleteNode deleteNodeRest = (DeleteNode) getInData();
+    ArrayList<String> oppositeNodesIdList = new ArrayList<String>();
+    ArrayList<OppositeNodesDeleteNode> oppositeNodesDeleteNodeList = deleteNodeRest.getDeleteNodes().getOppositeNodes();
+    for (OppositeNodesDeleteNode oppositeNodesDeleteNode : oppositeNodesDeleteNodeList) {
+      oppositeNodesIdList.add(oppositeNodesDeleteNode.getNodeId());
+    }
+    logger.trace(CommonDefinitions.END);
+    return oppositeNodesIdList;
+  }
 
-	protected abstract String getNotFoundSubDataErrorCode();
+  /**
+   * EM Access (Device Removal) Execution.
+   *
+   * @param targetNodeDb
+   *          device information to be deleted (DB)
+   * @return executability
+   * @throws EmctrlException
+   *           : EM exception
+   * @throws IllegalArgumentException
+   *           : mapper exception
+   */
+  protected abstract boolean executeDeleteNode(Nodes targetNodeDb) throws EmctrlException, IllegalArgumentException;
 
-	protected abstract String getNotFoundDataErrorCode();
+  /**
+   * EM Access (Internal Link Deletion) Execution.
+   *
+   * @param oppoNodeList
+   *          opposing device information list
+   * @return executability
+   * @throws EmctrlException
+   *           EM exception
+   * @throws IllegalArgumentException
+   *           mapper exception
+   */
+  protected boolean executeDeleteInternalLink(ArrayList<Nodes> oppoNodeList)
+      throws EmctrlException, IllegalArgumentException {
+    logger.trace(CommonDefinitions.START);
 
-	protected abstract String getExsistCpErrorCode();
+    InternalLinkAddDelete internalLinkDelEm = EmMapper.toInternalLinkDelete((DeleteNode) getInData(), oppoNodeList);
 
-	protected abstract String getDhcpStopErrorCode();
+    EmController emController = EmController.getInstance();
+    AbstractMessage ret = emController.request(internalLinkDelEm, false);
 
-	protected abstract String getSyslogStopErrorCode();
+    logger.trace(CommonDefinitions.END);
+    return ret.isResult();
 
-	protected abstract String getEm1ToErrorCode();
+  }
 
-	protected abstract String getEm1ErrorCode();
+  /**
+   * Opposing Device Existence Acquisition.
+   *
+   * @return opposing device existence
+   */
+  protected boolean isOppositeNodesInfo() {
+    return !((DeleteNode) getInData()).getDeleteNodes().getOppositeNodes().isEmpty();
+  }
 
-	protected abstract String getEm2ToErrorCode();
+  protected boolean deleteOppositeNodes(DBAccessManager session, List<Nodes> nodesList) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
 
-	protected abstract String getEm2ErrorCode();
+    boolean result = true;
 
-	protected abstract String getDbErrorCode();
+    try {
+      session.deleteUpdateOppositeNodes(nodesList);
+    } catch (DBAccessException dbae) {
+      if (dbae.getCode() == DBAccessException.NO_DELETE_TARGET) {
+        result = false;
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_409073));
+      } else {
+        throw dbae;
+      }
+    }
 
-	protected abstract String getEmLockErrorCode();
-
-	protected abstract String getCommitErrorCode();
-
-	protected abstract String getInconsistentErrorCode();
-
-	protected boolean deleteOppositeNodes(DBAccessManager session, List<Nodes> nodesList) throws DBAccessException {
-		logger.trace(CommonDefinitions.START);
-
-		boolean result = true;
-
-		try {
-			session.deleteUpdateOppositeNodes(nodesList);
-		} catch (DBAccessException e) {
-			if (e.getCode() == DBAccessException.NO_DELETE_TARGET) {
-				result = false;
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_409073));
-			} else {
-				throw e;
-			}
-		}
-
-		logger.trace(CommonDefinitions.END);
-		return result;
-	}
+    logger.trace(CommonDefinitions.END);
+    return result;
+  }
 
 }

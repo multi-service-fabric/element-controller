@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.device;
 
@@ -19,69 +22,86 @@ import msf.ecmm.ope.receiver.pojo.CheckDataException;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
 import msf.ecmm.ope.receiver.pojo.RegisterEquipmentType;
 
+/**
+ * Model Information Registration
+ */
 public class DeviceInfoRegistration extends Operation {
 
-	private static final String ERROR_CODE_020201 = "020201";
-	public DeviceInfoRegistration(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.DeviceInfoRegistration);
-	}
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_020101 = "020101";
+  /** In case the model information to be registered already exists. */
+  private static final String ERROR_CODE_020201 = "020201";
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_020301 = "020301";
 
-	@Override
-	public AbstractResponseMessage execute() {
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Constructor
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public DeviceInfoRegistration(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.DeviceInfoRegistration);
+  }
 
-		AbstractResponseMessage response = null;
+  @Override
+  public AbstractResponseMessage execute() {
+    logger.trace(CommonDefinitions.START);
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_020101);
-		}
+    AbstractResponseMessage response = null;
 
-		RegisterEquipmentType regiterEquipmentTypeRest = (RegisterEquipmentType) getInData();
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_020101);
+    }
 
-		try (DBAccessManager session = new DBAccessManager()) {
+    RegisterEquipmentType regiterEquipmentTypeRest = (RegisterEquipmentType) getInData();
 
-			Equipments equipmentsDb = DbMapper.toEqInfoCreate(regiterEquipmentTypeRest);
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			session.startTransaction();
+      Equipments equipmentsDb = DbMapper.toEqInfoCreate(regiterEquipmentTypeRest);
 
-			session.addEquipments(equipmentsDb);
+      session.startTransaction();
 
-			session.commit();
+      session.addEquipments(equipmentsDb);
 
-			response = makeSuccessResponse(RESP_CREATED_201, new CommonResponse());
+      session.commit();
 
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			if (e.getCode() == DBAccessException.DOUBLE_REGISTRATION) {
-				response = makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_020201);
-			} else {
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_020301);
-			}
-		}
+      response = makeSuccessResponse(RESP_CREATED_201, new CommonResponse());
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    } catch (DBAccessException e) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
+      if (e.getCode() == DBAccessException.DOUBLE_REGISTRATION) {
+        response = makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_020201);
+      } else {
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_020301);
+      }
+    }
 
-	@Override
-	protected boolean checkInData() {
-		logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		boolean checkResult = true;
+  @Override
+  protected boolean checkInData() {
+    logger.trace(CommonDefinitions.START);
 
-		RegisterEquipmentType regiterEquipmentTypeRest = (RegisterEquipmentType) getInData();
+    boolean checkResult = true;
 
-		try {
-			regiterEquipmentTypeRest.check(getOperationType());
-		} catch (CheckDataException e) {
-			logger.warn("check error :", e);
-			checkResult = false;
-		}
+    RegisterEquipmentType regiterEquipmentTypeRest = (RegisterEquipmentType) getInData();
 
-		logger.trace(CommonDefinitions.END);
-		return checkResult;
-	}
+    try {
+      regiterEquipmentTypeRest.check(getOperationType());
+    } catch (CheckDataException e) {
+      logger.warn("check error :", e);
+      checkResult = false;
+    }
+
+    logger.trace(CommonDefinitions.END);
+    return checkResult;
+  }
 
 }

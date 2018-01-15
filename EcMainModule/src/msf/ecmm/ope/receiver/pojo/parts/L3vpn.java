@@ -1,45 +1,87 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo.parts;
 
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.CheckDataException;
 
+/**
+ * VPN Configuration When the VPN Type is L3.
+ */
 public class L3vpn {
 
-	private As as;
+  /** BGP Configuration. */
+  private BgpAddNode bgp;
 
-	public BgpAddNode getBgp() {
-		return bgp;
-	}
+  /** AS Configuration. */
+  private As as;
 
-	public void setBgp(BgpAddNode bgp) {
-		this.bgp = bgp;
-	}
+  /**
+   * Getting BGP configuration.
+   *
+   * @return BGP configuration
+   */
+  public BgpAddNode getBgp() {
+    return bgp;
+  }
 
-	public As getAs() {
-		return as;
-	}
+  /**
+   * Setting BGP configuration.
+   *
+   * @param bgp
+   *          BGP configuration
+   */
+  public void setBgp(BgpAddNode bgp) {
+    this.bgp = bgp;
+  }
 
-	public void setAs(As as) {
-		this.as = as;
-	}
+  /**
+   * Getting AS configuration.
+   *
+   * @return AS configuration
+   */
+  public As getAs() {
+    return as;
+  }
 
-	@Override
-	public String toString() {
-		return "L3vpn [bgp=" + bgp + ", as=" + as + "]";
-	}
+  /**
+   * Setting AS configuration.
+   *
+   * @param as
+   *          AS configuration
+   */
+  public void setAs(As as) {
+    this.as = as;
+  }
 
-	public void check(OperationType ope) throws CheckDataException {
-		if (bgp == null) {
-			throw new CheckDataException();
-		} else {
-			bgp.check(ope);
-		}
-		if (as == null) {
-			throw new CheckDataException();
-		} else {
-			as.check(ope);
-		}
-	}
+  /**
+   * Stringizing Instance.
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "L3vpn [bgp=" + bgp + ", as=" + as + "]";
+  }
 
+  /**
+   * Input Parameter Check.
+   *
+   * @param ope
+   *          operation type
+   * @throws CheckDataException
+   *           input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+    if (bgp != null) {
+      bgp.check(ope);
+    }
+    if (as == null) {
+      throw new CheckDataException();
+    } else {
+      as.check(ope);
+    }
+  }
 }

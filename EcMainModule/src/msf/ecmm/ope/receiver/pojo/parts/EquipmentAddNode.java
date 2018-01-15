@@ -1,66 +1,54 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo.parts;
 
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.CheckDataException;
 
+/**
+ * Model Information for Device Extention.
+ */
 public class EquipmentAddNode {
 
-	private String platform;
+  /** Device ID. */
+  private String equipmentTypeId;
 
-	private String firmware;
+  /**
+   * Getting device ID.
+   *
+   * @return device ID
+   */
+  public String getEquipmentTypeId() {
+    return equipmentTypeId;
+  }
 
-	public String getEquipmentTypeId() {
-		return equipmentTypeId;
-	}
+  /**
+   * Setting device ID.
+   * @param equipmentTypeId device ID.
+   */
+  public void setEquipmentTypeId(String equipmentTypeId) {
+      this.equipmentTypeId = equipmentTypeId;
+  }
 
-	public void setEquipmentTypeId(String equipmentTypeId) {
-		this.equipmentTypeId = equipmentTypeId;
-	}
+  @Override
+  public String toString() {
+    return "EquipmentAddNode [equipmentTypeId=" + equipmentTypeId + "]";
+  }
 
-	public String getPlatform() {
-		return platform;
-	}
-
-	public void setPlatform(String platform) {
-		this.platform = platform;
-	}
-
-	public String getOs() {
-		return os;
-	}
-
-	public void setOs(String os) {
-		this.os = os;
-	}
-
-	public String getFirmware() {
-		return firmware;
-	}
-
-	public void setFirmware(String firmware) {
-		this.firmware = firmware;
-	}
-
-	@Override
-	public String toString() {
-		return "EquipmentAddNode [equipmentTypeId=" + equipmentTypeId + ", platform=" + platform + ", os=" + os
-				+ ", firmware=" + firmware + "]";
-	}
-
-	public void check(OperationType ope) throws CheckDataException {
-		if (equipmentTypeId == null) {
-			throw new CheckDataException();
-		}
-		if (platform == null) {
-			throw new CheckDataException();
-		}
-		if (os == null) {
-			throw new CheckDataException();
-		}
-		if (firmware == null) {
-			throw new CheckDataException();
-		}
-	}
+  /**
+   * Input Parameter Check
+   *
+   * @param ope
+   *          operation type.
+   * @throws CheckDataException
+   *           input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+    if (equipmentTypeId == null) {
+      throw new CheckDataException();
+    }
+  }
 
 }

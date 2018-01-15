@@ -1,8 +1,10 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
 
 import static msf.ecmm.common.CommonDefinitions.*;
-import static msf.ecmm.convert.LogicalPhysicalConverter.*;
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
 import java.util.HashMap;
@@ -19,82 +21,89 @@ import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.GetPhysicalInterface;
 
+/**
+ * Physical IF Information Acquisition.
+ */
 public class PhysicalIfInfoAcquisition extends Operation {
 
-	private static final String ERROR_CODE_190201 = "190201";
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_190101 = "190101";
 
-	public PhysicalIfInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.PhysicalIfInfoAcquisition);
-	}
+  /** In case the number of acquired results is zero. */
+  private static final String ERROR_CODE_190201 = "190201";
 
-	@Override
-	public AbstractResponseMessage execute() {
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_190401 = "190401";
 
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public PhysicalIfInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.PhysicalIfInfoAcquisition);
+  }
 
-		GetPhysicalInterface getPhysicalInterfaceRest = null;
+  @Override
+  public AbstractResponseMessage execute() {
 
-		AbstractResponseMessage response = null;
+    logger.trace(CommonDefinitions.START);
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_190101);
-		}
+    GetPhysicalInterface getPhysicalInterfaceRest = null;
 
-		try (DBAccessManager session = new DBAccessManager()) {
+    AbstractResponseMessage response = null;
 
-			int fabricType = toIntegerNodeType(getUriKeyMap().get(KEY_FABRIC_TYPE));
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_190101);
+    }
 
-			PhysicalIfs physicalIfsDb = session.searchPhysicalIfs(fabricType, getUriKeyMap().get(KEY_NODE_ID),
-					getUriKeyMap().get(KEY_PHYSICAL_IF_ID));
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			if (physicalIfsDb == null) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [PhysicalIfs]"));
-				return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_190201);
-			}
-			getPhysicalInterfaceRest = RestMapper.toPhyInInfo(physicalIfsDb);
+      PhysicalIfs physicalIfsDb = session.searchPhysicalIfs(getUriKeyMap().get(KEY_NODE_ID),
+          getUriKeyMap().get(KEY_PHYSICAL_IF_ID));
 
-			response = makeSuccessResponse(RESP_OK_200, getPhysicalInterfaceRest);
+      if (physicalIfsDb == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [PhysicalIfs]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_190201);
+      }
+      getPhysicalInterfaceRest = RestMapper.toPhyInInfo(physicalIfsDb);
 
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_190401);
-		}
+      response = makeSuccessResponse(RESP_OK_200, getPhysicalInterfaceRest);
 
-		logger.trace(CommonDefinitions.END);
+    } catch (DBAccessException dbae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_190401);
+    }
 
-		return response;
-	}
+    logger.trace(CommonDefinitions.END);
 
-	@Override
-	protected boolean checkInData() {
+    return response;
+  }
 
-		logger.trace(CommonDefinitions.START);
+  @Override
+  protected boolean checkInData() {
 
-		boolean result = true;
+    logger.trace(CommonDefinitions.START);
 
-		if (getUriKeyMap() == null) {
-			result = false;
-		} else {
-			if (getUriKeyMap().get(KEY_FABRIC_TYPE) == null) {
-				result = false;
-			} else {
+    boolean result = true;
 
-				String fabricType = getUriKeyMap().get(KEY_FABRIC_TYPE);
+    if (getUriKeyMap() == null) {
+      result = false;
+    } else {
+      if (!(getUriKeyMap().containsKey(KEY_NODE_ID)) || getUriKeyMap().get(KEY_NODE_ID) == null) {
+        result = false;
+      }
+      if (!(getUriKeyMap().containsKey(KEY_PHYSICAL_IF_ID)) || getUriKeyMap().get(KEY_PHYSICAL_IF_ID) == null) {
+        result = false;
+      }
+    }
 
-				if (!fabricType.equals("leafs") && !fabricType.equals("spines")) {
-					result = false;
-				} else if (getUriKeyMap().get(KEY_NODE_ID) == null) {
-					result = false;
-				} else if (getUriKeyMap().get(KEY_PHYSICAL_IF_ID) == null) {
-					result = false;
-				}
-			}
-		}
-
-		logger.trace(CommonDefinitions.END);
-
-		return result;
-	}
+    logger.trace(CommonDefinitions.END);
+    return result;
+  }
 }

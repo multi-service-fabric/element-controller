@@ -1,9 +1,19 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.ope.receiver.pojo;
 
+/**
+ * Input Check Exception Class
+ */
 public class CheckDataException extends Exception {
 
-	public CheckDataException() {
-		super();
-	}
+  /**
+   * input check exception
+   */
+  public CheckDataException() {
+    super();
+  }
 
 }

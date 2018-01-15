@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -5,75 +9,238 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * EM Device Body Configuration POJO Class.
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "config")
 public class BodyMessage extends AbstractMessage {
 
-	@XmlElement(name = "l3-slice")
-	private L3SliceAddDelete l3SliceAddDelete = null;
+  /** L2VLAN IF Batch Generation/Deletion POJO Class. */
+  @XmlElement(name = "l2-slice")
+  private L2SliceAddDelete l2SliceAddDelete = null;
 
-	@XmlElement(name = "spine")
-	private SpineAddDelete spineAddDelete = null;
+  /** L3VLAN IF Batch Generation/Deletion POJO Class. */
+  @XmlElement(name = "l3-slice")
+  private L3SliceAddDelete l3SliceAddDelete = null;
 
-	@XmlElement(name = "ce-lag")
-	private CeLagAddDelete ceLagAddDelete = null;
+  /** Leaf Extention/Removal POJO Class. */
+  @XmlElement(name = "leaf")
+  private LeafAddDelete leafAddDelete = null;
 
-	public BodyMessage() {
-		super();
-	}
+  /** Spin Extention/Removal POJO Class. */
+  @XmlElement(name = "spine")
+  private SpineAddDelete spineAddDelete = null;
 
-	public L2SliceAddDelete getL2SliceAddDelete() {
-		return l2SliceAddDelete;
-	}
+  /** LAG Add/Delete for Internal Link POJO Class. */
+  @XmlElement(name = "internal-link")
+  private InternalLinkAddDelete internalLinkLagAddDelete = null;
 
-	public void setL2SliceAddDelete(L2SliceAddDelete l2SliceAddDelete) {
-		this.l2SliceAddDelete = l2SliceAddDelete;
-	}
+  /** LAG Add/Delete for CE POJO Class. */
+  @XmlElement(name = "ce-lag")
+  private CeLagAddDelete ceLagAddDelete = null;
 
-	public L3SliceAddDelete getL3SliceAddDelete() {
-		return l3SliceAddDelete;
-	}
+  /** B-Leaf Add/Delete/Update POJO Class. */
+  @XmlElement(name = "b-leaf")
+  private BLeafAddDelete bLeafAddDelete = null;
 
-	public void setL3SliceAddDelete(L3SliceAddDelete l3SliceAddDelete) {
-		this.l3SliceAddDelete = l3SliceAddDelete;
-	}
+  /** POJO Class for Inter-Cluster Link Generation/Deletion. */
+  @XmlElement(name = "cluster-link")
+  private BetweenClustersLinkAddDelete betweenClustersLinkAddDelete = null;
 
-	public LeafAddDelete getLeafAddDelete() {
-		return leafAddDelete;
-	}
+  /** breakoutIF Registration/Deletion POJO Class. */
+  @XmlElement(name = "breakout")
+  private BreakoutIfAddDelete breakoutIfAddDelete = null;
 
-	public void setLeafAddDelete(LeafAddDelete leafAddDelete) {
-		this.leafAddDelete = leafAddDelete;
-	}
+  /**
+   * Generating new instance.
+   */
+  public BodyMessage() {
+    super();
+  }
 
-	public SpineAddDelete getSpineAddDelete() {
-		return spineAddDelete;
-	}
+  /**
+   * Getting L2VLAN IF batch generation/deletion POJO class.
+   *
+   * @return L2VLAN IF batch generation/deletion POJO class
+   */
+  public L2SliceAddDelete getL2SliceAddDelete() {
+    return l2SliceAddDelete;
+  }
 
-	public void setSpineAddDelete(SpineAddDelete spineAddDelete) {
-		this.spineAddDelete = spineAddDelete;
-	}
+  /**
+   * Setting L2VLAN IF batch generation/deletion POJO class.
+   *
+   * @param l2SliceAddDelete
+   *          L2VLAN IF batch generation/deletion POJO class
+   */
+  public void setL2SliceAddDelete(L2SliceAddDelete l2SliceAddDelete) {
+    this.l2SliceAddDelete = l2SliceAddDelete;
+  }
 
-	public InternalLinkLagAddDelete getInternalLinkLagAddDelete() {
-		return internalLinkLagAddDelete;
-	}
+  /**
+   * Getting L3VLAN IF batch generation/deletion POJO class.
+   *
+   * @return L3VLAN IF batch generation/deletion POJO class
+   */
+  public L3SliceAddDelete getL3SliceAddDelete() {
+    return l3SliceAddDelete;
+  }
 
-	public void setInternalLinkLagAddDelete(InternalLinkLagAddDelete internalLinkLagAddDelete) {
-		this.internalLinkLagAddDelete = internalLinkLagAddDelete;
-	}
+  /**
+   * Setting L3VLAN IF batch generation/deletion POJO class.
+   *
+   * @param l3SliceAddDelete
+   *          L3VLAN IF batch generation/deletion POJO class
+   */
+  public void setL3SliceAddDelete(L3SliceAddDelete l3SliceAddDelete) {
+    this.l3SliceAddDelete = l3SliceAddDelete;
+  }
 
-	public CeLagAddDelete getCeLagAddDelete() {
-		return ceLagAddDelete;
-	}
+  /**
+   * Getting Leaf extention/removal POJO class.
+   *
+   * @return Leaf extention/removal POJO class
+   */
+  public LeafAddDelete getLeafAddDelete() {
+    return leafAddDelete;
+  }
 
-	public void setCeLagAddDelete(CeLagAddDelete ceLagAddDelete) {
-		this.ceLagAddDelete = ceLagAddDelete;
-	}
+  /**
+   * Setting Leaf extention/removal POJO class.
+   *
+   * @param leafAddDelete
+   *          Leaf extention/removal POJO class
+   */
+  public void setLeafAddDelete(LeafAddDelete leafAddDelete) {
+    this.leafAddDelete = leafAddDelete;
+  }
 
-	@Override
-	public String toString() {
-		return "BodyMessage [l2SliceAddDelete=" + l2SliceAddDelete + ", l3SliceAddDelete=" + l3SliceAddDelete
-				+ ", leafAddDelete=" + leafAddDelete + ", spineAddDelete=" + spineAddDelete
-				+ ", internalLinkLagAddDelete=" + internalLinkLagAddDelete + ", ceLagAddDelete=" + ceLagAddDelete + "]";
-	}
+  /**
+   * Getting Spin extention/removal POJO class.
+   *
+   * @return Spin extention/removal POJO class
+   */
+  public SpineAddDelete getSpineAddDelete() {
+    return spineAddDelete;
+  }
+
+  /**
+   * Setting Spin extention/removal POJO class.
+   *
+   * @param spineAddDelete
+   *          Spin extention/removal POJO class
+   */
+  public void setSpineAddDelete(SpineAddDelete spineAddDelete) {
+    this.spineAddDelete = spineAddDelete;
+  }
+
+  /**
+   * Getting LAG add/delete for internal Link POJO class.
+   *
+   * @return LAG add/delete for internal Link POJO class
+   */
+  public InternalLinkAddDelete getInternalLinkLagAddDelete() {
+    return internalLinkLagAddDelete;
+  }
+
+  /**
+   * Setting LAG add/delete for internal Link POJO class.
+   *
+   * @param internalLinkLagAddDelete
+   *          LAG add/delete for internal Link POJO class
+   */
+  public void setInternalLinkLagAddDelete(InternalLinkAddDelete internalLinkLagAddDelete) {
+    this.internalLinkLagAddDelete = internalLinkLagAddDelete;
+  }
+
+  /**
+   * Getting LAG add/delete for CE POJO class.
+   *
+   * @return LAG add/delete for CE POJO class
+   */
+  public CeLagAddDelete getCeLagAddDelete() {
+    return ceLagAddDelete;
+  }
+
+  /**
+   * Setting LAG add/delete for CE POJO class.
+   *
+   * @param ceLagAddDelete
+   *          LAG add/delete for CE POJO class
+   */
+  public void setCeLagAddDelete(CeLagAddDelete ceLagAddDelete) {
+    this.ceLagAddDelete = ceLagAddDelete;
+  }
+
+  /**
+   * Getting B-Leaf add/delete/update POJO class.
+   *
+   * @return B-Leaf add/delete/update POJO class
+   */
+  public BLeafAddDelete getBLeafAddDelete() {
+    return bLeafAddDelete;
+  }
+
+  /**
+   * Setting B-Leaf add/delete/update POJO class.
+   *
+   * @param bLeafAddDelete
+   *          B-Leaf add/delete/update POJO class
+   */
+  public void setBLeafAddDelete(BLeafAddDelete bLeafAddDelete) {
+    this.bLeafAddDelete = bLeafAddDelete;
+  }
+
+  /**
+   * Creating POJO class for inter-cluster link generation/deletion.
+   *
+   * @return POJO class for inter-cluster link generation/deletion
+   */
+  public BetweenClustersLinkAddDelete getBetweenClustersLinkAddDelete() {
+    return betweenClustersLinkAddDelete;
+  }
+
+  /**
+   * Setting POJO class for inter-cluster link generation/deletion.
+   *
+   * @param betweenClustersLinkAddDelete
+   *          POJO class for inter-cluster link generation/deletion
+   */
+  public void setBetweenClustersLinkAddDelete(BetweenClustersLinkAddDelete betweenClustersLinkAddDelete) {
+    this.betweenClustersLinkAddDelete = betweenClustersLinkAddDelete;
+  }
+
+  /**
+   * Getting breakoutIF registration/deletion POJO class.
+   *
+   * @return breakoutIF registration/deletion POJO class
+   */
+  public BreakoutIfAddDelete getBreakoutIfAddDelete() {
+    return breakoutIfAddDelete;
+  }
+
+  /**
+   * Setting breakoutIF registration/deletion POJO class.
+   *
+   * @param breakoutIfAddDelete
+   *          breakoutIF registration/deletion POJO class
+   */
+  public void setBreakoutIfAddDelete(BreakoutIfAddDelete breakoutIfAddDelete) {
+    this.breakoutIfAddDelete = breakoutIfAddDelete;
+  }
+
+  /**
+   * Stringizing Instance.
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "BodyMessage [l2SliceAddDelete=" + l2SliceAddDelete + ", l3SliceAddDelete=" + l3SliceAddDelete
+        + ", leafAddDelete=" + leafAddDelete + ", spineAddDelete=" + spineAddDelete + ", internalLinkAddDelete="
+        + internalLinkLagAddDelete + ", ceLagAddDelete=" + ceLagAddDelete + ", bLeafAddDelete=" + bLeafAddDelete
+        + ", betweenClustersLinkAddDelete=" + betweenClustersLinkAddDelete + ", breakoutIfAddDelete="
+        + breakoutIfAddDelete + "]";
+  }
 }

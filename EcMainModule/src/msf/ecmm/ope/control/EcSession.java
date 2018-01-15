@@ -1,38 +1,67 @@
-package msf.ecmm.ope.control;
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
-import msf.ecmm.common.CommonDefinitions;
+package msf.ecmm.ope.control;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class EcSession implements AutoCloseable{
+import msf.ecmm.common.CommonDefinitions;
 
-	private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+/**
+ * Operation ID Retention Class Definition. Retaining operation ID.
+ *
+ */
+public class EcSession implements AutoCloseable {
 
-	public EcSession(int oid){
-		operationId = oid;
-	}
+  /**
+   * Logger
+   */
+  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-	public void close(){
+  /** Operation ID */
+  private int operationId;
 
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Constructor
+   *
+   * @param oid
+   *          Operation ID
+   */
+  public EcSession(int oid) {
+    operationId = oid;
+  }
 
-		if(operationId > 0){
-			OperationControlManager.getInstance().terminateOperation(this);
-		}else{
-			throw new InternalError();
-		}
+  /**
+   * Termination of Operation<br>
+   * Executing termination process of operation.
+   */
+  public void close() {
 
-		logger.trace(CommonDefinitions.END);
+    logger.trace(CommonDefinitions.START);
 
-	}
+    if (operationId > 0) {
+      OperationControlManager.getInstance().terminateOperation(this);
+    } else {
+      throw new InternalError();
+    }
 
-	protected int getOperationId() {
-		return operationId;
-	}
+    logger.trace(CommonDefinitions.END);
 
-	@Override
-	public String toString() {
-		return "EcSession [operationId=" + operationId + "]";
-	}
+  }
+
+  /**
+   * Getting operation ID.
+   *
+   * @return operation ID
+   */
+  protected int getOperationId() {
+    return operationId;
+  }
+
+  @Override
+  public String toString() {
+    return "EcSession [operationId=" + operationId + "]";
+  }
 }

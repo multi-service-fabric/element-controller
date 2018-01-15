@@ -1,21 +1,46 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo;
 
 import msf.ecmm.ope.receiver.pojo.parts.IfSearchIf;
 
+/**
+ * IF Information List Acquisition.
+ */
 public class GetInterfaceList extends AbstractResponseMessage {
 
-	public IfSearchIf getIfs() {
-		return ifs;
-	}
+  /** IF Information List. */
+  private IfSearchIf ifs;
 
-	public void setIfs(IfSearchIf ifs) {
-		this.ifs = ifs;
-	}
+  /**
+   * Getting IF information list.
+   *
+   * @return IF information list
+   */
+  public IfSearchIf getIfs() {
+    return ifs;
+  }
 
-	@Override
-	public String toString() {
-		return "GetInterfaceList [ifs=" + ifs + "]";
-	}
+  /**
+   * Setting IF information list.
+   *
+   * @param ifs
+   *          IF information list
+   */
+  public void setIfs(IfSearchIf ifs) {
+    this.ifs = ifs;
+  }
+
+  /**
+   * Stringizing Instance.
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "GetInterfaceList [ifs=" + ifs + "]";
+  }
 
 }

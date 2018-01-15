@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.emctrl.pojo;
 
@@ -11,45 +14,93 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import msf.ecmm.emctrl.pojo.parts.DeviceLeaf;
 
+/**
+ * L2VLAN IF Batch Generation/Deletion POJO Class
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "l2-slice")
 public class L2SliceAddDelete extends AbstractMessage {
 
-	private String name = null;
+  /** Attribute Data of Service Basic Configuration */
+  @XmlAttribute
+  private String xmlns = "http://www.ntt.co.jp/msf/service/l2-slice";
 
-	@XmlElement(name = "device-leaf")
-	private List<DeviceLeaf> deviceLeafList = null;
+  /** Service Name */
+  private String name = null;
 
-	public L2SliceAddDelete() {
-		super();
-	}
+  /** Forceful Deletion Flag (only for L2VLAN IF Batch Delete/Change) */
+  private String force = null;
 
-	public String getName() {
-		return name;
-	}
+  /** Leaf Device Information List */
+  @XmlElement(name = "device-leaf")
+  private List<DeviceLeaf> deviceLeafList = null;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * Generating new instance.
+   */
+  public L2SliceAddDelete() {
+    super();
+  }
 
-	public void addForce() {
-		this.force = new String("");
-	}
+  /**
+   * Getting service name.
+   *
+   * @return service name
+   */
+  public String getName() {
+    return name;
+  }
 
-	public void delForce() {
-		this.force = null;
-	}
+  /**
+   * Setting service name.
+   *
+   * @param name
+   *          service name
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	public List<DeviceLeaf> getDeviceLeafList() {
-		return deviceLeafList;
-	}
+  /**
+   * Adding forceful deletion flad (only for L2VLAN IF batch delete/change).
+   */
+  public void addForce() {
+    this.force = new String("");
+  }
 
-	public void setDeviceLeafList(List<DeviceLeaf> deviceLeafList) {
-		this.deviceLeafList = deviceLeafList;
-	}
+  /**
+   * Deleting forceful deletion flad (only for L2VLAN IF batch delete/change).
+   */
+  public void delForce() {
+    this.force = null;
+  }
 
-	@Override
-	public String toString() {
-		return "L2SliceAddDelete [name=" + name + ", force=" + force + ", deviceLeafList=" + deviceLeafList + "]";
-	}
+  /**
+   * Getting Leaf device information list.
+   *
+   * @return Leaf device information list
+   */
+  public List<DeviceLeaf> getDeviceLeafList() {
+    return deviceLeafList;
+  }
+
+  /**
+   * Setting Leaf device information list.
+   *
+   * @param deviceLeafList
+   *          Leaf device information list
+   */
+  public void setDeviceLeafList(List<DeviceLeaf> deviceLeafList) {
+    this.deviceLeafList = deviceLeafList;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "L2SliceAddDelete [name=" + name + ", force=" + force + ", deviceLeafList=" + deviceLeafList + "]";
+  }
 }

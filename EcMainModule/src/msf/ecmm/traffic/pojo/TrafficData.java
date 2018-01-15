@@ -1,43 +1,92 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.traffic.pojo;
 
+/**
+ * Traffic Information Storage Class Definition. Stores traffic information of an IF.
+ *
+ */
 public class TrafficData {
 
-	private double ifHclnOctets = -1.0;
+  /** IF Name */
+  private String ifName = "";
 
-	public TrafficData() {
-		super();
-	}
+  /** Traffic Information (In) */
+  private double ifHclnOctets = -1.0;
 
-	public String getIfname() {
-		return ifName;
-	}
+	/** Traffic Information (Out) */
+  private double ifHcOutOctets = -1.0;
 
-	public void setIfname(String ifName) {
-		this.ifName = ifName;
-	}
+  /**
+   * Generating new instance.
+   */
+  public TrafficData() {
+    super();
+  }
 
-	public double getIfHclnOctets() {
-		return ifHclnOctets;
-	}
+  /**
+   * Getting ifName.
+   *
+   * @return ifName
+   */
+  public String getIfname() {
+    return ifName;
+  }
 
-	public void setIfHclnOctets(double ifHclnOctets) {
-		this.ifHclnOctets = ifHclnOctets;
-	}
+  /**
+   * Setting ifName.
+   *
+   * @param ifName
+   *          ifName
+   */
+  public void setIfname(String ifName) {
+    this.ifName = ifName;
+  }
 
-	public double getIfHcOutOctets() {
-		return ifHcOutOctets;
-	}
+  /**
+   * Getting traffic information (in).
+   *
+   * @return traffic information (in)
+   */
+  public double getIfHclnOctets() {
+    return ifHclnOctets;
+  }
 
-	public void setIfHcOutOctets(double ifHcOutOctets) {
-		this.ifHcOutOctets = ifHcOutOctets;
-	}
+  /**
+   * Setting traffic information (in).
+   *
+   * @param ifHclnOctets
+   *          traffic information (in)
+   */
+  public void setIfHclnOctets(double ifHclnOctets) {
+    this.ifHclnOctets = ifHclnOctets;
+  }
 
-	@Override
-	public String toString() {
-		return "TrafficData [ifName=" + ifName + ", ifHclnOctets="
-				+ ifHclnOctets + ", ifHcOutOctets=" + ifHcOutOctets + "]";
-	}
+  /**
+   * Getting traffic information (out).
+   *
+   * @return traffic information (out)
+   */
+  public double getIfHcOutOctets() {
+    return ifHcOutOctets;
+  }
 
+  /**
+   * Setting traffic information (out).
+   *
+   * @param ifHcOutOctets
+   *          traffic information (out)
+   */
+  public void setIfHcOutOctets(double ifHcOutOctets) {
+    this.ifHcOutOctets = ifHcOutOctets;
+  }
 
+  @Override
+  public String toString() {
+    return "TrafficData [ifName=" + ifName + ", ifHclnOctets=" + ifHclnOctets + ", ifHcOutOctets=" + ifHcOutOctets
+        + "]";
+  }
 
 }

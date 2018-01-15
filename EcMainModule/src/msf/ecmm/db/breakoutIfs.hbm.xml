@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+    <!-- BreakoutIF Information Class -->
+
+<hibernate-mapping>
+    <class name="msf.ecmm.db.pojo.BreakoutIfs" table="breakout_ifs" lazy="true">
+        <composite-id>
+            <key-property name="node_id" type="text">
+                <column name="node_id" not-null="true"/>
+           </key-property>
+            <key-property name="breakout_if_id" type="text">
+                <column name="breakout_if_id" not-null="true" />
+            </key-property>
+            <generator class="assigned"/>
+        </composite-id>
+        <property name="physical_if_id" type="text" not-null="true"/>
+        <property name="speed" type="text" not-null="true"/>
+        <property name="if_name" type="text" not-null="true"/>
+        <property name="if_status" type="int" />
+        <property name="ipv4_address" type="string" />
+        <property name="ipv4_prefix" type="int" />
+    </class>
+    <query name="selectBreakoutIfs">
+        <![CDATA[
+            from msf.ecmm.db.pojo.BreakoutIfs as breakout_ifs where node_id = :key1 and breakout_if_id = :key2
+        ]]>
+    </query>
+    <query name="selectBreakoutIfsByNode">
+        <![CDATA[
+            from msf.ecmm.db.pojo.BreakoutIfs as breakout_ifs where node_id = :key1
+        ]]>
+    </query>
+    <query name="deleteBreakoutIfs">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.BreakoutIfs as breakout_ifs where node_id = :key1 and breakout_if_id = :key2
+        ]]>
+    </query>
+    <query name="deleteBreakoutIfsByNode">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.BreakoutIfs as breakout_ifs where node_id = :key1
+        ]]>
+    </query>
+    <query name="updateBreakoutIfsStatus">
+        <![CDATA[
+            update msf.ecmm.db.pojo.BreakoutIfs as breakout_ifs set if_status = :key3 where node_id = :key1 and breakout_if_id = :key2
+        ]]>
+    </query>
+    <query name="updateBreakoutIfsIP">
+        <![CDATA[
+            update msf.ecmm.db.pojo.BreakoutIfs as breakout_ifs set ipv4_prefix = :key4, ipv4_address = :key3 where node_id = :key1 and breakout_if_id = :key2
+        ]]>
+     </query>
+</hibernate-mapping>

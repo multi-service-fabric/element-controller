@@ -1,65 +1,88 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.ope.control;
 
+/**
+ * Operation Lock Key Class Definition. Defining the key for locking operation.
+ */
 public class OperationLockKey extends AbstractQueueEntryKey {
 
-	private String node_id;
+  /** Operation Type. */
+  private int operationType;
 
-	public OperationLockKey(int opeType,String nid,String fbt){
-		operationType =opeType;
-		node_id = nid;
-		fabricType = fbt;
-	}
+  /** Node ID. */
+  private String nodeId;
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((fabricType == null) ? 0 : fabricType.hashCode());
-		result = prime * result + ((node_id == null) ? 0 : node_id.hashCode());
-		result = prime * result + operationType;
-		return result;
-	}
+  /**
+   * Constructor.
+   *
+   * @param opeType
+   *          operation type
+   * @param nid
+   *          node ID
+   */
+  public OperationLockKey(int opeType, String nid) {
+    operationType = opeType;
+    nodeId = nid;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		OperationLockKey other = (OperationLockKey) obj;
-		if (fabricType == null) {
-			if (other.fabricType != null)
-				return false;
-		} else if (!fabricType.equals(other.fabricType))
-			return false;
-		if (node_id == null) {
-			if (other.node_id != null)
-				return false;
-		} else if (!node_id.equals(other.node_id))
-			return false;
-		if (operationType != other.operationType)
-			return false;
-		return true;
-	}
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((nodeId == null) ? 0 : nodeId.hashCode());
+    result = prime * result + operationType;
+    return result;
+  }
 
-	public int getOperationType() {
-		return operationType;
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    OperationLockKey other = (OperationLockKey) obj;
+    if (nodeId == null) {
+      if (other.nodeId != null) {
+        return false;
+      }
+    } else if (!nodeId.equals(other.nodeId)) {
+      return false;
+    }
+    if (operationType != other.operationType) {
+      return false;
+    }
+    return true;
+  }
 
-	public String getNode_id() {
-		return node_id;
-	}
+  /**
+   * Getting operation type.
+   *
+   * @return operation type
+   */
+  public int getOperationType() {
+    return operationType;
+  }
 
-	public String getFabricType() {
-		return fabricType;
-	}
+  /**
+   * Getting node ID.
+   *
+   * @return node ID
+   */
+  public String getNode_id() {
+    return nodeId;
+  }
 
-	@Override
-	public String toString() {
-		return "OperetionLockKey [operationType=" + operationType
-				+ ", node_id=" + node_id + ", fabricType" + fabricType + "]";
-	}
+  @Override
+  public String toString() {
+    return "OperationLockKey [operationType=" + operationType + ", nodeId=" + nodeId + "]";
+  }
 
 }

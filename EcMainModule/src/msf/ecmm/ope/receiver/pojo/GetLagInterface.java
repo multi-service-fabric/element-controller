@@ -1,20 +1,45 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo;
 
 import msf.ecmm.ope.receiver.pojo.parts.LagIf;
 
+/**
+ * LagIF Information Acquisition.
+ */
 public class GetLagInterface extends AbstractResponseMessage {
 
-	public LagIf getLagIfs() {
-		return lagIf;
-	}
+  /** LagIF Information. */
+  private LagIf lagIf = new LagIf();
 
-	public void setLagIfs(LagIf lagIf) {
-		this.lagIf = lagIf;
-	}
+  /**
+   * Getting LagIF information.
+   *
+   * @return LagIF information
+   */
+  public LagIf getLagIfs() {
+    return lagIf;
+  }
 
-	@Override
-	public String toString() {
-		return "GetLagInterface [lagIf=" + lagIf + "]";
-	}
+  /**
+   * Setting LagIF information.
+   *
+   * @param lagIf
+   *          LagIF information
+   */
+  public void setLagIfs(LagIf lagIf) {
+    this.lagIf = lagIf;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "GetLagInterface [lagIf=" + lagIf + "]";
+  }
 }

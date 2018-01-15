@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.allinfo;
 
@@ -18,43 +21,57 @@ import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.GetEquipmentTypeList;
 
+/**
+ * Model List Information Acquisition
+ */
 public class AllDeviceTypeInfoAcquisition extends Operation {
 
-	public AllDeviceTypeInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.AllDeviceTypeInfoAcquisition);
-	}
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_030201 = "030201";
 
-	@Override
-	public AbstractResponseMessage execute() {
+  /**
+   * Constructor
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public AllDeviceTypeInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.AllDeviceTypeInfoAcquisition);
+  }
 
-		logger.trace(CommonDefinitions.START);
+  @Override
+  public AbstractResponseMessage execute() {
 
-		AbstractResponseMessage response = null;
+    logger.trace(CommonDefinitions.START);
 
-		GetEquipmentTypeList outputData = null;
+    AbstractResponseMessage response = null;
 
-		try (DBAccessManager session = new DBAccessManager()) {
+    GetEquipmentTypeList outputData = null;
 
-			List<Equipments> equipments = session.getEquipmentsList();
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			outputData = RestMapper.toEquipmentList(equipments);
+      List<Equipments> equipments = session.getEquipmentsList();
 
-			response = makeSuccessResponse(RESP_OK_200, outputData);
+      outputData = RestMapper.toEquipmentList(equipments);
 
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_030201);
-		}
+      response = makeSuccessResponse(RESP_OK_200, outputData);
 
-		logger.trace(CommonDefinitions.END);
+    } catch (DBAccessException e) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_030201);
+    }
 
-		return response;
-	}
+    logger.trace(CommonDefinitions.END);
 
-	@Override
-	protected boolean checkInData() {
-		return true;
-	}
+    return response;
+  }
+
+  @Override
+  protected boolean checkInData() {
+    return true;
+  }
 
 }

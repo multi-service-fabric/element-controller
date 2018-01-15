@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -7,34 +11,75 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import msf.ecmm.emctrl.pojo.parts.Device;
 
+/**
+ * Spin Extention/Removal POJO Class
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "spine")
 public class SpineAddDelete extends AbstractMessage {
 
-	private String name = null;
+  /** Attribute Data of Service Basic Configuration */
+  @XmlAttribute
+  private String xmlns = "http://www.ntt.co.jp/msf/service/spine";
 
-	public SpineAddDelete() {
-		super();
-	}
+  /** Service Name */
+  private String name = null;
 
-	public String getName() {
-		return name;
-	}
+  /** Spine Device Information */
+  private Device device = null;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * Generating new instance.
+   */
+  public SpineAddDelete() {
+    super();
+  }
 
-	public Device getDevice() {
-		return device;
-	}
+  /**
+   * Getting service name.
+   *
+   * @return service name
+   */
+  public String getName() {
+    return name;
+  }
 
-	public void setDevice(Device device) {
-		this.device = device;
-	}
+  /**
+   * Setting service name.
+   *
+   * @param name
+   *          service name
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	@Override
-	public String toString() {
-		return "SpineAddDelete [name=" + name + ", device=" + device + "]";
-	}
+  /**
+   * Getting Spine device information.
+   *
+   * @return Spine device information
+   */
+  public Device getDevice() {
+    return device;
+  }
+
+  /**
+   * Setting Spine device information.
+   *
+   * @param device
+   *          Spine device information
+   */
+  public void setDevice(Device device) {
+    this.device = device;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "SpineAddDelete [name=" + name + ", device=" + device + "]";
+  }
 }

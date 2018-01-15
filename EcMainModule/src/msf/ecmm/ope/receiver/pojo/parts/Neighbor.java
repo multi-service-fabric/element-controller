@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo.parts;
 
@@ -6,31 +9,61 @@ import java.util.ArrayList;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.CheckDataException;
 
+/**
+ * Neighbor Configuration
+ */
 public class Neighbor {
 
-	public ArrayList<String> getAddresses() {
-		return addresses;
-	}
+  /** Neighbor IPv4 Address List */
+  private ArrayList<String> addresses = new ArrayList<String>();
 
-	public void setAddresses(ArrayList<String> addresses) {
-		this.addresses = addresses;
-	}
+  /**
+   * Getting neighbor IPv4 address list.
+   *
+   * @return neighbor IPv4 address list
+   */
+  public ArrayList<String> getAddresses() {
+    return addresses;
+  }
 
-	@Override
-	public String toString() {
-		return "Neighbor [addresses=" + addresses + "]";
-	}
+  /**
+   * Setting neighbor IPv4 address list.
+   *
+   * @param addresses
+   *          neighbor IPv4 address list
+   */
+  public void setAddresses(ArrayList<String> addresses) {
+    this.addresses = addresses;
+  }
 
-	public void check(OperationType ope) throws CheckDataException {
-		if (addresses.isEmpty()) {
-			throw new CheckDataException();
-		} else {
-			for (String addr : addresses) {
-				if (addr == null) {
-					throw new CheckDataException();
-				}
-			}
-		}
-	}
+  /**
+   * Stringizing Instance
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "Neighbor [addresses=" + addresses + "]";
+  }
+
+  /**
+   * Input Parameter Check
+   *
+   * @param ope
+   *          operation type
+   * @throws CheckDataException
+   *           input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+    if (addresses.isEmpty()) {
+      throw new CheckDataException();
+    } else {
+      for (String addr : addresses) {
+        if (addr == null) {
+          throw new CheckDataException();
+        }
+      }
+    }
+  }
 
 }

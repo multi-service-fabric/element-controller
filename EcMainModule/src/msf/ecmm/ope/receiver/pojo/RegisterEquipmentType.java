@@ -1,30 +1,63 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo;
 
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.parts.Equipment;
 
+/**
+ * Model Information Registration
+ */
 public class RegisterEquipmentType extends AbstractRestMessage {
 
-	public Equipment getEquipment() {
-		return equipment;
-	}
+  /** Model Information */
+  private Equipment equipment;
 
-	public void setEquipment(Equipment equipment) {
-		this.equipment = equipment;
-	}
+  /**
+   * Getting model information.
+   *
+   * @return model information
+   */
+  public Equipment getEquipment() {
+    return equipment;
+  }
 
-	@Override
-	public String toString() {
-		return "RegiterEquipmentType [equipment=" + equipment + "]";
-	}
+  /**
+   * Setting model information.
+   *
+   * @param equipment
+   *          model information
+   */
+  public void setEquipment(Equipment equipment) {
+    this.equipment = equipment;
+  }
 
-	public void check(OperationType ope) throws CheckDataException {
+  /**
+   * Stringinzing Instance
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "RegiterEquipmentType [equipment=" + equipment + "]";
+  }
 
-		if (equipment == null) {
-			throw new CheckDataException();
-		} else {
-			equipment.check(ope);
-		}
-	}
+  /**
+   * Input Parameter Check
+   *
+   * @param ope
+   *          operation type
+   * @throws CheckDataException
+   *           input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+
+    if (equipment == null) {
+      throw new CheckDataException();
+    } else {
+      equipment.check(ope);
+    }
+  }
 }

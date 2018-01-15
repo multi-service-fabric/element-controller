@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo.parts;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -5,63 +9,142 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * VRRP Configuration Information Class
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "vrrp")
 public class Vrrp {
 
-	@XmlElement(name = "virtual-address")
-	private String virtualAddress = null;
+  /** VRRP Group ID */
+  @XmlElement(name = "group-id")
+  private Long groupId = null;
 
-	private Integer priority = null;
+  /** VRRP Virtual IPv4 Address */
+  @XmlElement(name = "virtual-address")
+  private String virtualAddress = null;
 
-	public Vrrp() {
-		super();
-	}
+  /** VRRP Virtual IPv6 Address */
+  @XmlElement(name = "virtual-address6")
+  private String virtualAddress6 = null;
 
-	public Long getGroupId() {
-		return groupId;
-	}
+  /** VRRP Priority */
+  private Integer priority = null;
 
-	public void setGroupId(Long groupId) {
-		this.groupId = groupId;
-	}
+  /** Tracking IF Configuration Information */
+  private Track track = null;
 
-	public String getVirtualAddress() {
-		return virtualAddress;
-	}
+  /**
+   * Generating new instance.
+   */
+  public Vrrp() {
+    super();
+  }
 
-	public void setVirtualAddress(String virtualAddress) {
-		this.virtualAddress = virtualAddress;
-	}
+  /**
+   * Getting VRRP group ID.
+   *
+   * @return VRRP group ID
+   */
+  public Long getGroupId() {
+    return groupId;
+  }
 
-	public String getVirtualAddress6() {
-		return virtualAddress6;
-	}
+  /**
+   * Setting VRRP group ID.
+   *
+   * @param groupId
+   *          VRRP group ID
+   */
+  public void setGroupId(Long groupId) {
+    this.groupId = groupId;
+  }
 
-	public void setVirtualAddress6(String virtualAddress6) {
-		this.virtualAddress6 = virtualAddress6;
-	}
+  /**
+   * Getting VRRP virtual IPv4 address.
+   *
+   * @return VRRP virtual IPv4 address
+   */
+  public String getVirtualAddress() {
+    return virtualAddress;
+  }
 
-	public Integer getPriority() {
-		return priority;
-	}
+  /**
+   * Setting VRRP virtual IPv4 address.
+   *
+   * @param virtualAddress
+   *          VRRP virtual IPv4 address
+   */
+  public void setVirtualAddress(String virtualAddress) {
+    this.virtualAddress = virtualAddress;
+  }
 
-	public void setPriority(Integer priority) {
-		this.priority = priority;
-	}
+  /**
+   * Getting VRRP virtual IPv6 address.
+   *
+   * @return VRRP virtual IPv6 address
+   */
+  public String getVirtualAddress6() {
+    return virtualAddress6;
+  }
 
-	public Track getTrack() {
-		return track;
-	}
+  /**
+   * Setting VRRP virtual IPv6 address.
+   *
+   * @param virtualAddress6
+   *          VRRP virtual IPv6 address
+   */
+  public void setVirtualAddress6(String virtualAddress6) {
+    this.virtualAddress6 = virtualAddress6;
+  }
 
-	public void setTrack(Track track) {
-		this.track = track;
-	}
+  /**
+   * Getting VRRP priority.
+   *
+   * @return VRRP priority
+   */
+  public Integer getPriority() {
+    return priority;
+  }
 
-	@Override
-	public String toString() {
-		return "Vrrp [groupId=" + groupId + ", virtualAddress=" + virtualAddress + ", virtualAddress6="
-				+ virtualAddress6 + ", priority=" + priority + ", track=" + track + "]";
-	}
+  /**
+   * Setting VRRP priority.
+   *
+   * @param priority
+   *          VRRP priority
+   */
+  public void setPriority(Integer priority) {
+    this.priority = priority;
+  }
+
+  /**
+   * Getting tracking IF configuration information.
+   *
+   * @return tracking IF configuration information
+   */
+  public Track getTrack() {
+    return track;
+  }
+
+  /**
+   * Setting tracking IF configuration information.
+   *
+   * @param track
+   *          tracking IF configuration information
+   */
+  public void setTrack(Track track) {
+    this.track = track;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "Vrrp [groupId=" + groupId + ", virtualAddress=" + virtualAddress + ", virtualAddress6=" + virtualAddress6
+        + ", priority=" + priority + ", track=" + track + "]";
+  }
 
 }

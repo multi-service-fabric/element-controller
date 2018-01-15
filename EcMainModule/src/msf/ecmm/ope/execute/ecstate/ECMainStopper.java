@@ -1,9 +1,15 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.ope.execute.ecstate;
 
 import static msf.ecmm.common.CommonDefinitions.*;
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
 import java.util.HashMap;
+
+import org.hibernate.HibernateException;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
@@ -20,122 +26,143 @@ import msf.ecmm.ope.receiver.pojo.CommonResponse;
 import msf.ecmm.traffic.InterfaceIntegrityValidationManager;
 import msf.ecmm.traffic.TrafficDataGatheringManager;
 
-import org.hibernate.HibernateException;
-
+/**
+ * EC Termination Class Definition. Terminate EC.
+ */
 public class ECMainStopper extends Operation {
 
-	private final int WAIT_TIME = 1000;
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_300101 = "300101";
 
-	private final String CHANGE_OVER = "chgover";
+  /** Process Waiting Time */
+  private final int WAIT_TIME = 1000;
 
-	public ECMainStopper(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.ECMainStopper);
-	}
+  /** Normal Termination */
+  private final String NORMAL_STOP = "normal";
 
-	@Override
-	public AbstractResponseMessage execute() {
+  /** Switch systems */
+  private final String CHANGE_OVER = "chgover";
 
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Constructor
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public ECMainStopper(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.ECMainStopper);
+  }
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+  @Override
+  public AbstractResponseMessage execute() {
 
-			return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_300101);
-		} else {
-		}
+    logger.trace(CommonDefinitions.START);
 
-		ECMainState state;
-		if (this.getUriKeyMap().get(KEY_STOP_TYPE).equals(NORMAL_STOP)) {
-			state = ECMainState.StopReady;
-		} else {
-			state = ECMainState.ChangeOver;
-		}
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
 
-		try (DBAccessManager session = new DBAccessManager()) {
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_300101);
+    } else {
+    }
 
-			session.startTransaction();
+    ECMainState state;
+    if (this.getUriKeyMap().get(KEY_STOP_TYPE).equals(NORMAL_STOP)) {
+      state = ECMainState.StopReady;
+    } else {
+      state = ECMainState.ChangeOver;
+    }
 
-			session.updateSystemStatus(state.getValue(), -1);
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			session.commit();
+      session.startTransaction();
 
-		} catch (DBAccessException | HibernateException dae) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."));
-		}
+      session.updateSystemStatus(state.getValue(), -1);
 
-		synchronized (OperationControlManager.getInstance()) {
-			try {
-				OperationControlManager.getInstance().updateEcMainState(false, state);
-			} catch (DBAccessException e) {
-			}
-		}
+      session.commit();
 
-		while ((OperationControlManager.getInstance().isUnsentNodeStateNotificationSendingState())
-				|| (OperationControlManager.getInstance().getNumberOfExecuteOperations() > 1)) {
-			CommonUtil.sleep(WAIT_TIME);
-		}
+    } catch (DBAccessException | HibernateException dae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."));
+    }
 
-		OperationControlManager.getInstance().sendUnsentNodeStateNotification();
+    synchronized (OperationControlManager.getInstance()) {
+      try {
+        OperationControlManager.getInstance().updateEcMainState(false, state);
+      } catch (DBAccessException e) {
+      }
+    }
 
-		TrafficDataGatheringManager.getInstance().stopGetheringCycle();
+    while ((OperationControlManager.getInstance().isUnsentNodeStateNotificationSendingState())
+        || (OperationControlManager.getInstance().getNumberOfExecuteOperations() > 1)) {
+      CommonUtil.sleep(WAIT_TIME);
+    }
 
-		InterfaceIntegrityValidationManager.getInstance().stopIntegrityCycle();
+    OperationControlManager.getInstance().sendUnsentNodeStateNotification();
 
-		AbstractResponseMessage ret = makeSuccessResponse(RESP_OK_200, new CommonResponse());
+    TrafficDataGatheringManager.getInstance().stopGetheringCycle();
 
-		if (state == ECMainState.StopReady) {
-			try (DBAccessManager session = new DBAccessManager()) {
+    InterfaceIntegrityValidationManager.getInstance().stopIntegrityCycle();
 
-				session.startTransaction();
+    AbstractResponseMessage ret = makeSuccessResponse(RESP_OK_200, new CommonResponse());
 
-				session.updateSystemStatus(ECMainState.Stop.getValue(), -1);
+    if (state == ECMainState.StopReady) {
+      try (DBAccessManager session = new DBAccessManager()) {
 
-				session.commit();
+        session.startTransaction();
 
-			} catch (DBAccessException | HibernateException dae) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."),dae);
-			}
-		} else {
-		}
+        session.updateSystemStatus(ECMainState.Stop.getValue(), -1);
 
-		try {
-			OperationControlManager.getInstance().updateEcMainState(false, ECMainState.Stop);
-		} catch (DBAccessException e) {
-		}
+        session.commit();
 
-		logger.trace(CommonDefinitions.END);
+      } catch (DBAccessException | HibernateException dae) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dae);
+      }
+    } else {
+    }
 
-		return ret;
-	}
+    try {
+      OperationControlManager.getInstance().updateEcMainState(false, ECMainState.Stop);
+    } catch (DBAccessException e) {
+    }
 
-	@Override
-	protected boolean checkInData() {
+    logger.trace(CommonDefinitions.END);
 
-		logger.trace(CommonDefinitions.START);
+    return ret;
+  }
 
-		boolean checkResult = true;
+  @Override
+  protected boolean checkInData() {
+
+    logger.trace(CommonDefinitions.START);
+
+    boolean checkResult = true;
 
 
-		if (checkResult) {
-			if (getUriKeyMap() == null) {
-				checkResult = false;
-			} else if (getUriKeyMap().get(KEY_STOP_TYPE) == null) {
-				checkResult = false;
-			} else if (!getUriKeyMap().get(KEY_STOP_TYPE).equals(CHANGE_OVER)
-					&& !getUriKeyMap().get(KEY_STOP_TYPE).equals(NORMAL_STOP)) {
-				checkResult = false;
-			}
-		} else {
-		}
+    if (checkResult) {
+      if (getUriKeyMap() == null) {
+        checkResult = false;
+      } else if (getUriKeyMap().get(KEY_STOP_TYPE) == null) {
+        checkResult = false;
+      } else if (!getUriKeyMap().get(KEY_STOP_TYPE).equals(CHANGE_OVER)
+          && !getUriKeyMap().get(KEY_STOP_TYPE).equals(NORMAL_STOP)) {
+        checkResult = false;
+      }
+    } else {
+    }
 
-		logger.trace(CommonDefinitions.END + ", checkResult=" + checkResult);
+    logger.trace(CommonDefinitions.END + ", checkResult=" + checkResult);
 
-		return checkResult;
-	}
+    return checkResult;
+  }
 
-	public static void systemExit() {
-		logger.info(LogFormatter.out.format(LogFormatter.MSG_303071));
-		System.exit(0);
-	}
+  /**
+   * Process End<br>
+   * Terminating the process.
+   */
+  public static void systemExit() {
+    logger.info(LogFormatter.out.format(LogFormatter.MSG_303071));
+    System.exit(0);
+  }
 }

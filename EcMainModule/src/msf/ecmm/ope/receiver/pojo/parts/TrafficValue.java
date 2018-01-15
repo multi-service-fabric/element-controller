@@ -1,39 +1,108 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo.parts;
 
-import java.util.ArrayList;
-
+/**
+ * Traffic Information.
+ */
 public class TrafficValue {
 
-	private ArrayList<L2Cp> l2Cps = new ArrayList<L2Cp>();
+  /** IF Type. */
+  private String ifType = null;
+  /** IF ID. */
+  private String ifId = null;
+  /** Receiving Rate. */
+  private Double receiveRate = null;
+  /** Sending Rate. */
+  private Double sendRate = null;
 
-	public ArrayList<L3Cp> getL3Cps() {
-		return l3Cps;
-	}
+  /**
+   * Getting IF type.
+   *
+   * @return ifType
+   */
+  public String getIfType() {
+    return ifType;
+  }
 
-	public void setL3Cps(ArrayList<L3Cp> l3Cps) {
-		this.l3Cps = l3Cps;
-	}
+  /**
+   * Setting IF type.
+   *
+   * @param ifType
+   *          set ifType
+   */
+  public void setIfType(String ifType) {
+    this.ifType = ifType;
+  }
 
-	public ArrayList<L2Cp> getL2Cps() {
-		return l2Cps;
-	}
+  /**
+   * Getting IF ID.
+   *
+   * @return ifId
+   */
+  public String getIfId() {
+    return ifId;
+  }
 
-	public void setL2Cps(ArrayList<L2Cp> l2Cps) {
-		this.l2Cps = l2Cps;
-	}
+  /**
+   * Setting IF ID.
+   *
+   * @param ifId
+   *          set ifId
+   */
+  public void setIfId(String ifId) {
+    this.ifId = ifId;
+  }
 
-	public ArrayList<InternalLink> getInternalLinks() {
-		return internalLinks;
-	}
+  /**
+   * Getting receiving rate.
+   *
+   * @return receiveRate
+   */
+  public Double getReceiveRate() {
+    return receiveRate;
+  }
 
-	public void setInternalLinks(ArrayList<InternalLink> internalLinks) {
-		this.internalLinks = internalLinks;
-	}
+  /**
+   * Setting receiving rate.
+   *
+   * @param receiveRate
+   *          set receiveRate
+   */
+  public void setReceiveRate(Double receiveRate) {
+    this.receiveRate = receiveRate;
+  }
 
-	@Override
-	public String toString() {
-		return "TrafficValue [l3Cps=" + l3Cps + ", l2Cps=" + l2Cps + ", internalLinks=" + internalLinks + "]";
-	}
+  /**
+   * Getting sending rate.
+   *
+   * @return sendRate
+   */
+  public Double getSendRate() {
+    return sendRate;
+  }
+
+  /**
+   * Setting sending rate.
+   *
+   * @param sendRate
+   *          set sendRate
+   */
+  public void setSendRate(Double sendRate) {
+    this.sendRate = sendRate;
+  }
+
+  /**
+   * Stringizing Instance.
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "TrafficValue [ifType=" + ifType + ", ifId=" + ifId + ", receiveRate=" + receiveRate + ", sendRate="
+        + sendRate + "]";
+  }
 
 }

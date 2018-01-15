@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.db;
 
 import org.hibernate.HibernateException;
@@ -8,24 +12,48 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
+/**
+ * Data Base Session Management Class.
+ */
 public class SessionManager {
 
-	private SessionFactory sessions;
+  /** Data Base Session Management Instance. */
+  private static SessionManager instance = new SessionManager();
+  /** Session. */
+  private SessionFactory sessions;
 
-	private SessionManager() {
-		final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-				.build();
+  /**
+   * Private Constructor.
+   *
+   * @throws HibernateException
+   *           exception at Hibernate
+   */
+  private SessionManager() {
+    final StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure() 
+        .build();
 
-		MetadataSources ms = new MetadataSources(registry);
-		Metadata m = ms.buildMetadata();
-		sessions = m.buildSessionFactory();
-	}
+    MetadataSources ms = new MetadataSources(registry);
+    Metadata m = ms.buildMetadata();
+    sessions = m.buildSessionFactory();
+  }
 
-	public static synchronized SessionManager getInstance() {
-		return instance;
-	}
+  /**
+   * Instance Acquisition.
+   *
+   * @return data base session management class instance
+   */
+  public static synchronized SessionManager getInstance() {
+    return instance;
+  }
 
-	public Session getSession() throws HibernateException {
-		return sessions.openSession();
-	}
+  /**
+   * Session Acquisition.
+   *
+   * @return session class instance
+   * @throws HibernateException
+   *           flamework exception
+   */
+  public Session getSession() throws HibernateException {
+    return sessions.openSession();
+  }
 }

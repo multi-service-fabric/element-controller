@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+    <!-- VLANIF Information Class -->
+
+<hibernate-mapping>
+    <class name="msf.ecmm.db.pojo.VlanIfs" table="vlan_ifs" lazy="true">
+        <composite-id>
+            <key-property name="node_id" type="text">
+                <column name="node_id" not-null="true"/>
+            </key-property>
+            <key-property name="vlan_if_id" type="text">
+                <column name="vlan_if_id" not-null="true" />
+            </key-property>
+            <generator class="assigned"/>
+        </composite-id>
+        <property name="physical_if_id" type="text"/>
+        <property name="lag_if_id" type="text"/>
+        <property name="breakout_if_id" type="text"/>
+        <property name="vlan_id" type="text"/>
+        <property name="if_name" type="text" not-null="true"/>
+        <property name="if_status" type="int"/>
+        <property name="ipv4_address" type="string" />
+        <property name="ipv4_prefix" type="int" />
+        <property name="ipv6_address" type="string" />
+        <property name="ipv6_prefix" type="int" />
+        <property name="mtu" type="int" />
+        <property name="port_mode" type="int" />
+        <property name="bgp_id" type="text" />
+        <property name="vrrp_id" type="text" />
+        <set name="bgpOptionsList" table="bgp_options" lazy="true" inverse="true" cascade="all-delete-orphan">
+            <key>
+                <column name="node_id" />
+                <column name="vlan_if_id" />
+            </key>
+            <one-to-many class="msf.ecmm.db.pojo.BGPOptions" />
+        </set>
+        <set name="staticRouteOptionsList" table="static_route_options" lazy="true" inverse="true" cascade="all-delete-orphan">
+            <key>
+                <column name="node_id" />
+                <column name="vlan_if_id" />
+            </key>
+            <one-to-many class="msf.ecmm.db.pojo.StaticRouteOptions" />
+        </set>
+        <set name="vrrpOptionsList" table="vrrp_options" lazy="true" inverse="true" cascade="all-delete-orphan">
+            <key>
+                <column name="node_id" />
+                <column name="vlan_if_id" />
+            </key>
+            <one-to-many class="msf.ecmm.db.pojo.VRRPOptions" />
+        </set>
+    </class>
+    <query name="selectVlanIfs">
+        <![CDATA[
+            from msf.ecmm.db.pojo.VlanIfs as vlan_ifs where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+    <query name="selectVlanIfsOnlyId">
+        <![CDATA[
+            from msf.ecmm.db.pojo.VlanIfs as vlan_ifs where node_id = :key1
+        ]]>
+    </query>
+    <query name="deleteVlanIfs">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.VlanIfs as vlan_ifs where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+    <query name="deleteVlanIfsByNode">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.VlanIfs as vlan_ifs where node_id = :key1
+        ]]>
+    </query>
+    <query name="updateVlanIfsState">
+        <![CDATA[
+            update msf.ecmm.db.pojo.VlanIfs as vlan_ifs set if_status = :key3 where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+    <query name="updateVlanIfsIP">
+        <![CDATA[
+            update msf.ecmm.db.pojo.VlanIfs as vlan_ifs set ipv6_prefix = :key6, ipv6_address = :key5, ipv4_prefix = :key4, ipv4_address = :key3 where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+</hibernate-mapping>

@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.emctrl.pojo.parts;
 
@@ -9,141 +12,346 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Device Information Class.
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "device")
 public class Device {
 
-	@XmlElement(name = "vpn-type")
-	private String vpnType = null;
+  /** Attribute Data of device. */
+  @XmlAttribute
+  private String operation = null;
 
-	private Equipment equipment = null;
+  /** VPN Type (only for Adding LAG for Internal Link). */
+  @XmlElement(name = "vpn-type")
+  private String vpnType = null;
 
-	@XmlElement(name = "management-interface")
-	private ManagementInterface managementInterface = null;
+  /** Name of Device To Be Extended. */
+  private String name = null;
 
-	@XmlElement(name = "ce-lag-interface")
-	private List<CeLagInterface> ceLagInterfaceList = null;
+  /** Information of Device To Be Extended (only for Spine/Leaf/B-Leaf Device Extention). */
+  private Equipment equipment = null;
 
-	private Ntp ntp = null;
+  /** breakoutIF Information List (only for Spine/Leaf Device Extention and breakoutIF Registration/Deletion). */
+  @XmlElement(name = "breakout-interface")
+  private List<BreakoutIf> breakoutIfList = null;
 
-	@XmlElement(name = "l3-vpn")
-	private L3Vpn l3Vpn = null;
+  /** Internal Link Configuration Information List (only for Spine/Leaf/B-Leaf Device Extention). */
+  @XmlElement(name = "internal-interface")
+  private List<InternalInterface> internalLagList = null;
 
-	public Device() {
-		super();
-	}
+  /** Management IF Configuration Information (only for Spine/Leaf/B-Leaf Device Extention). */
+  @XmlElement(name = "management-interface")
+  private ManagementInterface managementInterface = null;
 
-	public String getOperation() {
-		return operation;
-	}
+  /** Loopback IF Configuration Information (only for Spine/Leaf/B-Leaf Device Extention). */
+  @XmlElement(name = "loopback-interface")
+  private LoopbackInterface loopbackInterface = null;
 
-	public void setOperation(String operation) {
-		this.operation = operation;
-	}
+  /** List of LAGIF Configuration Information for CE (only for LagIF Generation/Deletion). */
+  @XmlElement(name = "ce-lag-interface")
+  private List<CeLagInterface> ceLagInterfaceList = null;
 
-	public String getVpnType() {
-		return vpnType;
-	}
+  /** SNMP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
+  private Snmp snmp = null;
 
-	public void setVpnType(String vpnType) {
-		this.vpnType = vpnType;
-	}
+  /** NTP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
+  private Ntp ntp = null;
 
-	public String getName() {
-		return name;
-	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  /** L3VPN Configuration Information (only for Leaf/B-Leaf Device Extention). */
+  @XmlElement(name = "l3-vpn")
+  private L3Vpn l3Vpn = null;
 
-	public Equipment getEquipment() {
-		return equipment;
-	}
+  /** L2VPN Configuration Information (only for Leaf Device Extention). */
+  @XmlElement(name = "l2-vpn")
+  private L2Vpn l2Vpn = null;
 
-	public void setEquipment(Equipment equipment) {
-		this.equipment = equipment;
-	}
+  /** OSPF Configuration (only for Spine/Leaf/B-Leaf Device Extentioin). */
+  @XmlElement(name = "ospf")
+  private OspfAddNode ospfAddNode = null;
 
-	public List<InternalLag> getInternalLagList() {
-		return internalLagList;
-	}
+  /**
+   * Generating new instance.
+   */
+  public Device() {
+    super();
+  }
 
-	public void setInternalLagList(List<InternalLag> internalLagList) {
-		this.internalLagList = internalLagList;
-	}
+  /**
+   * Getting attribute data of device.
+   *
+   * @return attribute data of device.
+   */
+  public String getOperation() {
+    return operation;
+  }
 
-	public ManagementInterface getManagementInterface() {
-		return managementInterface;
-	}
+  /**
+   * Setting attribute data of device.
+   *
+   * @param operation
+   *          attribute data of device.
+   */
+  public void setOperation(String operation) {
+    this.operation = operation;
+  }
 
-	public void setManagementInterface(ManagementInterface managementInterface) {
-		this.managementInterface = managementInterface;
-	}
+  /**
+   * Getting VPN type (only for LAG Addition for Internal Link).
+   *
+   * @return VPN type (only for LAG Addition for Internal Link).
+   */
+  public String getVpnType() {
+    return vpnType;
+  }
 
-	public LoopbackInterface getLoopbackInterface() {
-		return loopbackInterface;
-	}
+  /**
+   * Setting VPN type (only for LAG Addition for Internal Link).
+   *
+   * @param vpnType
+   *          VPN type (only for LAG Addition for Internal Link).
+   */
+  public void setVpnType(String vpnType) {
+    this.vpnType = vpnType;
+  }
 
-	public void setLoopbackInterface(LoopbackInterface loopbackInterface) {
-		this.loopbackInterface = loopbackInterface;
-	}
+  /**
+   * Getting name of device to be extended.
+   *
+   * @return name of device to be extended.
+   */
+  public String getName() {
+    return name;
+  }
 
-	public List<CeLagInterface> getCeLagInterfaceList() {
-		return ceLagInterfaceList;
-	}
+  /**
+   * Setting name of device to be extended.
+   *
+   * @param name
+   *          name of device to be extended.
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	public void setCeLagInterfaceList(List<CeLagInterface> ceLagInterfaceList) {
-		this.ceLagInterfaceList = ceLagInterfaceList;
-	}
+  /**
+   * Getting internal link IF configuration information list (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @return internal link IF configuration information list (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public List<InternalInterface> getInternalLagList() {
+    return internalLagList;
+  }
 
-	public Snmp getSnmp() {
-		return snmp;
-	}
+  /**
+   * Setting internal link IF configuration information list (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @param internalLagList
+   *          internal link IF configuration information list (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public void setInternalLagList(List<InternalInterface> internalLagList) {
+    this.internalLagList = internalLagList;
+  }
 
-	public void setSnmp(Snmp snmp) {
-		this.snmp = snmp;
-	}
+  /**
+   * Getting management IF configuration information (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @return management IF configuration information (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public ManagementInterface getManagementInterface() {
+    return managementInterface;
+  }
 
-	public Ntp getNtp() {
-		return ntp;
-	}
+  /**
+   * Setting management IF configuration information (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @param managementInterface
+   *          management IF configuration information (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public void setManagementInterface(ManagementInterface managementInterface) {
+    this.managementInterface = managementInterface;
+  }
 
-	public void setNtp(Ntp ntp) {
-		this.ntp = ntp;
-	}
+  /**
+   * Getting loopback IF configuration information (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @return loopback IF configuration information (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public LoopbackInterface getLoopbackInterface() {
+    return loopbackInterface;
+  }
 
-	public Msdp getMsdp() {
-		return msdp;
-	}
+  /**
+   * Setting loopback IF configuration information (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @param loopbackInterface
+   *          loopback IF configuration information (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public void setLoopbackInterface(LoopbackInterface loopbackInterface) {
+    this.loopbackInterface = loopbackInterface;
+  }
 
-	public void setMsdp(Msdp msdp) {
-		this.msdp = msdp;
-	}
+  /**
+   * Getting LAGIF configuration information list for CE (only for LagIF generation/deletion).
+   *
+   * @return LAGIF configuration information list for CE (only for LagIF generation/deletion).
+   */
+  public List<CeLagInterface> getCeLagInterfaceList() {
+    return ceLagInterfaceList;
+  }
 
-	public L3Vpn getL3Vpn() {
-		return l3Vpn;
-	}
+  /**
+   * Setting LAGIF configuration information list for CE (only for LagIF generation/deletion).
+   *
+   * @param ceLagInterfaceList
+   *          LAGIF configuration information list for CE (only for LagIF generation/deletion).
+   */
+  public void setCeLagInterfaceList(List<CeLagInterface> ceLagInterfaceList) {
+    this.ceLagInterfaceList = ceLagInterfaceList;
+  }
 
-	public void setL3Vpn(L3Vpn l3Vpn) {
-		this.l3Vpn = l3Vpn;
-	}
+  /**
+   * Getting SNMP server information (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @return SNMP server information (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public Snmp getSnmp() {
+    return snmp;
+  }
 
-	public L2Vpn getL2Vpn() {
-		return l2Vpn;
-	}
+  /**
+   * Setting SNMP server information (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @param snmp
+   *          SNMP server information (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public void setSnmp(Snmp snmp) {
+    this.snmp = snmp;
+  }
 
-	public void setL2Vpn(L2Vpn l2Vpn) {
-		this.l2Vpn = l2Vpn;
-	}
 
-	@Override
-	public String toString() {
-		return "Device [operation=" + operation + ", vpnType=" + vpnType + ", name=" + name + ", equipment="
-				+ equipment + ", internalLagList="
-				+ internalLagList + ", managementInterface=" + managementInterface + ", loopbackInterface="
-				+ loopbackInterface + ", ceLagInterfaceList="
-				+ ceLagInterfaceList + ", snmp=" + snmp + ", ntp=" + ntp + ", msdp=" + msdp + ", l3Vpn=" + l3Vpn
-				+ ", l2Vpn=" + l2Vpn + "]";
-	}
+  /**
+   * Getting NTP server information (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @return NTP server information (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public Ntp getNtp() {
+    return ntp;
+  }
+
+  /**
+   * Setting NTP server information (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @param ntp
+   *          NTP server information (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public void setNtp(Ntp ntp) {
+    this.ntp = ntp;
+  }
+
+  /**
+   * Getting MSDP configuration related information (only for Spine device extention).
+   *
+   * @return MSDP configuration related information (only for Spine device extention).
+   */
+  public L3Vpn getL3Vpn() {
+    return l3Vpn;
+  }
+
+  /**
+   * Setting MSDP configuration related information (only for Spine device extention).
+   *
+   * @param l3Vpn
+   *          MSDP configuration related information (only for Spine device extention).
+   */
+  public void setL3Vpn(L3Vpn l3Vpn) {
+    this.l3Vpn = l3Vpn;
+  }
+
+  /**
+   * Getting information of device to be extended (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @return information of device to be extended (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public Equipment getEquipment() {
+    return equipment;
+  }
+
+  /**
+   * Setting information of device to be extended (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @param equipment
+   *          information of device to be extended (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public void setEquipment(Equipment equipment) {
+    this.equipment = equipment;
+  }
+
+  /**
+   * Getting breakoutIF information list.
+   *
+   * @return breakoutIfList
+   */
+  public List<BreakoutIf> getBreakoutIfList() {
+    return breakoutIfList;
+  }
+
+  /**
+   * Setting breakoutIF information list.
+   *
+   * @param list
+   *          set list
+   */
+  public void setBreakoutIfList(List<BreakoutIf> list) {
+    this.breakoutIfList = list;
+  }
+
+  /**
+   * Getting L2VPN configuration information (only for Leaf device extention).
+   *
+   * @return L2VPN configuration information (only for Leaf device extention).
+   */
+  public L2Vpn getL2Vpn() {
+    return l2Vpn;
+  }
+
+  /**
+   * Setting L2VPN configuration information (only for Leaf device extention).
+   *
+   * @param l2Vpn
+   *          L2VPN configuration information (only for Leaf device extention).
+   */
+  public void setL2Vpn(L2Vpn l2Vpn) {
+    this.l2Vpn = l2Vpn;
+  }
+
+  /**
+   * Getting OSPF configuration (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @return OSPF configuration (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public OspfAddNode getOspfAddNode() {
+    return ospfAddNode;
+  }
+
+  /**
+   * Setting OSPF configuration (only for Spine/Leaf/B-Leaf device extention).
+   *
+   * @param ospfAddNode
+   *          OSPF configuration (only for Spine/Leaf/B-Leaf device extention).
+   */
+  public void setOspfAddNode(OspfAddNode ospfAddNode) {
+    this.ospfAddNode = ospfAddNode;
+  }
+
+  @Override
+  public String toString() {
+    return "Device [operation=" + operation + ", vpnType=" + vpnType + ", name=" + name + ", equipment=" + equipment
+        + ", breakoutIfList=" + breakoutIfList + ", internalLagList=" + internalLagList + ", managementInterface="
+        + managementInterface + ", loopbackInterface=" + loopbackInterface + ", ceLagInterfaceList="
+        + ceLagInterfaceList + ", snmp=" + snmp + ", ntp=" + ntp + ", l3Vpn=" + l3Vpn + ", l2Vpn=" + l2Vpn
+        + ", ospfAddNode=" + ospfAddNode + "]";
+  }
 }

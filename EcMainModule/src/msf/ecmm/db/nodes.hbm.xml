@@ -3,85 +3,78 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
+    <!-- Device Information Class -->
 
 <hibernate-mapping>
-        <class name="msf.ecmm.db.pojo.Nodes" table="nodes" lazy="true">
-            <composite-id>
-                <key-property name="node_type" type="int">
-                    <column name="node_type" not-null="true" />
-                </key-property>
-                <key-property name="node_id" type="text">
-                    <column name="node_id" not-null="true" />
-                </key-property>
-                <generator class="assigned"/>
-            </composite-id>
-
-            <property name="node_name" type="text" not-null="true"/>
-            <property name="management_if_address" type="text" not-null="true"/>
-            <property name="snmp_community" type="text" not-null="true"/>
-
-            <many-to-one name="equipments" class="msf.ecmm.db.pojo.Equipments">
-                <column name="equipment_type_id" not-null="true"/>
-            </many-to-one>
-            <set name="nodesStartupNotificationList" table="nodes_startup_notification" lazy="true" inverse="true" cascade="all-delete-orphan">
-                <key>
-                    <column name="node_type"/>
-                    <column name="node_id"/>
-                </key>
-                <one-to-many class="msf.ecmm.db.pojo.NodesStartupNotification" />
-            </set>
-            <set name="physicalIfsList" table="physical_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
-                <key>
-                    <column name="node_type"/>
-                    <column name="node_id"/>
-                </key>
-                <one-to-many class="msf.ecmm.db.pojo.PhysicalIfs" />
-            </set>
-            <set name="lagIfsList" table="lag_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
-                <key>
-                    <column name="node_type"/>
-                    <column name="node_id"/>
-                </key>
-                <one-to-many class="msf.ecmm.db.pojo.LagIfs" />
-            </set>
-            <set name="l2CpsList" table="l2_cps" lazy="true" inverse="true" cascade="all-delete-orphan">
-                <key>
-                    <column name="node_type"/>
-                    <column name="node_id"/>
-                </key>
-                <one-to-many class="msf.ecmm.db.pojo.L2Cps" />
-            </set>
-            <set name="l3CpsList" table="l3_cps" lazy="true" inverse="true" cascade="all-delete-orphan">
-                <key>
-                    <column name="node_type"/>
-                    <column name="node_id"/>
-                </key>
-                <one-to-many class="msf.ecmm.db.pojo.L3Cps" />
-            </set>
-        </class>
-        <query name="selectNodes">
-            <![CDATA[
-                from msf.ecmm.db.pojo.Nodes as nodes where node_type = :key1 and node_id = :key2
-             ]]>
-        </query>
-        <query name="selectNodesOnlyType">
-            <![CDATA[
-                from msf.ecmm.db.pojo.Nodes as nodes where node_type = :key1
-             ]]>
-        </query>
-        <query name="selectNodesAndIfAddr">
-            <![CDATA[
-                from msf.ecmm.db.pojo.Nodes as nodes where management_if_address = :key1
-             ]]>
-        </query>
-        <query name="selectNodesOnlyEquipmentTypeId">
-            <![CDATA[
-                from msf.ecmm.db.pojo.Nodes as nodes where equipment_type_id = :key1
-             ]]>
-        </query>
-        <query name="deleteNodes">
-            <![CDATA[
-                delete from msf.ecmm.db.pojo.Nodes as nodes where node_type = :key1 and node_id = :key2
-             ]]>
-        </query>
+    <class name="msf.ecmm.db.pojo.Nodes" table="nodes" lazy="true">
+        <id name="node_id" type="text">
+            <column name="node_id" not-null="true" />
+            <generator class="assigned"/>
+        </id>
+        <property name="node_name" type="text" not-null="true"/>
+        <property name="equipment_type_id" type="text" not-null="true"/>
+        <property name="management_if_address" type="text" not-null="true"/>
+        <property name="snmp_community" type="text" not-null="true"/>
+        <property name="node_state" type="int" not-null="true"/>
+        <property name="provisioning" type="boolean" not-null="true"/>
+        <property name="plane" type="int" />
+        <property name="vpn_type" type="string" />
+        <property name="loopback_if_address" type="text" not-null="true"/>
+        <property name="username" type="text" not-null="true"/>
+        <property name="password" type="text" not-null="true"/>
+        <property name="ntp_server_address" type="text" not-null="true"/>
+        <property name="host_name" type="text" not-null="true"/>
+        <property name="mac_addr" type="string" not-null="true"/>
+        <many-to-one name="equipments" class="msf.ecmm.db.pojo.Equipments" insert="false" update="false">
+            <column name="equipment_type_id" not-null="true"/>
+        </many-to-one>
+        <set name="nodesStartupNotificationList" table="nodes_startup_notification" lazy="true" inverse="true" cascade="all-delete-orphan">
+            <key>
+                <column name="node_id"/>
+            </key>
+            <one-to-many class="msf.ecmm.db.pojo.NodesStartupNotification" />
+        </set>
+        <set name="physicalIfsList" table="physical_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
+            <key>
+                <column name="node_id"/>
+            </key>
+            <one-to-many class="msf.ecmm.db.pojo.PhysicalIfs" />
+        </set>
+        <set name="lagIfsList" table="lag_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
+            <key>
+                <column name="node_id"/>
+            </key>
+            <one-to-many class="msf.ecmm.db.pojo.LagIfs" />
+        </set>
+    </class>
+    <query name="selectNodes">
+        <![CDATA[
+            from msf.ecmm.db.pojo.Nodes as nodes where node_id = :key1
+        ]]>
+    </query>
+    <query name="selectNodesAll">
+        <![CDATA[
+            from msf.ecmm.db.pojo.Nodes as nodes
+        ]]>
+    </query>
+    <query name="selectNodesAndIfAddr">
+        <![CDATA[
+            from msf.ecmm.db.pojo.Nodes as nodes where management_if_address = :key1
+        ]]>
+    </query>
+    <query name="selectNodesOnlyEquipmentTypeId">
+        <![CDATA[
+            from msf.ecmm.db.pojo.Nodes as nodes where equipment_type_id = :key1
+        ]]>
+    </query>
+    <query name="updateNodes">
+        <![CDATA[
+            update msf.ecmm.db.pojo.Nodes as nodes set node_state = :key2 where node_id = :key1
+        ]]>
+    </query>
+    <query name="deleteNodes">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.Nodes as nodes where node_id = :key1
+        ]]>
+    </query>
 </hibernate-mapping>

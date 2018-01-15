@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.device;
 
@@ -18,62 +21,83 @@ import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.GetEquipmentType;
 
+/**
+ * Model Information Acquisition.
+ */
 public class DeviceInfoAcquisition extends Operation {
 
-	private static final String ERROR_CODE_040201 = "040201";
-	public DeviceInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.DeviceInfoAcquisition);
-	}
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_040101 = "040101";
+  /** In case the number of acquired results is zero. */
+  private static final String ERROR_CODE_040201 = "040201";
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_040401 = "040401";
 
-	@Override
-	public AbstractResponseMessage execute() {
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public DeviceInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.DeviceInfoAcquisition);
+  }
 
-		AbstractResponseMessage response = null;
+  @Override
+  public AbstractResponseMessage execute() {
+    logger.trace(CommonDefinitions.START);
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_040101);
-		}
+    AbstractResponseMessage response = null;
 
-		String equipmentTypeId = getUriKeyMap().get(KEY_EQUIPMENT_TYPE_ID);
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_040101);
+    }
 
-		GetEquipmentType getEquipmentTypeRest = null;
+    String equipmentTypeId = getUriKeyMap().get(KEY_EQUIPMENT_TYPE_ID);
 
-		try (DBAccessManager session = new DBAccessManager()) {
+    GetEquipmentType getEquipmentTypeRest = null;
 
-			Equipments equipmentsDb = session.searchEquipments(equipmentTypeId);
-			if (equipmentsDb == null) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Equipments]"));
-				return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_040201);
-			}
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			getEquipmentTypeRest = RestMapper.toEqInfo(equipmentsDb);
+      Equipments equipmentsDb = session.searchEquipments(equipmentTypeId);
+      if (equipmentsDb == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Equipments]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_040201);
+      }
 
-			response = makeSuccessResponse(RESP_OK_200, getEquipmentTypeRest);
+      getEquipmentTypeRest = RestMapper.toEqInfo(equipmentsDb);
 
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_040401);
-		}
+      response = makeSuccessResponse(RESP_OK_200, getEquipmentTypeRest);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    } catch (DBAccessException dbae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_040401);
+    }
 
-	@Override
-	protected boolean checkInData() {
-		logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		boolean checkResult = true;
+  @Override
+  protected boolean checkInData() {
+    logger.trace(CommonDefinitions.START);
 
-		if (!getUriKeyMap().containsKey(KEY_EQUIPMENT_TYPE_ID)) {
-			checkResult = false;
-		}
+    boolean checkResult = true;
 
-		logger.trace(CommonDefinitions.END);
-		return checkResult;
-	}
+    if (getUriKeyMap() == null) {
+      checkResult = false;
+    } else {
+      if (!(getUriKeyMap().containsKey(KEY_EQUIPMENT_TYPE_ID)) || getUriKeyMap().get(KEY_EQUIPMENT_TYPE_ID) == null) {
+        checkResult = false;
+      }
+    }
+
+    logger.trace(CommonDefinitions.END);
+    return checkResult;
+  }
 
 }

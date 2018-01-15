@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.device;
 
@@ -9,7 +12,6 @@ import java.util.HashMap;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
-import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.Nodes;
@@ -23,6 +25,7 @@ import msf.ecmm.fcctrl.RestClientException;
 import msf.ecmm.fcctrl.pojo.CommonResponseFromFc;
 import msf.ecmm.fcctrl.pojo.NotifyNodeStartUpToFc;
 import msf.ecmm.ope.control.ECMainState;
+import msf.ecmm.ope.control.NodeAdditionState;
 import msf.ecmm.ope.control.OperationControlManager;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
@@ -32,299 +35,453 @@ import msf.ecmm.ope.receiver.pojo.CheckDataException;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
 import msf.ecmm.ope.receiver.pojo.NotifyNodeStartUp;
 
+/**
+ * Device Extention Notification.
+ */
 public class NodeAddedNotification extends Operation {
 
-	private static final String ERROR_CODE_290402 = "290402";
-	private static final String ERROR_CODE_290404 = "290404";
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_290402 = "290402";
+  /** DHCP Termination Failed. */
+  private static final String ERROR_CODE_290403 = "290403";
+  /** Syslog Monitoring Termination Failed. */
+  private static final String ERROR_CODE_290404 = "290404";
 
-	private static final String BOOT_RET_FAILED = "failed";
-	private int bootNodeType = CommonDefinitions.NODE_TYPE_LEAF;
+  /** Device Start-up Succeeded. */
+  private static final String BOOT_RET_SUCCESS = RECV_OK_NOTIFICATION_STRING;
+  /** Device Start-up Failed. */
+  private static final String BOOT_RET_FAILED = RECV_NG_NOTIFICATION_STRING;
+  /** Device Start-up Cancelled. */
+  private static final String BOOT_RET_CANCEL = WAIT_NOTIFICATION_STRING;
 
-	public NodeAddedNotification(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.NodeAddedNotification);
-	}
+  /** Device ID. */
+  private String bootNodeId = "";
 
-	@Override
-	public boolean prepare() {
+  /** Device Start-up Result. */
+  private boolean bootStatus = false; 
 
-		logger.trace(CommonDefinitions.START);
+  /** Extended Device Information. */
+  private NodeAdditionThread nodeAdditionThread;
 
-		boolean result = false;
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public NodeAddedNotification(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.NodeAddedNotification);
+  }
 
-		boolean judge = false;
-		synchronized(OperationControlManager.getInstance()){
+  @Override
+  public boolean prepare() {
 
-			judge = OperationControlManager.getInstance().judgeExecution(getOperationType());
-			if (judge) {
-				operationId = OperationControlManager.getInstance().startOperation(this);
-				if (operationId == null) {
-					judge = false;
-				}
-			}
+    logger.trace(CommonDefinitions.START);
 
+    boolean result = false;
 
-			do {
-				if (judge == false && getEcMainState() != ECMainState.InService) {
-					logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "NodeAddedNotification operation rejected."));
-					reqNotifyFlag = false;
-					reqDeleteFlag = false;
-					break;
-				}
+    boolean judge = false;
+    synchronized (OperationControlManager.getInstance()) {
 
-				waitNodeStateNotificationSending();
+      judge = OperationControlManager.getInstance().judgeExecution(getOperationType());
+      if (judge) {
+        operationId = OperationControlManager.getInstance().startOperation(this);
+        if (operationId == null) {
+          judge = false;
+        }
+      }
 
-				if (!checkInData()) {
-					logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-					reqNotifyFlag = false;
-					reqDeleteFlag = false;
-					break;
-				}
+      boolean reqNotifyFlag = false; 
+      boolean reqDeleteFlag = true; 
+      boolean reqUpdateNodeStateFlag = false; 
 
-				if (getUriKeyMap().get(KEY_STATUS).equals(BOOT_RET_SUCCESS)) {
-					bootStatus = true;
-				} else {
-					bootStatus = false;
-				}
+      do {
 
-				clusterId = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.CLUSTER_ID);
+        if (!checkInData()) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+          reqNotifyFlag = false;
+          reqDeleteFlag = false;
+          reqUpdateNodeStateFlag = false;
+          break;
+        }
 
-				try (DBAccessManager session = new DBAccessManager()) {
+        if (getUriKeyMap().get(KEY_STATUS).equals(BOOT_RET_SUCCESS)) {
+          bootStatus = true;
+        } else {
+          bootStatus = false;
+        }
 
-					session.startTransaction();
+        if (judge == false && getEcMainState() != ECMainState.InService) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "NodeAddedNotification operation rejected."));
+          reqNotifyFlag = false;
+          reqDeleteFlag = false;
+          reqUpdateNodeStateFlag = false;
+          break;
+        }
 
-					NotifyNodeStartUp notifyNodeStartUpRest = (NotifyNodeStartUp) getInData();
-					Nodes bootNode = session.searchNodes(CommonDefinitions.NOT_SET, null,
-							notifyNodeStartUpRest.getManagementIfAddress());
-					if (bootNode == null) {
-						logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Nodes]"));
-						break;
-					}
+        waitNodeStateNotificationSending();
 
-					bootNodeType = bootNode.getNode_type();
-					bootNodeId = bootNode.getNode_id();
-					logger.debug("boot nodeType=" + bootNodeType + " boot nodeId=" + bootNodeId);
+        try (DBAccessManager session = new DBAccessManager()) {
 
-					NodesStartupNotification nodeStartupNoticeDb = createNodeStartupInfo(bootNode);
-					session.updateNodesStartupNotification(nodeStartupNoticeDb);
+          Nodes bootNode = session.searchNodes(null, ((NotifyNodeStartUp) getInData()).getManagementIfAddress());
+          if (bootNode == null) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Nodes]"));
+            reqNotifyFlag = false; 
+            reqDeleteFlag = false; 
+            reqUpdateNodeStateFlag = false; 
+            break;
+          }
 
-					session.commit();
+          bootNodeId = bootNode.getNode_id();
+          logger.debug(" boot nodeId=" + bootNodeId);
+          reqNotifyFlag = true; 
 
-					if (judge == true) {
-						result = true;
-					}
+          boolean clearFcData = true;
+          nodeAdditionThread = OperationControlManager.getInstance().getNodeAdditionInfo();
+          if (nodeAdditionThread == null) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [FC received data]"));
+            reqNotifyFlag = false; 
+            reqDeleteFlag = true;
+            reqUpdateNodeStateFlag = true;
+            clearFcData = false;
+            break;
+          }
 
-				} catch (DBAccessException e) {
-					if (e.getCode() == DBAccessException.NO_UPDATE_TARGET) {
-						logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [NodesStartupNotification]"));
-					} else {
-						logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-					}
-				}
-			} while (false);
+          String nodeNotifyAddr = ((NotifyNodeStartUp) getInData()).getManagementIfAddress();
+          String fcNotifyAddr = nodeAdditionThread.getAddNodeInfo().getCreateNode().getManagementInterface()
+              .getAddress();
+          if (!nodeNotifyAddr.equals(fcNotifyAddr)) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Unmatch data. [FC received data]"));
+            reqNotifyFlag = false; 
+            reqDeleteFlag = true;
+            reqUpdateNodeStateFlag = true;
+            clearFcData = false;
+            break;
+          }
+          if (clearFcData == true) {
+            OperationControlManager.getInstance().clearNodeAdditionInfo();
+          }
 
-			if (result == false) {
-				cleanUp(true, reqNotifyFlag, reqDeleteFlag);
-			}
+          session.startTransaction();
 
-		logger.trace(CommonDefinitions.END);
-		return result;
-	}
+          NodesStartupNotification nodeStartupNoticeDb = createNodeStartupInfo(bootNode);
+          session.updateNodesStartupNotification(nodeStartupNoticeDb);
 
-	@Override
-	public AbstractResponseMessage execute() {
-		logger.trace(CommonDefinitions.START);
+          session.commit();
 
-		AbstractResponseMessage response = null;
+          if (judge == true) {
+            result = true;
+          } else {
+            reqNotifyFlag = true;
+            reqDeleteFlag = true;
+            reqUpdateNodeStateFlag = true;
+          }
 
-		boolean dhcpOkFlag = false;
-		boolean syslogOkFlag = false;
-		boolean reqNotifyFlag = true;
-		boolean reqDeleteFlag = true;
+        } catch (DBAccessException dbae) {
+          if (dbae.getCode() == DBAccessException.NO_UPDATE_TARGET) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [NodesStartupNotification]"),
+                dbae);
+            reqNotifyFlag = false; 
+            reqDeleteFlag = false; 
+            reqUpdateNodeStateFlag = true;
+          } else {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
+            if (bootNodeId.isEmpty()) {
+              reqNotifyFlag = false;
+              reqDeleteFlag = false;
+              reqUpdateNodeStateFlag = false;
+            } else {
+              reqNotifyFlag = true;
+              reqDeleteFlag = true; 
+              reqUpdateNodeStateFlag = true; 
+            }
+          }
+        }
+      }
+      while (false);
 
-		try {
+      if (result == false) {
+        cleanUp(true, reqNotifyFlag, reqDeleteFlag, reqUpdateNodeStateFlag);
+      }
+    } 
 
-			DhcpController dhcpController = DhcpController.getInstance();
-			dhcpController.stop(true);
-			dhcpOkFlag = true;
+    logger.trace(CommonDefinitions.END);
+    return result;
+  }
 
-			SyslogController syslogController = SyslogController.getInstance();
-			syslogOkFlag = true;
+  @Override
+  public AbstractResponseMessage execute() {
+    logger.trace(CommonDefinitions.START);
 
-			requestToFc(true);
-			reqNotifyFlag = false;
+    AbstractResponseMessage response = null;
 
-			deleteNodesStartupNotification();
-			reqDeleteFlag = false;
+    boolean dhcpOkFlag = false;
+    boolean syslogOkFlag = false;
+    boolean reqNotifyFlag = true;
+    boolean reqDeleteFlag = true;
+    boolean reqUpdateNodeStateFlag = false; 
+    boolean needCleanUpFlag = true; 
 
-			response = makeSuccessResponse(RESP_OK_200, new CommonResponse());
+    try {
 
-			needCleanUpFlag = false;
+      DhcpController dhcpController = DhcpController.getInstance();
+      dhcpController.stop(true);
+      dhcpOkFlag = true;
 
-		} catch (DevctrlException e) {
-			if (dhcpOkFlag == false) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "DHCP stop was failed."), e);
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_290403);
-			} else {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Watch syslog stop was failed."), e);
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_290404);
-			}
-		} catch (RestClientException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request rest was failed."), e);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_290401);
-			reqNotifyFlag = false;
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_290402);
-			reqDeleteFlag = false;
-		} finally {
-			if (needCleanUpFlag == true) {
-				cleanUp(!syslogOkFlag, reqNotifyFlag, reqDeleteFlag);
-			}
-		}
+      SyslogController syslogController = SyslogController.getInstance();
+      syslogController.monitorStop(true); 
+      syslogOkFlag = true;
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+      deleteNodesStartupNotification();
+      reqDeleteFlag = false;
 
-	@Override
-	protected boolean checkInData() {
-		logger.trace(CommonDefinitions.START);
+      response = makeSuccessResponse(RESP_OK_200, new CommonResponse());
 
-		boolean checkResult = true;
+      needCleanUpFlag = false;
 
-		NotifyNodeStartUp notifyNodeStartUp = (NotifyNodeStartUp) getInData();
+    } catch (DevctrlException de) {
+      if (dhcpOkFlag == false) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "DHCP stop was failed."), de);
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_290403);
+      } else {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Watch syslog stop was failed."), de);
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_290404);
+      }
+      reqUpdateNodeStateFlag = true;
+      reqDeleteFlag = true;
+    } catch (DBAccessException dbae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_290402);
+      reqDeleteFlag = false;
+      reqUpdateNodeStateFlag = true;
+    } finally {
+      if (needCleanUpFlag == true) {
+        cleanUp(!syslogOkFlag, reqNotifyFlag, reqDeleteFlag, reqUpdateNodeStateFlag);
+      }
+    }
 
-		if (!getUriKeyMap().containsKey(KEY_STATUS)) {
-			checkResult = false;
-		} else {
-			String status = getUriKeyMap().get(KEY_STATUS);
-			if (!status.equals("success") && !status.equals("failed")) {
-				checkResult = false;
-			}
-		}
-		if (checkResult) {
-			try {
-				notifyNodeStartUp.check(getOperationType());
-			} catch (CheckDataException e) {
-				logger.warn("check error :", e);
-				checkResult = false;
-			}
-		}
+    nodeAdditionThread.notifyNodeBoot(bootStatus);
 
-		logger.trace(CommonDefinitions.END);
-		return checkResult;
-	}
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-	private NodesStartupNotification createNodeStartupInfo(Nodes node) {
-		logger.trace(CommonDefinitions.START);
-		logger.debug(node);
-		NodesStartupNotification nodeStartupNoticeDb = new NodesStartupNotification();
-		nodeStartupNoticeDb.setNode_id(node.getNode_id());
-		nodeStartupNoticeDb.setNode_type(node.getNode_type());
-		int notification = CommonDefinitions.RECV_NG_NOTIFICATION;
-		if (bootStatus) {
-			notification = CommonDefinitions.RECV_OK_NOTIFICATION;
-		}
-		nodeStartupNoticeDb.setNotification_reception_status(notification);
-		nodeStartupNoticeDb.setNodes(node);
-		logger.trace(CommonDefinitions.END);
-		return nodeStartupNoticeDb;
-	}
+  @Override
+  protected boolean checkInData() {
+    logger.trace(CommonDefinitions.START);
 
-	private void requestToFc(boolean executeResult) throws RestClientException {
-		logger.trace(CommonDefinitions.START);
-		logger.debug(executeResult);
+    boolean checkResult = true;
 
-		NotifyNodeStartUpToFc sendMessage = new NotifyNodeStartUpToFc();
-		String status = "";
-		if (bootStatus == false) {
-			status = BOOT_RET_FAILED;
-		} else {
-			if (executeResult == true) {
-				status = BOOT_RET_SUCCESS;
-			} else {
-				status = BOOT_RET_CANCEL;
-			}
-		}
-		sendMessage.setStatus(status);
+    NotifyNodeStartUp notifyNodeStartUp = (NotifyNodeStartUp) getInData();
 
-		HashMap<String, String> keyMap = new HashMap<String, String>();
-		keyMap.put(KEY_CLUSTER_ID, String.valueOf(clusterId));
-		keyMap.put(KEY_NODE_ID, String.valueOf(bootNodeId));
+    if (!getUriKeyMap().containsKey(KEY_STATUS)) {
+      checkResult = false;
+    } else {
+      String status = getUriKeyMap().get(KEY_STATUS);
+      if (!status.equals("success") && !status.equals("failed")) {
+        checkResult = false;
+      }
+    }
+    if (checkResult) {
+      try {
+        notifyNodeStartUp.check(getOperationType());
+      } catch (CheckDataException cde) {
+        logger.warn("check error :", cde);
+        checkResult = false;
+      }
+    }
 
-		int requestType = CommonDefinitions.NOT_SET;
-		if (bootNodeType == CommonDefinitions.NODE_TYPE_LEAF) {
-			requestType = RestClient.NOTIFY_LEAF_STARTUP;
-		} else {
-			requestType = RestClient.NOTIFY_SPINE_STARTUP;
-		}
+    logger.trace(CommonDefinitions.END);
+    return checkResult;
+  }
 
-		new RestClient().request(requestType, keyMap, sendMessage, CommonResponseFromFc.class);
+  /**
+   * Device Start-up Notification Information.
+   *
+   * @param node
+   *          device information
+   * @return device start-up notification information
+   */
+  private NodesStartupNotification createNodeStartupInfo(Nodes node) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug(node);
+    NodesStartupNotification nodeStartupNoticeDb = new NodesStartupNotification();
+    nodeStartupNoticeDb.setNode_id(node.getNode_id());
+    int notification = CommonDefinitions.RECV_NG_NOTIFICATION;
+    if (bootStatus) {
+      notification = CommonDefinitions.RECV_OK_NOTIFICATION;
+    }
+    nodeStartupNoticeDb.setNotification_reception_status(notification);
+    logger.trace(CommonDefinitions.END);
+    return nodeStartupNoticeDb;
+  }
 
-		logger.trace(CommonDefinitions.END);
-	}
+  /**
+   * REST request to FC (Device Extention Completion Notification).
+   *
+   * @param executeResult
+   *          process result FC notification status
+   * @return  FC notification
+   * @throws RestClientException
+   *           REST request failure
+   */
+  private String requestToFc(boolean executeResult) throws RestClientException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug(executeResult);
 
-	private void cleanUp(boolean reqDhcpSyslogFlag, boolean reqNotifyFlag, boolean reqDeleteFlag) {
-		logger.trace(CommonDefinitions.START);
-		logger.debug("reqDhcpSyslogFlag:" + reqDhcpSyslogFlag + " reqNotifyFlag:" + reqNotifyFlag + " reqDeleteFlag:" + reqDeleteFlag);
+    NotifyNodeStartUpToFc sendMessage = new NotifyNodeStartUpToFc();
+    String status = "";
+    if (bootStatus == false) {
+      status = BOOT_RET_FAILED;
+    } else {
+      if (executeResult == true) {
+        status = BOOT_RET_SUCCESS; 
+      } else {
+        status = BOOT_RET_CANCEL;
+      }
+    }
+    sendMessage.setStatus(status);
+    if (nodeAdditionThread != null) {
+      sendMessage.setNodeInfo(nodeAdditionThread.getAddNodeInfo());
+    } else {
+      logger.debug("Not found data. [FC received data]");
+      throw new RestClientException(RestClientException.COMMON_NG);
+    }
 
-		try {
-			if (reqDhcpSyslogFlag) {
-				DevctrlCommon.cleanUp();
-			}
+    HashMap<String, String> keyMap = new HashMap<String, String>();
+    if (!bootNodeId.isEmpty()) {
+      keyMap.put(KEY_NODE_ID, String.valueOf(bootNodeId));
+    } else {
+      logger.debug("Not found data. [NodeID]");
+      throw new RestClientException(RestClientException.COMMON_NG);
+    }
 
-			if (reqNotifyFlag) {
-				requestToFc(false);
-			}
+    new RestClient().request(RestClient.NOTIFY_NODE_ADDITION, keyMap, sendMessage, CommonResponseFromFc.class);
 
-			if (reqDeleteFlag) {
-				deleteNodesStartupNotification();
-			}
+    logger.trace(CommonDefinitions.END);
+    return status;
+  }
 
-		} catch (RestClientException | DBAccessException e) {
-			logger.debug("cleanUp error : ", e);
-		}
-		logger.trace(CommonDefinitions.END);
-	}
+  /**
+   * Do the followings as cleanup. - Terminating DHCP and syslog monitoring, - Error notification to FC, - Device start-up notification information deletion, - Device status update
+   *
+   * @param reqDhcpSyslogFlag
+   *          DHCP termination and Syslog monitoring are necessary
+   * @param reqNotifyFlag
+   *          FC notification is necessary
+   * @param reqDeleteFlag
+   *          DB deletion is necessary
+   * @param reqUpdateStatusFlag
+   *          device status update is necessary
+   */
+  private void cleanUp(boolean reqDhcpSyslogFlag, boolean reqNotifyFlag, boolean reqDeleteFlag,
+      boolean reqUpdateStatusFlag) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("reqDhcpSyslogFlag:" + reqDhcpSyslogFlag + " reqNotifyFlag:" + reqNotifyFlag + " reqDeleteFlag:"
+        + reqDeleteFlag + " reqUpdateStatusFlag:" + reqUpdateStatusFlag);
 
-	private void deleteNodesStartupNotification() throws DBAccessException {
-		logger.trace(CommonDefinitions.START);
+    String msgToFc = "";
 
-		try (DBAccessManager session = new DBAccessManager()) {
-			session.startTransaction();
-			session.deleteNodesStartupNotification(bootNodeType, bootNodeId);
-			session.commit();
-		} catch (DBAccessException e) {
-			if (e.getCode() == DBAccessException.NO_DELETE_TARGET) {
-				logger.debug("Not found record. node_type:" + bootNodeType + "node_id:" + bootNodeId);
-			} else {
-				throw e;
-			}
-		}
-		logger.trace(CommonDefinitions.END);
-	}
+    try {
+      if (reqDhcpSyslogFlag) {
+        DevctrlCommon.cleanUp();
+      }
 
-	private ECMainState getEcMainState() {
-		logger.trace(CommonDefinitions.START);
-		ECMainState status = null;
+      if (reqNotifyFlag) {
+        msgToFc = requestToFc(false);
+      }
 
-		try {
-			status = OperationControlManager.getInstance().getEcMainState(false);
-		} catch (DBAccessException e) {
-			logger.debug("Internal Error.", e);
-			status = ECMainState.Stop;
-		}
-		logger.trace(CommonDefinitions.END);
-		return status;
-	}
+      if (reqDeleteFlag) {
+        deleteNodesStartupNotification();
+      }
 
-	private void waitNodeStateNotificationSending() {
-		logger.trace(CommonDefinitions.START);
-		while (OperationControlManager.getInstance().isUnsentNodeStateNotificationSendingState()) {
-			CommonUtil.sleep();
-		}
-		logger.trace(CommonDefinitions.END);
-		return;
-	}
+      if (reqUpdateStatusFlag) {
+        updateNodeStatus();
+      }
+
+      if (!msgToFc.isEmpty() && !msgToFc.equals(BOOT_RET_SUCCESS)) {
+        OperationControlManager.getInstance().rollbackAddedNodeInfo(bootNodeId);
+      }
+    } catch (RestClientException | DBAccessException | AddNodeException exp) {
+      logger.debug("cleanUp error : ", exp);
+    }
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Device Status Update.
+   * @throws AddNodeException device status update failure
+   */
+  private void updateNodeStatus() throws AddNodeException {
+    logger.trace(CommonDefinitions.START);
+    NodeAdditionState state = null;
+    if (bootStatus == false) {
+      state = NodeAdditionState.FailedInfraSetting;
+    } else {
+      state = NodeAdditionState.Failed;
+    }
+    boolean ret = OperationControlManager.getInstance().updateNodeAdditionState(state, bootNodeId);
+    if (ret == false) {
+      logger.debug("updateNodeAdditinState error.");
+      throw new AddNodeException();
+    }
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Device Start-up Notification Information Deletion.
+   *
+   * @throws DBAccessException
+   *           DB exception occurrence
+   */
+  private void deleteNodesStartupNotification() throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+
+    try (DBAccessManager session = new DBAccessManager()) {
+      session.startTransaction();
+      session.deleteNodesStartupNotification(bootNodeId);
+      session.commit();
+    } catch (DBAccessException dbae) {
+      if (dbae.getCode() == DBAccessException.NO_DELETE_TARGET) {
+        logger.debug("Not found record. node_id:" + bootNodeId);
+      } else {
+        throw dbae;
+      }
+    }
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * EC Main Status Acquisition.
+   *
+   * @return EC main status
+   */
+  private ECMainState getEcMainState() {
+    logger.trace(CommonDefinitions.START);
+    ECMainState status = null;
+
+    try {
+      status = OperationControlManager.getInstance().getEcMainState(false);
+    } catch (DBAccessException dbae) {
+      logger.debug("Internal Error.", dbae);
+      status = ECMainState.Stop;
+    }
+    logger.trace(CommonDefinitions.END);
+    return status;
+  }
+
+  /**
+   * Waiting for Unsent Device Start-up Notification Sending Status.
+   */
+  private void waitNodeStateNotificationSending() {
+    logger.trace(CommonDefinitions.START);
+    while (OperationControlManager.getInstance().isUnsentNodeStateNotificationSendingState()) {
+      CommonUtil.sleep();
+    }
+    logger.trace(CommonDefinitions.END);
+    return;
+  }
 }

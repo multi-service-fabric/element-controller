@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.fcctrl;
 
 import static msf.ecmm.common.CommonDefinitions.*;
@@ -19,6 +23,7 @@ import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.fcctrl.pojo.AbstractRequest;
 import msf.ecmm.fcctrl.pojo.AbstractResponse;
 import msf.ecmm.fcctrl.pojo.CommonResponseFromFc;
+import msf.ecmm.ope.control.RestRequestCount;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,228 +35,371 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+/**
+ * REST Client.
+ */
 public class RestClient {
 
-	protected static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  /**
+   * Logger.
+   */
+  protected static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-	public static final int NOTIFY_LEAF_STARTUP = 1;
-	private static final String PROTOCOL = "http";
+  /** Process Execution Request. */
+  public static final int OPERATION = 0;
+  /** Etxention Completion Notification. */
+  public static final int NOTIFY_NODE_ADDITION = 1;
 
-	private static final int PUT = 1;
+  /** Controler Status Notification. */
+  public static final int CONTROLLER_STATE_NOTIFICATION = 2;
 
-	private static final String NEED_RETRY = "000001";
+  /** Protocol. */
+  private static final String PROTOCOL = "http";
 
-	protected static Gson jsonParser = new GsonBuilder()
-			.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-			.create();
+  /** POST Method. */
+  protected static final int POST = 0;
+  /** PUT Method. */
+  protected static final int PUT = 1;
+  /** GET Method. */
+  protected static final int GET = 2;
 
-	public AbstractResponse request(int requestType, HashMap<String, String> keyMap,
-			AbstractRequest requestData, Class<? extends AbstractResponse> responseType) throws RestClientException {
 
-		logger.trace(CommonDefinitions.START);
-		logger.debug("requestType:" + requestType);
+  protected static final String NEED_RETRY = "000001";
 
-		EcConfiguration config = EcConfiguration.getInstance();
+  /**
+   * Key String for Acquiring Config Port Number
+   * @return key
+   */
+  protected String getPortKey(){
+    return EcConfiguration.FC_PORT ;
+  }
 
-		ClientConfig clientConfig = new ClientConfig();
-		clientConfig.property(ClientProperties.READ_TIMEOUT, timeout*1000);
+  /**
+   * Key String for Acquiring Config Address Number
+   * @return key
+   */
+  protected String getAddressKey(){
+    return EcConfiguration.FC_ADDRESS ;
+  }
 
-		checkKeyMap(requestType, keyMap);
+  protected Response doPost(ClientConfig clientConfig, String url ,String uri ,String jsonImage){
+    return ClientBuilder.newClient(clientConfig).target(url).path(uri)
+        .request(MediaType.APPLICATION_JSON)
+              .post(Entity.entity(jsonImage, MediaType.APPLICATION_JSON));
+  }
 
-		String jsonImage = "";
-		if (requestData != null) {
-		}
-		logger.debug("sendData:" + jsonImage);
+  protected Response doPut(ClientConfig clientConfig, String url ,String uri ,String jsonImage){
+    return ClientBuilder.newClient(clientConfig).target(url).path(uri).
+        request(MediaType.APPLICATION_JSON)
+              .put(Entity.entity(jsonImage, MediaType.APPLICATION_JSON));
+  }
 
-		int lastErrorReason = RestClientException.NOT_SET;
-		Response response;
-		String responseBody = "";
+  protected Response doGet(ClientConfig clientConfig, String url ,String uri ,String jsonImage,
+      HashMap<String, String> keyMap){
+    throw new ProcessingException("GET method not support.");
+  }
 
-		for (int retryCount = 0; retryCount <= retryNum; retryCount++) {
-			lastErrorReason = RestClientException.NOT_SET;
-			try {
-				if (method == POST) {
-					response  = ClientBuilder.newClient(clientConfig)
-							.target(url).path(uri)
-							.request(MediaType.APPLICATION_JSON)
-							.post(Entity.entity(jsonImage, MediaType.APPLICATION_JSON));
-				} else {
-					response = ClientBuilder.newClient(clientConfig)
-							.target(url).path(uri)
-							.request(MediaType.APPLICATION_JSON)
-							.put(Entity.entity(jsonImage, MediaType.APPLICATION_JSON));
-				}
+  /**
+   * json Parser.
+   */
+  protected static Gson jsonParser = new GsonBuilder()
+      .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
-				if (isSuccess(response)) {
-					logger.debug("Recv OK");
-				} else {
-					logger.debug("Recv NG");
-					logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, getStatus(response)));
-					lastErrorReason = RestClientException.ERROR_RESPONSE;
-					if (needRetry(requestType, responseBody)) {
-						logger.debug("retry");
-						continue;
-					}
-					logger.debug("do not retry");
-					break;
-				}
+  /**
+   * REST Request
+   *
+   * @param requestType
+   *          Request Type
+   * @param keyMap
+   *          URI Key Map
+   * @param requestData
+   *          Request Data (request body configuration data) - set null when there is no body
+   * @param responseType
+   *          Response POJO Type (set CommonResponse.class when it is not any acquiring requests)
+   * @return Response POJO
+   * @throws RestClientException
+   *           REST Request Failure Exception - failing factor can be acquired with getCode()
+   */
+  public AbstractResponse request(int requestType, HashMap<String, String> keyMap,
+      AbstractRequest requestData,
+      Class<? extends AbstractResponse> responseType) throws RestClientException {
 
-			} catch (ProcessingException e) {
-				logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, "-"), e);
-				if (e.getCause() instanceof ConnectException) {
-					lastErrorReason = RestClientException.CONNECT_NG;
-					logger.debug("retry");
-					continue;
-				}
-				if (e.getCause() instanceof SocketTimeoutException) {
-					lastErrorReason = RestClientException.TIMEOUT;
-					break;
-				}
-				lastErrorReason = RestClientException.COMMON_NG;
-				break;
-			} catch (Exception e) {
-				logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, "-"), e);
-				lastErrorReason = RestClientException.COMMON_NG;
-				break;
-			}
-		}
+    logger.trace(CommonDefinitions.START);
+    logger.debug("requestType:" + requestType);
 
-		AbstractResponse returnResponse;
-		if (lastErrorReason == RestClientException.NOT_SET) {
-			try {
-				returnResponse = jsonParser.fromJson(responseBody, responseType);
-			} catch (JsonSyntaxException e) {
-				logger.debug("Notify to FC NG. format error.");
-				throw new RestClientException(RestClientException.JSON_FORMAT_NG);
-			}
-			logger.debug("Notify to FC OK. data:" + responseBody);
-		} else {
-			logger.debug("Notify to FC NG.");
-			throw new RestClientException(lastErrorReason);
-		}
+    EcConfiguration config = EcConfiguration.getInstance();
+    int retryNum = config.get(Integer.class, EcConfiguration.REST_RETRY_NUM); 
+    int timeout = config.get(Integer.class, EcConfiguration.REST_TIMEOUT); 
+    String fcIpaddr = config.get(String.class, getAddressKey()); 
+    String fcPort = config.get(String.class, getPortKey()); 
 
-		logger.trace(CommonDefinitions.END);
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.property(ClientProperties.READ_TIMEOUT, timeout * 1000);
 
-		return returnResponse;
-	}
+    checkKeyMap(requestType, keyMap);
 
-	private void checkKeyMap(int requestType, HashMap<String, String> keyMap) throws RestClientException {
+    String url = createUrl(fcIpaddr, fcPort); 
+    String uri = createUri(requestType, keyMap); 
+    String jsonImage = "";
+    if (requestData != null) {
+      jsonImage = jsonParser.toJson(requestData); 
+    }
+    logger.debug("sendData:" + jsonImage);
+    int method = getMethod(requestType); 
 
-		logger.trace(CommonDefinitions.START);
+    int lastErrorReason = RestClientException.NOT_SET;
+    Response response;
+    String responseBody = "";
 
-		switch (requestType) {
-		case OPERATION:
-			break;
-		case NOTIFY_LEAF_STARTUP:
-		case NOTIFY_SPINE_STARTUP:
-			if (!keyMap.containsKey(KEY_CLUSTER_ID) || !keyMap.containsKey(KEY_NODE_ID)) {
-				logger.debug("Not found key");
-				throw new RestClientException(RestClientException.COMMON_NG);
-			}
-			break;
-		default:
-			logger.debug("Unknown requestType type:" + requestType);
-			throw new RestClientException(RestClientException.COMMON_NG);
-		}
+    for (int retryCount = 0; retryCount <= retryNum; retryCount++) {
+      lastErrorReason = RestClientException.NOT_SET;
+      try {
+        if (method == POST) {
+          response = doPost(clientConfig, url ,uri ,jsonImage);
+        } else if (method == PUT) {
+          response = doPut(clientConfig, url ,uri ,jsonImage);
+        } else {
+          response = doGet(clientConfig, url ,uri ,jsonImage,keyMap);
+        }
+        responseBody = response.readEntity(String.class); 
 
-		logger.trace(CommonDefinitions.END);
-	}
+        if (isSuccess(response)) {
+          logger.debug("Recv OK");
+          break; 
+        } else {
+          logger.debug("Recv NG");
+          logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, getStatus(response)));
+          lastErrorReason = RestClientException.ERROR_RESPONSE;
+          if (needRetry(requestType, responseBody)) {
+            logger.debug("retry");
+            continue;
+          }
+          logger.debug("do not retry");
+          break;
+        }
 
-	private String createUrl(String fcIpaddr, String fcPort) {
-		return url;
-	}
+      } catch (ProcessingException pe) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, "-"), pe);
+        if (pe.getCause() instanceof ConnectException) {
+          lastErrorReason = RestClientException.CONNECT_NG;
+          logger.debug("retry");
+          continue;
+        }
+        if (pe.getCause() instanceof SocketTimeoutException) {
+          lastErrorReason = RestClientException.TIMEOUT;
+          break;
+        }
+        lastErrorReason = RestClientException.COMMON_NG;
+        break;
+      } catch (Exception exp) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, "-"), exp);
+        lastErrorReason = RestClientException.COMMON_NG;
+        break;
+      }
+    }
 
-	private String createUri(int requestType, HashMap<String, String> keyMap) throws RestClientException {
+    AbstractResponse returnResponse;
+    if (lastErrorReason == RestClientException.NOT_SET) {
+      RestRequestCount.requestcount(RestRequestCount.REST_TRANSMISSION);
+      try {
+        returnResponse = jsonParser.fromJson(responseBody, responseType);
+      } catch (JsonSyntaxException jse) {
+        logger.debug("Notify to FC/EM NG. format error.", jse);
+        throw new RestClientException(RestClientException.JSON_FORMAT_NG);
+      }
+      logger.debug("Notify to FC/EM OK. data:" + responseBody);
+    } else {
+      logger.debug("Notify to FC/EM NG.");
+      throw new RestClientException(lastErrorReason);
+    }
 
-		logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.END);
 
-		String uri = "";
-		switch (requestType) {
-		case OPERATION:
-			uri = "/v1/internal/FabricController/operations";
-			break;
-		case NOTIFY_LEAF_STARTUP:
-			uri = "/v1/internal/clusters/" + keyMap.get(KEY_CLUSTER_ID) + "/nodes/leafs/" + keyMap.get(KEY_NODE_ID);
-			break;
-		case NOTIFY_SPINE_STARTUP:
-			uri = "/v1/internal/clusters/" + keyMap.get(KEY_CLUSTER_ID) + "/nodes/spines/" + keyMap.get(KEY_NODE_ID);
-			break;
-		default:
-			logger.debug("Unknown requestType type:" + requestType);
-			throw new RestClientException(RestClientException.COMMON_NG);
-		}
+    return returnResponse;
+  }
 
-		logger.trace(CommonDefinitions.END);
+  /**
+   * URI Key Check.
+   *
+   * @param requestType
+   *          request type
+   * @param keyMap
+   *          URI key map
+   * @throws RestClientException
+   *           request type invalid, no required key
+   */
+  protected void checkKeyMap(int requestType, HashMap<String, String> keyMap)
+      throws RestClientException {
 
-		return uri;
-	}
+    logger.trace(CommonDefinitions.START);
 
-	private int getMethod(int requestType) throws RestClientException {
+    switch (requestType) {
+      case OPERATION:
+      case CONTROLLER_STATE_NOTIFICATION:
+        break;
+      case NOTIFY_NODE_ADDITION:
+        if (!keyMap.containsKey(KEY_NODE_ID)) {
+          logger.debug("Not found key");
+          throw new RestClientException(RestClientException.COMMON_NG);
+        }
+        break;
+      default:
+        logger.debug("Unknown requestType type:" + requestType);
+        throw new RestClientException(RestClientException.COMMON_NG);
+    }
 
-		logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.END);
+  }
 
-		int method = 0;
+  /**
+   * Generating URL (excl. path part).
+   *
+   * @param fcIpaddr
+   *          FC IP address
+   * @param fcPort
+   *          FC port number
+   * @return URL (excl. path)
+   */
+  private String createUrl(String fcIpaddr, String fcPort) {
+    String url = PROTOCOL + "://" + fcIpaddr + ":" + fcPort;
+    return url;
+  }
 
-		switch (requestType) {
-		case OPERATION:
-			method = POST;
-			break;
-		case NOTIFY_LEAF_STARTUP:
-		case NOTIFY_SPINE_STARTUP:
-			method = PUT;
-			break;
-		default:
-			logger.debug("Unknown requestType type:" + requestType);
-			throw new RestClientException(RestClientException.COMMON_NG);
-		}
+  /**
+   * Generating URI (path).
+   *
+   * @param requestType
+   *          request type
+   * @param keyMap
+   *          URI key map
+   * @return URI (path)
+   * @throws RestClientException
+   *           request type invalid, no required key
+   */
+  protected String createUri(int requestType, HashMap<String, String> keyMap)
+      throws RestClientException {
 
-		logger.trace(CommonDefinitions.END);
+    logger.trace(CommonDefinitions.START);
 
-		return method;
-	}
+    String uri = "";
+    switch (requestType) {
+      case OPERATION:
+        uri = "/v1/internal/FabricController/operations";
+        break;
+      case NOTIFY_NODE_ADDITION:
+        uri = "/v1/internal/nodes/" + keyMap.get(KEY_NODE_ID);
+        break;
+      case CONTROLLER_STATE_NOTIFICATION:
+        uri = "/v1/internal/controller/ec_em/status";
+        break;
+      default:
+        logger.debug("Unknown requestType type:" + requestType);
+        throw new RestClientException(RestClientException.COMMON_NG);
+    }
 
-	protected boolean isSuccess(Response response) {
-		logger.trace(CommonDefinitions.START);
-		boolean ret = false;
-		int respCode = response.getStatus();
-		switch (respCode) {
-		case RESP_OK_200:
-		case RESP_CREATED_201:
-		case RESP_ACCEPTED_202:
-		case RESP_NOCONTENTS_204:
-			ret = true;
-			break;
-		default:
-			ret = false;
-			break;
-		}
-		logger.trace(CommonDefinitions.END);
-		return ret;
-	}
+    logger.trace(CommonDefinitions.END);
 
-	private String getStatus(Response response) {
-		logger.trace(CommonDefinitions.START);
-		String responseInfo = "";
-		if (response != null) {
-			responseInfo = response.getStatus() + " " + response.getStatusInfo();
-		}
-		logger.trace(CommonDefinitions.END);
-		return responseInfo;
-	}
+    return uri;
+  }
 
-	private boolean needRetry(int requestType, String responseBody) {
-		logger.trace(CommonDefinitions.START);
-		boolean retry = false;
-		if (requestType == NOTIFY_LEAF_STARTUP || requestType == NOTIFY_SPINE_STARTUP) {
-			try {
-				CommonResponseFromFc resp = jsonParser.fromJson(responseBody, CommonResponseFromFc.class);
-				if (resp.getErrorCode().equals(NEED_RETRY)) {
-					retry = true;
-				}
-			} catch (Exception e) {
-			}
-		}
-		logger.trace(CommonDefinitions.END);
-		return retry;
-	}
+  /**
+   * Getting method.
+   *
+   * @param requestType
+   *          request type
+   * @return method type
+   * @throws RestClientException
+   *           request type invalid
+   */
+  protected int getMethod(int requestType) throws RestClientException {
+
+    logger.trace(CommonDefinitions.START);
+
+    int method = 0;
+
+    switch (requestType) {
+      case OPERATION:
+        method = POST;
+        break;
+      case NOTIFY_NODE_ADDITION:
+      case CONTROLLER_STATE_NOTIFICATION:
+        method = PUT;
+        break;
+      default:
+        logger.debug("Unknown requestType type:" + requestType);
+        throw new RestClientException(RestClientException.COMMON_NG);
+    }
+
+    logger.trace(CommonDefinitions.END);
+
+    return method;
+  }
+
+  /**
+   * Response Determination.
+   *
+   * @param response
+   *          response from FC
+   * @return true: request execution success - false: failed
+   */
+  protected boolean isSuccess(Response response) {
+    logger.trace(CommonDefinitions.START);
+    boolean ret = false;
+    int respCode = response.getStatus();
+    switch (respCode) {
+      case RESP_OK_200:
+      case RESP_CREATED_201:
+      case RESP_ACCEPTED_202:
+      case RESP_NOCONTENTS_204:
+        ret = true;
+        break;
+      default:
+        ret = false;
+        break;
+    }
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * Getting response information.
+   *
+   * @param response
+   *          response
+   * @return response information
+   */
+  private String getStatus(Response response) {
+    logger.trace(CommonDefinitions.START);
+    String responseInfo = "";
+    if (response != null) {
+      responseInfo = response.getStatus() + " " + response.getStatusInfo();
+    }
+    logger.trace(CommonDefinitions.END);
+    return responseInfo;
+  }
+
+  /**
+   * retry Requirement Determination.
+   *
+   * @param requestType
+   *          request type
+   * @param responseBody
+   *          body of FC response
+   * @return true: required, false: optional
+   */
+  protected boolean needRetry(int requestType, String responseBody) {
+    logger.trace(CommonDefinitions.START);
+    boolean retry = false;
+
+    try {
+      CommonResponseFromFc resp = jsonParser.fromJson(responseBody, CommonResponseFromFc.class);
+      if (resp.getErrorCode().equals(NEED_RETRY)) {
+        retry = true;
+      }
+    } catch (Exception exp) {
+      retry = false; 
+    }
+    logger.trace(CommonDefinitions.END);
+    return retry;
+  }
 }

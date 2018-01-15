@@ -1,37 +1,79 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo.parts;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
+/**
+ * Spin Extention-SNMP Configuration Information Class
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Snmp {
 
-	private String community = null;
+  /** IPv4 Address of SNMP Server */
+  @XmlElement(name = "server-address")
+  private String serverAdddress = null;
 
-	public Snmp() {
-		super();
-	}
+  /** SNMP Community Name */
+  private String community = null;
 
-	public String getServerAdddress() {
-		return serverAdddress;
-	}
+  /**
+   * Generating new instance.
+   */
+  public Snmp() {
+    super();
+  }
 
-	public void setServerAdddress(String serverAdddress) {
-		this.serverAdddress = serverAdddress;
-	}
+  /**
+   * Getting IPv4 address of SNMP server.
+   *
+   * @return IPv4 address of SNMP server
+   */
+  public String getServerAdddress() {
+    return serverAdddress;
+  }
 
-	public String getCommunity() {
-		return community;
-	}
+  /**
+   * Setting IPv4 address of SNMP server.
+   *
+   * @param serverAdddress
+   *          IPv4 address of SNMP server
+   */
+  public void setServerAdddress(String serverAdddress) {
+    this.serverAdddress = serverAdddress;
+  }
 
-	public void setCommunity(String community) {
-		this.community = community;
-	}
+  /**
+   * Getting SNMP community name.
+   *
+   * @return SNMP community name
+   */
+  public String getCommunity() {
+    return community;
+  }
 
-	@Override
-	public String toString() {
-		return "Snmp [serverAdddress=" + serverAdddress + ", community=" + community + "]";
-	}
+  /**
+   * Setting SNMP community name.
+   *
+   * @param community
+   *          SNMP community name
+   */
+  public void setCommunity(String community) {
+    this.community = community;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "Snmp [serverAdddress=" + serverAdddress + ", community=" + community + "]";
+  }
 
 }

@@ -1,0 +1,39 @@
+#
+# DHCP Server Configuration file.
+#   see /usr/share/doc/dhcp*/dhcpd.conf.example
+#   see dhcpd.conf(5) man page
+#
+
+# DHCP server general settings
+subnet $$MANAGEMENTNETWORKADDRESS$$ netmask $$MANAGEMENTSUBNETMASK$$ {
+  range $$MANAGEMENTRANGESTART$$ $$MANAGEMENTRANGEEND$$;
+  option subnet-mask $$MANAGEMENTSUBNETMASK$$;
+  default-lease-time 600;
+  deny unknown-clients;
+  max-lease-time 7200;
+}
+
+# For QFX zero touch provisioning
+option space QFX;
+option QFX.config-file-name code 1 = text;
+option QFX.image-file-type code 2 = text;
+option QFX.transfer-mode code 3 = text;
+option QFX.alt-image-file-name code 4 = text;
+option QFX-encapsulation code 43 = encapsulate QFX;
+
+
+##########
+# host
+##########
+
+# QFX5200
+host QFX5200 {
+  hardware ethernet $$MACADDRESS$$;
+  fixed-address $$MANAGEMENTADDRESS$$;
+  next-server $$TFTPHOSTNAME$$;
+  option tftp-server-name "$$TFTPHOSTNAME$$";
+  option QFX.alt-image-file-name "/junos-conf/jinstall-qfx-5e-flex-15.1X53-D30.5-domestic-signed.tgz";
+  option QFX.transfer-mode "http";
+  option QFX.config-file-name "$$INITIALCONFIG$$";
+}
+

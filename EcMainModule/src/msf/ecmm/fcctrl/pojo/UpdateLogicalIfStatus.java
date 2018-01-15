@@ -1,41 +1,71 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.fcctrl.pojo;
 
 import java.util.ArrayList;
 
+import msf.ecmm.fcctrl.pojo.parts.IfsLogical;
 import msf.ecmm.fcctrl.pojo.parts.NodeLogical;
-import msf.ecmm.fcctrl.pojo.parts.Slice;
 
+/**
+ * Logical IF Status Update.
+ */
 public class UpdateLogicalIfStatus extends AbstractRequest {
 
-	private ArrayList<NodeLogical> nodes = new ArrayList<NodeLogical>();
+  /** Device Information List. */
+  private ArrayList<NodeLogical> nodes = new ArrayList<NodeLogical>();
 
-	public String getClusterId() {
-		return clusterId;
-	}
+  /** IF Information List. */
+  private ArrayList<IfsLogical> ifs = new ArrayList<IfsLogical>();
 
-	public void setClusterId(String clusterId) {
-		this.clusterId = clusterId;
-	}
+  /**
+   * Getting device information list.
+   *
+   * @return device information list
+   */
+  public ArrayList<NodeLogical> getNodes() {
+    return nodes;
+  }
 
-	public ArrayList<NodeLogical> getNodes() {
-		return nodes;
-	}
+  /**
+   * Setting device information list.
+   *
+   * @param nodes
+   *          device information list
+   */
+  public void setNodes(ArrayList<NodeLogical> nodes) {
+    this.nodes = nodes;
+  }
 
-	public void setNodes(ArrayList<NodeLogical> nodes) {
-		this.nodes = nodes;
-	}
+  /**
+   * Getting IF information list.
+   *
+   * @return ifs
+   */
+  public ArrayList<IfsLogical> getIfs() {
+    return ifs;
+  }
 
-	public Slice getSlices() {
-		return slices;
-	}
+  /**
+   * Setting IF information list.
+   *
+   * @param ifs
+   *          set ifs
+   */
+  public void setIfs(ArrayList<IfsLogical> ifs) {
+    this.ifs = ifs;
+  }
 
-	public void setSlices(Slice slices) {
-		this.slices = slices;
-	}
-
-	@Override
-	public String toString() {
-		return "UpdateLogicalIfStatus [clusterId=" + clusterId + ", nodes=" + nodes + ", slices=" + slices + "]";
-	}
+  /**
+   * Stiringizing Instance.
+   *
+   * @return Instance string
+   */
+  @Override
+  public String toString() {
+    return "UpdateLogicalIfStatus [nodes=" + nodes + ", ifs=" + ifs + "]";
+  }
 
 }

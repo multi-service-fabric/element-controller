@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+    <!-- BGP Option Information Class -->
+
+<hibernate-mapping >
+        <class name="msf.ecmm.db.pojo.BGPOptions" table="bgp_option" lazy="true">
+            <id name="bgp_id" type="text">
+                <column name="bgp_id" sql-type="TEXT" not-null="true" />
+                <generator class="assigned" />
+            </id>
+            <property name="bgp_role" type="int" />
+            <property name="bgp_neighbor_as" type="int"/>
+            <property name="bgp_neighbor_ipv4_address" type="string"/>
+            <property name="bgp_neighbor_ipv6_address" type="string"/>
+            <property name="node_id" type="text"/>
+            <property name="vlan_if_id" type="text"/>
+        </class>
+        <query name="selectBGPOptions">
+            <![CDATA[
+                from msf.ecmm.db.pojo.BGPOptions as bgp_option where bgp_id = :key1
+             ]]>
+        </query>
+        <query name="selectBGPOptionsByVlanIfId">
+            <![CDATA[
+                from msf.ecmm.db.pojo.BGPOptions as bgp_option where node_id = :key1 and vlan_if_id = :key2
+             ]]>
+        </query>
+        <query name="deleteBGPOptions">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.BGPOptions as bgp_option where bgp_id = :key1
+             ]]>
+        </query>
+        <query name="deleteBGPOptionsByVlanIfId">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.BGPOptions as bgp_option where node_id = :key1 and vlan_if_id = :key2
+             ]]>
+        </query>
+</hibernate-mapping>

@@ -1,120 +1,306 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.device;
 
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
-import msf.ecmm.config.EcConfiguration;
+import msf.ecmm.convert.DbMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.BootErrorMessages;
+import msf.ecmm.db.pojo.EquipmentIfs;
 import msf.ecmm.db.pojo.Equipments;
 import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.devctrl.DevctrlCommon;
 import msf.ecmm.devctrl.DevctrlException;
 import msf.ecmm.devctrl.DhcpController;
+import msf.ecmm.devctrl.SyslogController;
 import msf.ecmm.devctrl.pojo.DhcpInfo;
+import msf.ecmm.ope.control.OperationControlManager;
 import msf.ecmm.ope.execute.Operation;
+import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
+import msf.ecmm.ope.receiver.pojo.AddNode;
+import msf.ecmm.ope.receiver.pojo.CheckDataException;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
+import msf.ecmm.ope.receiver.pojo.parts.BreakoutBaseIf;
+import msf.ecmm.ope.receiver.pojo.parts.CreateNode;
+import msf.ecmm.ope.receiver.pojo.parts.InterfaceInfo;
+import msf.ecmm.ope.receiver.pojo.parts.InternalLinkInfo;
+import msf.ecmm.ope.receiver.pojo.parts.UnusePhysicalIf;
 
-public abstract class NodeInfoRegistration extends Operation {
+/**
+ * Extention Information Registration.
+ */
+public class NodeInfoRegistration extends Operation {
 
-	public NodeInfoRegistration(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-	}
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_080101 = "080101";
+  /** In case the number of pieces of information of device extention/removal is zero (data acquisition from DBs is failed in the previous step of process). */
+  private static final String ERROR_CODE_080102 = "080102";
+  /** Detected unexpected unused physical IF ID or physical IF ID which is not registered in the model information. */
+  private static final String ERROR_CODE_080104 = "080104";
+  /** In case the device information to be registered already exists (incl. duplication of management IF address). */
+  private static final String ERROR_CODE_080304 = "080304";
+  /** DHCP start-up failed. */
+  private static final String ERROR_CODE_080411 = "080411";
+  /** Syslog monitoring start-up failed. */
+  private static final String ERROR_CODE_080412 = "080412";
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_080413 = "080413";
 
-	@Override
-	public AbstractResponseMessage execute() {
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public NodeInfoRegistration(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.NodeInfoRegistration);
+  }
 
-		AbstractResponseMessage response = null;
+  @Override
+  public AbstractResponseMessage execute() {
+    logger.trace(CommonDefinitions.START);
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, getInputDataErrorCode());
-		}
+    AbstractResponseMessage response = null;
 
-		boolean dhcpOkFlag = false;
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080101);
+    }
+    AddNode addNode = (AddNode) getInData();
 
-		try (DBAccessManager session = new DBAccessManager()) {
+    boolean dhcpOkFlag = false;
+    boolean needCleanUpFlag = true; 
 
-			DhcpInfo dhcpInfo = createDhcpInfo();
-			DhcpController dhcpController = DhcpController.getInstance();
-			dhcpController.start(dhcpInfo);
-			dhcpOkFlag = true;
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			startSyslogWatch();
+      Equipments equipments = session.searchEquipments(addNode.getEquipment().getEquipmentTypeId());
+      if (equipments == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Equipments]"));
+        return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080102);
+      }
 
-			int clusterId = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.CLUSTER_ID);
+      if (checkPhysicalIfIdUnuse(equipments) == false) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Found unused physical IF ID"));
+        return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080104);
+      }
 
-			Equipments equipments = session.searchEquipments(getEquipmentTypeId());
-			if (equipments == null) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Equipments]"));
-				return makeFailedResponse(RESP_BADREQUEST_400, getNotFoundSubDataErrorCode());
-			}
+      if (addNode.getCreateNode().getProvisioning() == true) {
 
-			Nodes nodesDb = toNodeinfoCreate(clusterId, equipments);
+        DhcpInfo dhcpInfo = createDhcpInfo(equipments);
+        DhcpController.getInstance().start(dhcpInfo);
+        dhcpOkFlag = true;
 
-			session.startTransaction();
+        startSyslogWatch(equipments);
+      }
 
-			session.addNodes(nodesDb);
+      if (equipments.getRouter_type() == CommonDefinitions.ROUTER_TYPE_NORMAL) {
+        if (session.searchNodes(null, addNode.getCreateNode().getManagementInterface().getAddress()) != null) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Double registration. [management if address]"));
+          return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_080304);
+        }
+      }
 
-			session.commit();
+      Nodes nodesDb = DbMapper.toAddNode(addNode, equipments);
 
-			response = makeSuccessResponse(RESP_CREATED_201, new CommonResponse());
+      session.startTransaction();
 
-			needCleanUpFlag = false;
+      session.addNodes(nodesDb);
 
-		} catch (DevctrlException e) {
-			if (dhcpOkFlag == false) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "DHCP startup was failed."), e);
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getDhcpStartErrorCode());
-			} else {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Watch syslog was failed."),e );
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getSyslogStartErrorCode());
-			}
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			if (e.getCode() == DBAccessException.DOUBLE_REGISTRATION) {
-				response = makeFailedResponse(RESP_CONFLICT_409, getDoubleRegisterErrorCode());
-			} else {
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, getDbErrorCode());
-			}
-		} finally {
-			if (needCleanUpFlag == true) {
-				DevctrlCommon.cleanUp();
-			}
-		}
+      session.commit();
 
-		logger.trace(CommonDefinitions.END);
-		return response;
+      registerAddNodeInfo();
+
+      if (addNode.getCreateNode().getProvisioning() == false) {
+        needCleanUpFlag = false;
+        NodeAdditionThread nodeAdditionThread = OperationControlManager.getInstance().getNodeAdditionInfo();
+        nodeAdditionThread.notifyNodeBoot(true);
+      }
+
+      response = makeSuccessResponse(RESP_CREATED_201, new CommonResponse());
+
+      needCleanUpFlag = false;
+
+    } catch (DevctrlException de) {
+      if (dhcpOkFlag == false) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "DHCP startup was failed."), de);
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080411);
+      } else {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Watch syslog was failed."), de);
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080412);
+      }
+    } catch (DBAccessException dbae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
+      if (dbae.getCode() == DBAccessException.DOUBLE_REGISTRATION) {
+        response = makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_080304);
+      } else {
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080413);
+      }
+    } finally {
+      if (needCleanUpFlag == true) {
+        DevctrlCommon.cleanUp();
+      }
     }
 
-	@Override
-	protected abstract boolean checkInData();
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-	protected abstract DhcpInfo createDhcpInfo();
+  @Override
+  protected boolean checkInData() {
+    logger.trace(CommonDefinitions.START);
 
-	protected abstract void startSyslogWatch() throws DevctrlException;
+    boolean checkResult = true;
 
-	protected abstract String getEquipmentTypeId();
+    AddNode addNode = (AddNode) getInData();
+    try {
+      addNode.check(getOperationType());
+    } catch (CheckDataException cde) {
+      logger.warn("check error :", cde);
+      checkResult = false;
+    }
+    logger.trace(CommonDefinitions.END);
+    return checkResult;
+  }
 
-	protected abstract Nodes toNodeinfoCreate(int clusterId, Equipments equipments);
+  /**
+   * Unused Physical IFID Check.
+   *
+   * @param equipments
+   *          model information
+   * @return true: there is no unexpected unused, false: there are ones
+   */
+  private boolean checkPhysicalIfIdUnuse(Equipments equipments) {
+    logger.trace(CommonDefinitions.START);
 
-    protected abstract String getInputDataErrorCode();
+    boolean ret = true;
 
-    protected abstract String getDoubleRegisterErrorCode();
+    AddNode addNode = (AddNode) getInData();
 
-    protected abstract String getDhcpStartErrorCode();
+    Set<String> eqIfIds = new HashSet<>();
 
-    protected abstract String getSyslogStartErrorCode();
+    for (EquipmentIfs eqIfs : equipments.getEquipmentIfsList()) {
+      eqIfIds.add(eqIfs.getPhysical_if_id()); 
+    }
 
-    protected abstract String getDbErrorCode();
+    for (BreakoutBaseIf boIfs : addNode.getCreateNode().getIfInfo().getBreakoutBaseIfs()) {
+      if (eqIfIds.contains(boIfs.getBasePhysicalIfId()) == false) {
+        logger.debug("Not found. " + boIfs.getBasePhysicalIfId());
+        ret = false;
+      } else {
+        eqIfIds.remove(boIfs.getBasePhysicalIfId());
+      }
+    }
 
-	protected abstract String getNotFoundSubDataErrorCode();
+    for (InternalLinkInfo internalIf : addNode.getCreateNode().getIfInfo().getInternalLinkIfs()) {
+      if (internalIf.getInternalLinkIf().getIfType().equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
+        if (eqIfIds.contains(internalIf.getInternalLinkIf().getIfId()) == false) {
+          logger.debug("Not found. " + internalIf.getInternalLinkIf().getIfId());
+          ret = false;
+        } else {
+          eqIfIds.remove(internalIf.getInternalLinkIf().getIfId());
+        }
+      } else if (internalIf.getInternalLinkIf().getIfType().equals(CommonDefinitions.IF_TYPE_LAG_IF)) {
+        for (InterfaceInfo lagMember : internalIf.getInternalLinkIf().getLagMember()) {
+          if (lagMember.getIfType().equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
+            if (eqIfIds.contains(lagMember.getIfId()) == false) {
+              logger.debug("Not found. " + lagMember.getIfId());
+              ret = false;
+            } else {
+              eqIfIds.remove(lagMember.getIfId());
+            }
+          }
+        }
+      }
+    }
 
+    for (UnusePhysicalIf unusedIfId : addNode.getCreateNode().getIfInfo().getUnusePhysicalIfs()) {
+      if (eqIfIds.contains(unusedIfId.getPhysicalIfId()) == false) {
+        logger.debug("Not found. " + unusedIfId.getPhysicalIfId());
+        ret = false;
+      } else {
+        eqIfIds.remove(unusedIfId.getPhysicalIfId());
+      }
+    }
+
+    if (!eqIfIds.isEmpty()) {
+      logger.debug("Found unused physicalIfId. " + eqIfIds);
+      ret = false;
+    }
+
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * DHCP Information Creation.
+   *
+   * @param equipments
+   *          model information
+   * @return DHCP information
+   */
+  private DhcpInfo createDhcpInfo(Equipments equipments) {
+    logger.trace(CommonDefinitions.START);
+
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
+    DhcpInfo dhcpInfo = new DhcpInfo(equipments.getDhcp_template(), equipments.getInitial_config(),
+        nodeInfo.getHostname(), nodeInfo.getMacAddress(), "", nodeInfo.getNtpServerAddress(),
+        nodeInfo.getManagementInterface().getAddress(), nodeInfo.getManagementInterface().getPrefix());
+
+    logger.trace(CommonDefinitions.END);
+    return dhcpInfo;
+  }
+
+  /**
+   * Syslog Monitoring Start-up.
+   *
+   * @param equipments
+   *          model information
+   * @throws DevctrlException
+   *           device related exception
+   */
+  private void startSyslogWatch(Equipments equipments) throws DevctrlException {
+    logger.trace(CommonDefinitions.START);
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
+
+    List<String> bootErrorMessages = new ArrayList<>();
+    for (BootErrorMessages message : equipments.getBootErrorMessagesList()) {
+      bootErrorMessages.add(message.getBoot_error_msgs());
+    }
+    SyslogController syslogController = SyslogController.getInstance();
+    syslogController.monitorStart(nodeInfo.getManagementInterface().getAddress(), equipments.getBoot_complete_msg(),
+        bootErrorMessages);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Device Extention Information Retention.
+   */
+  private void registerAddNodeInfo() {
+    logger.trace(CommonDefinitions.START);
+
+    AddNode addNode = (AddNode) getInData();
+    NodeAdditionThread nodeAdditionThread = new NodeAdditionThread();
+    nodeAdditionThread.setAddNodeInfo(addNode);
+    OperationControlManager.getInstance().registerNodeAdditionInfo(nodeAdditionThread);
+
+    logger.trace(CommonDefinitions.END);
+  }
 }

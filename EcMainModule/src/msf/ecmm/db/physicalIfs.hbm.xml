@@ -3,39 +3,65 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
+    <!-- Physical IF Information Class -->
 
 <hibernate-mapping>
-        <class name="msf.ecmm.db.pojo.PhysicalIfs" table="physical_ifs" lazy="true">
-            <composite-id>
-                <key-many-to-one name="nodes" class="msf.ecmm.db.pojo.Nodes">
-                    <column name="node_type" not-null="true"/>
-                    <column name="node_id" not-null="true"/>
-                </key-many-to-one>
-                <key-property name="physical_if_id" type="text">
-                    <column name="physical_if_id" not-null="true" />
-                </key-property>
-                <generator class="assigned"/>
-            </composite-id>
-            <property name="if_name" type="text" />
-        </class>
-        <query name="selectPhysicalIfs">
-            <![CDATA[
-                from msf.ecmm.db.pojo.PhysicalIfs as physicalIfs where node_type = :key1 and node_id = :key2 and physical_if_id = :key3
-             ]]>
-        </query>
-        <query name="selectPhysicalIfsByNode">
-            <![CDATA[
-                from msf.ecmm.db.pojo.PhysicalIfs as physicalIfs where node_type = :key1 and node_id = :key2
-             ]]>
-        </query>
-        <query name="deletePhysicalIfsByNode">
-            <![CDATA[
-                delete from msf.ecmm.db.pojo.PhysicalIfs as physicalIfs where node_type = :key1 and node_id = :key2
-             ]]>
-        </query>
-        <query name="updatePhysicalIfs">
-            <![CDATA[
-                update msf.ecmm.db.pojo.PhysicalIfs as physicalIfs set if_name = :key4 where node_type = :key1 and node_id = :key2 and physical_if_id = :key3
-             ]]>
-        </query>
+    <class name="msf.ecmm.db.pojo.PhysicalIfs" table="physical_ifs" lazy="true">
+        <composite-id>
+            <key-property name="node_id" type="text">
+                <column name="node_id" not-null="true"/>
+            </key-property>
+            <key-property name="physical_if_id" type="text">
+                <column name="physical_if_id" not-null="true" />
+            </key-property>
+            <generator class="assigned"/>
+        </composite-id>
+        <property name="if_name" type="text" />
+        <property name="if_speed" type="string" />
+        <property name="if_status" type="int" />
+        <property name="ipv4_address" type="string" />
+        <property name="ipv4_prefix" type="int" />
+        <set name="breakoutIfsList" table="breakout_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
+            <key>
+                <column name="node_id" />
+                <column name="physical_if_id" />
+            </key>
+            <one-to-many class="msf.ecmm.db.pojo.BreakoutIfs" />
+        </set>
+    </class>
+    <query name="selectPhysicalIfs">
+        <![CDATA[
+            from msf.ecmm.db.pojo.PhysicalIfs as physicalIfs where node_id = :key1 and physical_if_id = :key2
+        ]]>
+    </query>
+    <query name="selectPhysicalIfsByNode">
+        <![CDATA[
+            from msf.ecmm.db.pojo.PhysicalIfs as physical_ifs where node_id = :key1
+        ]]>
+    </query>
+    <query name="deletePhysicalIfsByNode">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.PhysicalIfs as physical_ifs where node_id = :key1
+        ]]>
+    </query>
+    <query name="updatePhysicalIfs">
+        <![CDATA[
+            update msf.ecmm.db.pojo.PhysicalIfs as physical_ifs set if_speed = :key3, if_name = :key4 where node_id = :key1 and physical_if_id = :key2
+        ]]>
+    </query>
+    <query name="updatePhysicalIfsIP">
+        <![CDATA[
+            update msf.ecmm.db.pojo.PhysicalIfs as physical_ifs set ipv4_prefix = :key4, ipv4_address = :key3 where node_id = :key1 and physical_if_id = :key2
+        ]]>
+    </query>
+    <query name="updatePhysicalIfsState">
+        <![CDATA[
+            update msf.ecmm.db.pojo.PhysicalIfs as physical_ifs set if_status = :key3 where node_id = :key1 and physical_if_id = :key2
+        ]]>
+    </query>
+    <query name="updatePhysicalIfsAll">
+        <![CDATA[
+            update msf.ecmm.db.pojo.PhysicalIfs as physical_ifs set ipv4_prefix = :key7, if_name = :key3, if_speed = :key4, if_status = :key5, ipv4_address = :key6 where node_id = :key1 and physical_if_id = :key2
+        ]]>
+    </query>
 </hibernate-mapping>

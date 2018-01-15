@@ -3,32 +3,33 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
+    <!-- System Status Information Class -->
 
 <hibernate-mapping >
-        <class name="msf.ecmm.db.pojo.SystemStatus" table="system_status" lazy="false">
-            <composite-id>
-                <key-property name="service_status" type="int">
-                    <column name="service_status" not-null="true" />
-                </key-property>
-                <key-property name="blockade_status" type="int">
-                    <column name="blockade_status" not-null="true" />
-                </key-property>
-                <generator class="assigned"/>
-            </composite-id>
-        </class>
-        <query name="updateSystemStatus">
-            <![CDATA[
-                update msf.ecmm.db.pojo.SystemStatus as systemStatus set service_status = :key1, blockade_status = :key2
-             ]]>
+    <class name="msf.ecmm.db.pojo.SystemStatus" table="system_status" lazy="true">
+         <composite-id>
+             <key-property name="service_status" type="int">
+                 <column name="service_status" not-null="true" />
+             </key-property>
+             <key-property name="blockade_status" type="int">
+                 <column name="blockade_status" not-null="true" />
+             </key-property>
+             <generator class="assigned"/>
+         </composite-id>
+    </class>
+    <query name="updateSystemStatus">
+        <![CDATA[
+            update msf.ecmm.db.pojo.SystemStatus as systemStatus set service_status = :key1, blockade_status = :key2
+        ]]>
         </query>
-        <query name="updateSystemStatusForService">
-            <![CDATA[
-                update msf.ecmm.db.pojo.SystemStatus as systemStatus set service_status = :key1
-             ]]>
-        </query>
-        <query name="updateSystemStatusForBlock">
-            <![CDATA[
-                update msf.ecmm.db.pojo.SystemStatus as systemStatus set blockade_status = :key1
-             ]]>
-        </query>
+    <query name="updateSystemStatusForService">
+        <![CDATA[
+            update msf.ecmm.db.pojo.SystemStatus as systemStatus set service_status = :key1
+        ]]>
+    </query>
+    <query name="updateSystemStatusForBlock">
+        <![CDATA[
+            update msf.ecmm.db.pojo.SystemStatus as systemStatus set blockade_status = :key1
+        ]]>
+    </query>
 </hibernate-mapping>

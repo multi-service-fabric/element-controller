@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo;
 
 import java.util.List;
@@ -9,34 +13,75 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import msf.ecmm.emctrl.pojo.parts.Device;
 
+/**
+ * LAG Add/Delete for CE POJO Class.
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "ce-lag")
 public class CeLagAddDelete extends AbstractMessage {
 
-	private String name = null;
+  /** Attribute Data of Service Basic Configuration. */
+  @XmlAttribute
+  private String xmlns = "http://www.ntt.co.jp/msf/service/ce-lag";
 
-	public CeLagAddDelete() {
-		super();
-	}
+  /** Service Name. */
+  private String name = null;
 
-	public String getName() {
-		return name;
-	}
+  /** Leaf Device Information. */
+  private List<Device> device = null;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * Generating new instance.
+   */
+  public CeLagAddDelete() {
+    super();
+  }
 
-	public List<Device> getDevice() {
-		return device;
-	}
+  /**
+   * Getting service name.
+   *
+   * @return service name
+   */
+  public String getName() {
+    return name;
+  }
 
-	public void setDevice(List<Device> device) {
-		this.device = device;
-	}
+  /**
+   * Setting service name.
+   *
+   * @param name
+   *          service name
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	@Override
-	public String toString() {
-		return "CeLagAddDelete [name=" + name + ", device=" + device + "]";
-	}
+  /**
+   * Getting Leaf device information.
+   *
+   * @return Leaf device information
+   */
+  public List<Device> getDevice() {
+    return device;
+  }
+
+  /**
+   * Setting Leaf device information.
+   *
+   * @param device
+   *          Leaf device information
+   */
+  public void setDevice(List<Device> device) {
+    this.device = device;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "CeLagAddDelete [name=" + name + ", device=" + device + "]";
+  }
 }

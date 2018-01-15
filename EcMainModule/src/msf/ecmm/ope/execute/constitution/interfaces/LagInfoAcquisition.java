@@ -1,17 +1,21 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
 
 import static msf.ecmm.common.CommonDefinitions.*;
-import static msf.ecmm.convert.LogicalPhysicalConverter.*;
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.BreakoutIfs;
 import msf.ecmm.db.pojo.LagIfs;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
@@ -19,79 +23,94 @@ import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.GetLagInterface;
 
+/**
+ * LagIF Information Acquisition.
+ */
 public class LagInfoAcquisition extends Operation {
 
-	private static final String ERROR_CODE_250201 = "250201";
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_250101 = "250101";
 
-	public LagInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.LagInfoAcquisition);
-	}
+  /** In case the number of acquired cases is zero. */
+  private static final String ERROR_CODE_250201 = "250201";
 
-	@Override
-	public AbstractResponseMessage execute() {
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_250401 = "250401";
 
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public LagInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.LagInfoAcquisition);
+  }
 
-		GetLagInterface getLagInterfaceRest = null;
+  @Override
+  public AbstractResponseMessage execute() {
 
-		AbstractResponseMessage response = null;
+    logger.trace(CommonDefinitions.START);
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_250101);
-		}
+    GetLagInterface getLagInterfaceRest = null;
 
-		try (DBAccessManager session = new DBAccessManager()) {
+    AbstractResponseMessage response = null;
 
-			int fabricType = toIntegerNodeType(getUriKeyMap().get(KEY_FABRIC_TYPE));
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_250101);
+    }
 
-			LagIfs lagIfsDb = session.searchLagIfs(fabricType, getUriKeyMap().get(KEY_NODE_ID),
-					getUriKeyMap().get(KEY_LAG_IF_ID));
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			if (lagIfsDb == null) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [LagIfs]"));
-				return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_250201);
-			}
+      LagIfs lagIfsDb = session.searchLagIfs(getUriKeyMap().get(KEY_NODE_ID), getUriKeyMap().get(KEY_LAG_IF_ID));
 
-			getLagInterfaceRest = RestMapper.toLagIfInfo(lagIfsDb);
+      if (lagIfsDb == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [LagIfs]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_250201);
+      }
 
-			response = makeSuccessResponse(RESP_OK_200, getLagInterfaceRest);
+      List<BreakoutIfs> breakoutIfsDbList = session.getBreakoutIfsList(getUriKeyMap().get(KEY_NODE_ID));
 
-		} catch (DBAccessException dbe) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbe);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_250401);
-		}
+      getLagInterfaceRest = RestMapper.toLagIfInfo(lagIfsDb, breakoutIfsDbList);
 
-		logger.trace(CommonDefinitions.END);
+      response = makeSuccessResponse(RESP_OK_200, getLagInterfaceRest);
 
-		return response;
+    } catch (DBAccessException dbe) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbe);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_250401);
+    }
 
-	}
+    logger.trace(CommonDefinitions.END);
 
-	@Override
-	protected boolean checkInData() {
+    return response;
 
-		logger.trace(CommonDefinitions.START);
+  }
 
-		boolean result = true;
+  @Override
+  protected boolean checkInData() {
 
-		if (getUriKeyMap() == null) {
-			result = false;
-		} else if (getUriKeyMap().get(KEY_FABRIC_TYPE) == null) {
-			result = false;
-		} else if (!getUriKeyMap().get(KEY_FABRIC_TYPE).equals("leafs")
-				&& !getUriKeyMap().get(KEY_FABRIC_TYPE).equals("spines")) {
-			result = false;
-		} else if (getUriKeyMap().get(KEY_NODE_ID) == null) {
-			result = false;
-		} else if (getUriKeyMap().get(KEY_LAG_IF_ID) == null) {
-			result = false;
-		}
+    logger.trace(CommonDefinitions.START);
 
-		logger.trace(CommonDefinitions.END);
+    boolean result = true;
 
-		return result;
-	}
+    if (getUriKeyMap() == null) {
+      result = false;
+    } else {
+      if (!(getUriKeyMap().containsKey(KEY_NODE_ID)) || getUriKeyMap().get(KEY_NODE_ID) == null) {
+        result = false;
+      }
+      if (!(getUriKeyMap().containsKey(KEY_LAG_IF_ID)) || getUriKeyMap().get(KEY_LAG_IF_ID) == null) {
+        result = false;
+      }
+    }
+
+    logger.trace(CommonDefinitions.END);
+
+    return result;
+  }
 
 }

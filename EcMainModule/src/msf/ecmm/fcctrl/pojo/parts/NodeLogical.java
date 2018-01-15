@@ -1,40 +1,66 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.fcctrl.pojo.parts;
 
-import java.util.ArrayList;
-
+/**
+ * Device Information List.
+ */
 public class NodeLogical {
 
-	private String nodeId;
+  /** Device ID. */
+  private String nodeId;
 
-	public String getNodeType() {
-		return nodeType;
-	}
+  /** Failure Status. */
+  private String failureStatus;
 
-	public void setNodeType(String nodeType) {
-		this.nodeType = nodeType;
-	}
+  /**
+   * Getting device ID.
+   *
+   * @return device ID
+   */
+  public String getNodeId() {
+    return nodeId;
+  }
 
-	public String getNodeId() {
-		return nodeId;
-	}
+  /**
+   * Setting device ID.
+   *
+   * @param nodeId
+   *          device ID
+   */
+  public void setNodeId(String nodeId) {
+    this.nodeId = nodeId;
+  }
 
-	public void setNodeId(String nodeId) {
-		this.nodeId = nodeId;
-	}
+  /**
+   * Getting failure status.
+   *
+   * @return failureStatus
+   */
+  public String getFailureStatus() {
+    return failureStatus;
+  }
 
-	public ArrayList<InternalLinkIfsLogical> getInternalLinkIfs() {
-		return internalLinkIfs;
-	}
+  /**
+   * Setting failure status.
+   *
+   * @param failureStatus
+   *          set failureStatus
+   */
+  public void setFailureStatus(String failureStatus) {
+    this.failureStatus = failureStatus;
+  }
 
-	public void setInternalLinkIfs(ArrayList<InternalLinkIfsLogical> internalLinkIfs) {
-		this.internalLinkIfs = internalLinkIfs;
-	}
-
-	@Override
-	public String toString() {
-		return "NodeLogical [nodeType=" + nodeType + ", nodeId=" + nodeId + ", internalLinkIfs=" + internalLinkIfs
-				+ "]";
-	}
+  /**
+   * Stringizing Instance.
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "NodeLogical [nodeId=" + nodeId + ", failureStatus=" + failureStatus + "]";
+  }
 
 }

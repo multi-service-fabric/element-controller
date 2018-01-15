@@ -1,29 +1,55 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.ope.control;
 
 import java.util.Date;
 
+/**
+ * Operation Queue Reception Definition. A class for holding the operation ID and stored time in the operation queue.
+ *
+ */
 public class OperationQueueEntry {
 
-	private Date timestamp;
+  /** Operation ID */
+  private EcSession operationId;
 
-	public OperationQueueEntry(EcSession entry){
-		operationId =entry;
-		timestamp = new Date();
-	}
+  /** Stored Time */
+  private Date timestamp;
 
-	protected EcSession getOperationId() {
-		return operationId;
-	}
+  /**
+   * Constructor
+   * 
+   * @param entry
+   *          operation ID
+   */
+  public OperationQueueEntry(EcSession entry) {
+    operationId = entry;
+    timestamp = new Date();
+  }
 
-	protected Date getTimestamp() {
-		return timestamp;
-	}
+  /**
+   * Getting operation ID.
+   * 
+   * @return operation ID
+   */
+  protected EcSession getOperationId() {
+    return operationId;
+  }
 
-	@Override
-	public String toString() {
-		return "OperationQueueEntry [operationId=" + operationId
-				+ ", timestamp=" + timestamp + "]";
-	}
+  /**
+   * Getting the time it is stored in the queue.
+   * 
+   * @return stored time
+   */
+  protected Date getTimestamp() {
+    return timestamp;
+  }
 
+  @Override
+  public String toString() {
+    return "OperationQueueEntry [operationId=" + operationId + ", timestamp=" + timestamp + "]";
+  }
 
 }

@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.allinfo;
 
@@ -8,7 +11,6 @@ import java.util.HashMap;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
-import msf.ecmm.convert.LogicalPhysicalConverter;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
@@ -19,69 +21,82 @@ import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.GetInterfaceList;
 
+/**
+ * IF Information List Acquisition.
+ */
 public class AllIfInfoAcquisition extends Operation {
 
-	private static final String ERROR_CODE_170301 = "170301";
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_170101 = "170101";
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_170301 = "170301";
 
-	public AllIfInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.AllIfInfoAcquisition);
-	}
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public AllIfInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.AllIfInfoAcquisition);
+  }
 
-	@Override
-	public AbstractResponseMessage execute() {
+  @Override
+  public AbstractResponseMessage execute() {
 
-		logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.START);
 
-		AbstractResponseMessage response = null;
+    AbstractResponseMessage response = null;
 
-		GetInterfaceList outputData = null;
+    GetInterfaceList outputData = null;
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_170101);
-		}
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_170101);
+    }
 
-		try (DBAccessManager session = new DBAccessManager()) {
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			int fabricType = LogicalPhysicalConverter.toIntegerNodeType(getUriKeyMap().get(KEY_FABRIC_TYPE));
+      Nodes nodes = session.searchNodes(getUriKeyMap().get(KEY_NODE_ID), null);
 
-			Nodes nodes = session.searchNodes(fabricType, getUriKeyMap().get(KEY_NODE_ID), null);
+      if (nodes == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Nodes]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_170101);
+      }
 
-			outputData = RestMapper.toIFList(nodes);
+      outputData = RestMapper.toIFList(nodes);
 
-			response = makeSuccessResponse(RESP_OK_200, outputData);
+      response = makeSuccessResponse(RESP_OK_200, outputData);
 
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_170301);
-		}
+    } catch (DBAccessException dbae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_170301);
+    }
 
-		logger.trace(CommonDefinitions.END);
+    logger.trace(CommonDefinitions.END);
 
-		return response;
-	}
+    return response;
+  }
 
-	@Override
-	protected boolean checkInData() {
+  @Override
+  protected boolean checkInData() {
 
-		logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.START);
 
-		boolean checkResult = true;
+    boolean checkResult = true;
 
-		if (getUriKeyMap() == null) {
-			checkResult = false;
-		} else if (getUriKeyMap().get(KEY_FABRIC_TYPE) == null) {
-			checkResult = false;
-		} else if (!getUriKeyMap().get(KEY_FABRIC_TYPE).equals("leafs")
-				&& !getUriKeyMap().get(KEY_FABRIC_TYPE).equals("spines")) {
-			checkResult = false;
-		} else if (getUriKeyMap().get(KEY_NODE_ID) == null) {
-			checkResult = false;
-		}
+    if (getUriKeyMap() == null) {
+      checkResult = false;
+    } else {
+      if (!(getUriKeyMap().containsKey(KEY_NODE_ID)) || getUriKeyMap().get(KEY_NODE_ID) == null) {
+        checkResult = false;
+      }
+    }
 
-		logger.trace(CommonDefinitions.END);
-		return checkResult;
-	}
-
+    logger.trace(CommonDefinitions.END);
+    return checkResult;
+  }
 }

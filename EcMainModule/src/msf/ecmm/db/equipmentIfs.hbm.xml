@@ -3,23 +3,38 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
+    <!-- Model IF Information Class -->
 
 <hibernate-mapping>
         <class name="msf.ecmm.db.pojo.EquipmentIfs" table="equipment_ifs" lazy="true">
             <composite-id>
-                <key-many-to-one name="equipments" class="msf.ecmm.db.pojo.Equipments">
+                <key-property name="equipment_type_id" type="text">
                     <column name="equipment_type_id" not-null="true"/>
-                </key-many-to-one>
+                </key-property>
                 <key-property name="physical_if_id" type="text">
                     <column name="physical_if_id" not-null="true"/>
+                </key-property>
+                <key-property name="port_speed" type="text">
+                    <column name="port_speed" not-null="true"/>
                 </key-property>
                 <generator class="assigned"/>
             </composite-id>
             <property name="if_slot" type="text" not-null="true"/>
         </class>
+        <query name="selectEquipmentIfs">
+            <![CDATA[
+                from msf.ecmm.db.pojo.EquipmentIfs as equipment_ifs where equipment_type_id = :key1
+             ]]>
+        </query>
+        <query name="selectEquipmentIfsAll">
+            <![CDATA[
+                from msf.ecmm.db.pojo.EquipmentIfs as equipment_ifs
+             ]]>
+        </query>
         <query name="deleteEquipmentIfs">
             <![CDATA[
-                delete from msf.ecmm.db.pojo.EquipmentIfs as equipmentIfs where equipment_type_id = :key
+                delete from msf.ecmm.db.pojo.EquipmentIfs as equipment_ifs where equipment_type_id = :key1
              ]]>
         </query>
 </hibernate-mapping>
+

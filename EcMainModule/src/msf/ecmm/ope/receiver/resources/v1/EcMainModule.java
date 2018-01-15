@@ -1,3 +1,6 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.resources.v1;
 
@@ -8,134 +11,267 @@ import java.util.HashMap;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.execute.ecstate.ECMainStopper;
+import msf.ecmm.ope.receiver.pojo.EmControllerReceiveStatus;
 import msf.ecmm.ope.receiver.pojo.NotifyNodeStartUp;
 import msf.ecmm.ope.receiver.pojo.NotifyReceiveSnmpTrap;
 import msf.ecmm.ope.receiver.resources.BaseResource;
 
+/**
+ * EC Internal IF Resource
+ */
 @Path("/v1/internal")
 public class EcMainModule extends BaseResource {
 
-	private static final String ERROR_CODE_300399 = "300399";
+  /** EC Stop - operation execution preparation failure */
+  private static final String ERROR_CODE_300201 = "300201";
+  /** EC Stop - other exceptions */
+  private static final String ERROR_CODE_300399 = "300399";
 
-	private static final String ERROR_CODE_320399 = "320399";
+  /** EC Blockage Status Change - operation execution preparation failure */
+  private static final String ERROR_CODE_320201 = "320201";
+  /** EC Blockage Status Change - other exceptions */
+  private static final String ERROR_CODE_320399 = "320399";
 
-	private static final String ERROR_CODE_310399 = "310399";
+  /** SNMPTrap Reception Notification - input data check result is NG (json error). */
+  private static final String ERROR_CODE_330101 = "330101";
+  /** SNMPTrap Reception Notification - operation execution preparation failure. */
+  private static final String ERROR_CODE_330201 = "330201";
+  /** SNMPTrap Reception Notification - other exceptions. */
+  private static final String ERROR_CODE_330399 = "330399";
 
-	private static final String ERROR_CODE_330201 = "330201";
-	private static final String ERROR_CODE_290101 = "290101";
-	private static final String ERROR_CODE_290499 = "290499";
+  /** Device Start-up Notification - input data check result is NG (json error). */
+  private static final String ERROR_CODE_290101 = "290101";
+  /** Device Start-up Notification - operation execution preparation failure.. */
+  private static final String ERROR_CODE_290301 = "290301";
+  /** Device Start-up Notification - other exceptions. */
+  private static final String ERROR_CODE_290499 = "290499";
 
-	@POST
-	@Path("ec_ctrl/stop/{stop_type}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response requestStop(@PathParam("stop_type") String stopType) {
+  /** Controller Status Acquisition - operation execution preparation failure.. */
+  private static final String ERROR_CODE_310201 = "310201";
+  /** Controller Status Acquisition - other exceptions. */
+  private static final String ERROR_CODE_310399 = "310399";
 
-		logger.trace(CommonDefinitions.START);
+  /** Controller Log Acquisition - operation execution preparation failure.. */
+  private static final String ERROR_CODE_430201 = "430201";
+  /** Controller Log Acquisition - other exceptions. */
+  private static final String ERROR_CODE_430299 = "430299";
 
-		operationType = OperationType.ECMainStopper;
+  /**
+   * EC Stop
+   *
+   * @param stopType
+   *          stop type
+   * @return REST response
+   */
+  @POST
+  @Path("ec_ctrl/stop/{stop_type}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response requestStop(@PathParam("stop_type") String stopType) {
 
-		setErrorCode("", ERROR_CODE_300201, ERROR_CODE_300399);
+    logger.trace(CommonDefinitions.START);
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_STOP_TYPE, stopType);
+    operationType = OperationType.ECMainStopper;
 
-		Response response = executeOperation(uriKeyMap, null);
+    setErrorCode("", ERROR_CODE_300201, ERROR_CODE_300399);
 
-		if (isSuccess(response)) {
-			ECMainStopper.systemExit();
-		}
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_STOP_TYPE, stopType);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    Response response = executeOperation(uriKeyMap, null);
 
-	@POST
-	@Path("ec_ctrl/statuschg/{instruction_type}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response requestBusy(@PathParam("instruction_type") String instructionType) {
+    if (isSuccess(response)) {
+      ECMainStopper.systemExit();
+    }
 
-		logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		operationType = OperationType.ObstructionStateController;
+  /**
+   *  EC Blockage Status Change
+   *
+   * @param instructionType
+   *          instruction type
+   * @return REST response
+   */
+  @POST
+  @Path("ec_ctrl/statuschg/{instruction_type}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response requestBusy(@PathParam("instruction_type") String instructionType) {
 
-		setErrorCode("", ERROR_CODE_320201, ERROR_CODE_320399);
+    logger.trace(CommonDefinitions.START);
+    operationType = OperationType.ObstructionStateController;
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_INSTRUCTION_TYPE, instructionType);
+    setErrorCode("", ERROR_CODE_320201, ERROR_CODE_320399);
 
-		Response response = executeOperation(uriKeyMap, null);
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_INSTRUCTION_TYPE, instructionType);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    Response response = executeOperation(uriKeyMap, null);
 
-	@GET
-	@Path("ec_ctrl/statusget")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response checkStatus() {
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		logger.trace(CommonDefinitions.START);
+  /**
+   * SNMPTrap Reception Notification.
+   *
+   * @param linkStatus
+   *          type
+   * @return REST response
+   */
+  @POST
+  @Path("snmp/{link_status}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response notifyReceiveSnmpTrap(@PathParam("link_status") String linkStatus) {
 
-		operationType = OperationType.ECMainStateConfirm;
+    logger.trace(CommonDefinitions.START);
 
-		setErrorCode("", ERROR_CODE_310201, ERROR_CODE_310399);
+    operationType = OperationType.SNMPTrapSignalRecieveNotification;
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    setErrorCode(ERROR_CODE_330101, ERROR_CODE_330201, ERROR_CODE_330399);
 
-		Response response = executeOperation(uriKeyMap, null);
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_LINK_STATUS, linkStatus);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    Response response = executeOperation(uriKeyMap, NotifyReceiveSnmpTrap.class);
 
-	@POST
-	@Path("snmp/{link_status}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response notifyReceiveSnmpTrap(@PathParam("link_status") String linkStatus) {
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Device Start-up Notification.
+   *
+   * @param bootResult
+   *          start-up result
+   * @return REST response
+   */
+  @POST
+  @Path("node_boot/{status}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response notifyNodeStartUp(@PathParam("status") String bootResult) {
 
-		operationType = OperationType.SNMPTrapSignalRecieveNotification;
+    logger.trace(CommonDefinitions.START);
 
-		setErrorCode(ERROR_CODE_330101, ERROR_CODE_330201, ERROR_CODE_330399);
+    operationType = OperationType.NodeAddedNotification;
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_LINK_STATUS, linkStatus);
+    setErrorCode(ERROR_CODE_290101, ERROR_CODE_290301, ERROR_CODE_290499);
 
-		Response response = executeOperation(uriKeyMap, NotifyReceiveSnmpTrap.class);
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_STATUS, bootResult);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    Response response = executeOperation(uriKeyMap, NotifyNodeStartUp.class);
 
-	@POST
-	@Path("node_boot/{status}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response notifyNodeStartUp(@PathParam("status") String bootResult) {
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 
-		logger.trace(CommonDefinitions.START);
+  /**
+   * Controller Log Acquisition.
+   *
+   * @param controller
+   *          controller to be acquired
+   * @param startdate
+   *          acquisition start date and time
+   * @param enddate
+   *          acquisition end date and time
+   * @param limitnumber
+   *          the upper limit number of acquiring logs
+   * @return REST response
+   */
+  @GET
+  @Path("ec_ctrl/log")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getControllerLog(@QueryParam("controller") String controller,
+      @QueryParam("start_date") String startdate, @QueryParam("end_date") String enddate,
+      @QueryParam("limit_number") String limitnumber) {
 
-		operationType = OperationType.NodeAddedNotification;
+    logger.trace(CommonDefinitions.START);
 
-		setErrorCode(ERROR_CODE_290101, ERROR_CODE_290301, ERROR_CODE_290499);
+    operationType = OperationType.ECMainLogAcquisition;
 
-		HashMap<String, String> uriKeyMap = new HashMap<String, String>();
-		uriKeyMap.put(KEY_STATUS, bootResult);
+    setErrorCode("", ERROR_CODE_430201, ERROR_CODE_430299);
 
-		Response response = executeOperation(uriKeyMap, NotifyNodeStartUp.class);
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_CONTROLLER, controller);
+    uriKeyMap.put(KEY_START_DATE, startdate);
+    uriKeyMap.put(KEY_END_DATE, enddate);
+    uriKeyMap.put(KEY_LIMIT_NUMBER, limitnumber);
 
-		logger.trace(CommonDefinitions.END);
-		return response;
-	}
+    Response response = executeOperation(uriKeyMap, null);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
+  /**
+   * Controller Status Acquisition.
+   *
+   * @param controller
+   *          controller to be acquired
+   * @param getinfo
+   *          information to be acquired
+   * @return REST response
+   */
+  @GET
+  @Path("ec_ctrl/statusget")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response sendControllerState(@QueryParam("controller") String controller,
+      @QueryParam("get_info") String getinfo) {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.ECMainStateConfirm;
+
+    setErrorCode("", ERROR_CODE_310201, ERROR_CODE_310399);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_CONTROLLER, controller);
+    uriKeyMap.put(KEY_GET_INFO, getinfo);
+
+    Response response = executeOperation(uriKeyMap, null);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
+  /**
+   * Controller Status Notification.
+   *
+   * @return REST response
+   */
+
+  @PUT
+  @Path("ec_ctrl/statusnotify")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response requestEmStutas() {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.ControllerStateSendNotification;
+
+    setErrorCode("", ERROR_CODE_310201, ERROR_CODE_310399);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+
+    Response response = executeOperation(uriKeyMap, EmControllerReceiveStatus.class);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
 }

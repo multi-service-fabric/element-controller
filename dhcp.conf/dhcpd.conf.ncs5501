@@ -1,0 +1,30 @@
+#
+# DHCP Server Configuration file.
+#   see /usr/share/doc/dhcp*/dhcpd.conf.example
+#   see dhcpd.conf(5) man page
+#
+
+# DHCP server general settings
+subnet $$MANAGEMENTNETWORKADDRESS$$ netmask $$MANAGEMENTSUBNETMASK$$ {
+  range $$MANAGEMENTRANGESTART$$ $$MANAGEMENTRANGEEND$$;
+  option subnet-mask $$MANAGEMENTSUBNETMASK$$;
+  default-lease-time 600;
+  deny unknown-clients;
+  max-lease-time 7200;
+}
+
+##########
+# host
+##########
+
+## NCS5501 ##
+host NCS5501 {
+    hardware ethernet $$MACADDRESS$$;
+    fixed-address $$MANAGEMENTADDRESS$$;
+    next-server $$TFTPHOSTNAME$$;
+    if exists user-class and option user-class = "iPXE" {
+        filename "http://$$TFTPHOSTNAME$$/no-such-file.sh";
+    } else {
+        filename "http://$$TFTPHOSTNAME$$$$INITIALCONFIG$$";
+    }
+}

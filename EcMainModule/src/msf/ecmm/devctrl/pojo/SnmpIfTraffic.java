@@ -1,43 +1,103 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.devctrl.pojo;
 
+/**
+ * SNMP Traffic Informtion
+ */
 public class SnmpIfTraffic {
 
-	private long inOctets;
+  /** IF Name */
+  private String ifName;
 
-	public SnmpIfTraffic(String ifName, long inOctets, long outOctets) {
-		super();
-		this.ifName = ifName;
-		this.inOctets = inOctets;
-		this.outOctets = outOctets;
-	}
+  /** Inbound Traffic */
+  private long inOctets;
 
-	public String getIfName() {
-		return ifName;
-	}
+  /** Outbound Traffic */
+  private long outOctets;
 
-	public void setIfName(String ifName) {
-		this.ifName = ifName;
-	}
+  /**
+   * @param ifName
+   *          IF name
+   * @param inOctets
+   *          inbound traffic
+   * @param outOctets
+   *          outbound traffic
+   */
+  public SnmpIfTraffic(String ifName, long inOctets, long outOctets) {
+    super();
+    this.ifName = ifName;
+    this.inOctets = inOctets;
+    this.outOctets = outOctets;
+  }
 
-	public long getInOctets() {
-		return inOctets;
-	}
+  /**
+   * Getting IF name
+   *
+   * @return IF name
+   */
+  public String getIfName() {
+    return ifName;
+  }
 
-	public void setInOctets(long inOctets) {
-		this.inOctets = inOctets;
-	}
+  /**
+   * Setting IF name
+   *
+   * @param ifName
+   *          IF name
+   */
+  public void setIfName(String ifName) {
+    this.ifName = ifName;
+  }
 
-	public long getOutOctets() {
-		return outOctets;
-	}
+  /**
+   * Getting inbound traffic
+   *
+   * @return inbound traffic
+   */
+  public long getInOctets() {
+    return inOctets;
+  }
 
-	public void setOutOctets(long outOctets) {
-		this.outOctets = outOctets;
-	}
+  /**
+   * Setting inbound traffic
+   *
+   * @param inOctets
+   *          inbound traffic
+   */
+  public void setInOctets(long inOctets) {
+    this.inOctets = inOctets;
+  }
 
-	@Override
-	public String toString() {
-		return "SnmpIfTraffic [ifName=" + ifName + ", inOctets=" + inOctets + ", outOctets=" + outOctets + "]";
-	}
+  /**
+   * Getting outbound traffic
+   *
+   * @return outbound traffic
+   */
+  public long getOutOctets() {
+    return outOctets;
+  }
+
+  /**
+   * Setting outbound traffic
+   *
+   * @param outOctets
+   *          outbound traffic
+   */
+  public void setOutOctets(long outOctets) {
+    this.outOctets = outOctets;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "SnmpIfTraffic [ifName=" + ifName + ", inOctets=" + inOctets + ", outOctets=" + outOctets + "]";
+  }
 
 }

@@ -1,8 +1,10 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
 
 import static msf.ecmm.common.CommonDefinitions.*;
-import static msf.ecmm.convert.LogicalPhysicalConverter.*;
 import static msf.ecmm.db.DBAccessException.*;
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
@@ -13,8 +15,9 @@ import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.EmMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
-import msf.ecmm.db.pojo.CpsList;
 import msf.ecmm.db.pojo.LagIfs;
+import msf.ecmm.db.pojo.Nodes;
+import msf.ecmm.db.pojo.VlanIfs;
 import msf.ecmm.emctrl.EmController;
 import msf.ecmm.emctrl.EmctrlException;
 import msf.ecmm.emctrl.pojo.AbstractMessage;
@@ -25,117 +28,143 @@ import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
 
+/**
+ * LagIF Deletion Class Definition<br>
+ * Deleting LagIF.
+ */
 public class LagRemove extends Operation {
 
-	private static final String ERROR_CODE_260201 = "260201";
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_260101 = "260101";
 
-	private static final String ERROR_CODE_260402 = "260402";
+  /** In case the information to be deleted does not exist. */
+  private static final String ERROR_CODE_260201 = "260201";
 
-	private static final String ERROR_CODE_260404 = "260404";
+  /** In case the CP requires LAG has not been deleted. */
+  private static final String ERROR_CODE_260302 = "260302";
 
-	public LagRemove(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.LagRemove);
-	}
+  /** Disconnection or connection timeout with EM has occurred while requesting LagIF deletion to EM. */
+  private static final String ERROR_CODE_260402 = "260402";
 
-	@Override
-	public AbstractResponseMessage execute() {
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_260403 = "260403";
 
-		logger.trace(CommonDefinitions.START);
+  /** Error has occurred from EM while requesting LagIF deletion to EM (error response received). */
+  private static final String ERROR_CODE_260404 = "260404";
 
-		AbstractResponseMessage response = null;
+  /** In case DB commitment failed after successful EM access. */
+  private static final String ERROR_CODE_900405 = "900405";
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_260101);
-		}
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public LagRemove(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.LagRemove);
+  }
 
-		try (DBAccessManager session = new DBAccessManager()) {
+  @Override
+  public AbstractResponseMessage execute() {
 
-			session.startTransaction();
+    logger.trace(CommonDefinitions.START);
 
-			int fabricType = toIntegerNodeType(getUriKeyMap().get(KEY_FABRIC_TYPE));
+    AbstractResponseMessage response = null;
 
-			String nodeId = getUriKeyMap().get(KEY_NODE_ID);
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_260101);
+    }
 
-			String lagIfId = getUriKeyMap().get(KEY_LAG_IF_ID);
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			LagIfs lagIfsDb = session.searchLagIfs(fabricType, nodeId, lagIfId);
+      String nodeId = getUriKeyMap().get(KEY_NODE_ID);
+      String lagIfId = getUriKeyMap().get(KEY_LAG_IF_ID);
 
-			if (lagIfsDb == null) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [LagIfs]"));
-				return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_260201);
-			}
+      LagIfs lagIfsDb = session.searchLagIfs(nodeId, lagIfId);
 
-			CpsList cpsListDb = session.getCpsList(fabricType, nodeId, lagIfsDb.getIf_name());
+      if (lagIfsDb == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [LagIfs]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_260201);
+      }
 
-			if ((!cpsListDb.getL2CpsList().isEmpty()) || (!cpsListDb.getL3CpsList().isEmpty())) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "CP data is found."));
-				return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_260302);
-			}
+      for (VlanIfs vlanIfs : session.getVlanIfsList(nodeId)) {
+        if ((vlanIfs.getLag_if_id() != null) && vlanIfs.getLag_if_id().equals(lagIfId)) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "VLANIF data is found."));
+          return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_260302);
+        }
+      }
 
-			session.deleteLagIfs(fabricType, nodeId, lagIfId);
+      Nodes nodesDb = session.searchNodes(nodeId, null);
 
-			CeLagAddDelete ceLagAddDeleteEm = EmMapper.toLagIfDelete(lagIfsDb);
+      CeLagAddDelete ceLagAddDeleteEm = EmMapper.toLagIfDelete(nodesDb, lagIfsDb);
 
-			AbstractMessage result = EmController.getInstance().request(ceLagAddDeleteEm);
+      session.startTransaction();
 
-			if (!result.isResult()) {
-				logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed."));
-				return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_260404);
-			}
+      session.deleteLagIfs(nodeId, lagIfId);
 
-			session.commit();
+      AbstractMessage result = EmController.getInstance().request(ceLagAddDeleteEm);
 
-			response = makeSuccessResponse(RESP_NOCONTENTS_204, new CommonResponse());
+      if (!result.isResult()) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed."));
+        return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_260404);
+      }
 
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			switch (e.getCode()) {
-			case NO_DELETE_TARGET:
-				response = makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_260201);
-				break;
-			case COMMIT_FAILURE:
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_900405);
-				break;
-			default:
-				response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_260403);
-				break;
-			}
-		} catch (EmctrlException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to EM was failed."), e);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_260402);
-		} catch (IllegalArgumentException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "input data error"), e);
-			response = makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_260101);
-		}
+      session.commit();
 
-		logger.trace(CommonDefinitions.END);
+      response = makeSuccessResponse(RESP_NOCONTENTS_204, new CommonResponse());
 
-		return response;
-	}
+    } catch (DBAccessException dbae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
+      switch (dbae.getCode()) {
+        case NO_DELETE_TARGET:
+          response = makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_260201);
+          break;
+        case COMMIT_FAILURE:
+          response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_900405);
+          break;
+        default:
+          response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_260403);
+          break;
+      }
+    } catch (EmctrlException ee) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to EM was failed."), ee);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_260402);
+    } catch (IllegalArgumentException iae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "input data error"), iae);
+      response = makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_260101);
+    }
 
-	@Override
-	protected boolean checkInData() {
+    logger.trace(CommonDefinitions.END);
 
-		logger.trace(CommonDefinitions.START);
+    return response;
+  }
 
-		boolean result = true;
+  @Override
+  protected boolean checkInData() {
 
-		if (getUriKeyMap() == null) {
-			result = false;
-		} else if (getUriKeyMap().get(KEY_FABRIC_TYPE) == null
-				|| (!getUriKeyMap().get(KEY_FABRIC_TYPE).equals("leafs"))) {
-			result = false;
-		} else if (getUriKeyMap().get(KEY_NODE_ID) == null) {
-			result = false;
-		} else if (getUriKeyMap().get(KEY_LAG_IF_ID) == null) {
-			result = false;
-		}
+    logger.trace(CommonDefinitions.START);
 
-		logger.trace(CommonDefinitions.END);
+    boolean result = true;
 
-		return result;
-	}
+    if (getUriKeyMap() == null) {
+      result = false;
+    } else {
+      if (!(getUriKeyMap().containsKey(KEY_NODE_ID)) || getUriKeyMap().get(KEY_NODE_ID) == null) {
+        result = false;
+      }
+      if (!(getUriKeyMap().containsKey(KEY_LAG_IF_ID)) || getUriKeyMap().get(KEY_LAG_IF_ID) == null) {
+        result = false;
+      }
+    }
+
+    logger.trace(CommonDefinitions.END);
+
+    return result;
+  }
 
 }

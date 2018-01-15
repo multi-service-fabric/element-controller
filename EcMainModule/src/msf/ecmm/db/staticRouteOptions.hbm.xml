@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+    <!-- StaticRoute Option Information Class -->
+
+<hibernate-mapping >
+    <class name="msf.ecmm.db.pojo.StaticRouteOptions" table="static_route_option" lazy="true">
+        <composite-id>
+            <key-property name="node_id" type="text">
+                <column name="node_id" not-null="true"/>
+            </key-property>
+            <key-property name="vlan_if_id" type="text">
+                <column name="vlan_if_id" not-null="true"/>
+            </key-property>
+            <key-property name="static_route_address_type" type="int">
+                <column name="static_route_address_type" not-null="false" />
+            </key-property>
+            <key-property name="static_route_destination_address" type="string">
+                <column name="static_route_destination_address" not-null="false" />
+            </key-property>
+            <key-property name="static_route_prefix" type="int">
+                <column name="static_route_prefix" not-null="false" />
+            </key-property>
+            <key-property name="static_route_nexthop_address" type="string">
+                <column name="static_route_nexthop_address" not-null="false" />
+            </key-property>
+            <generator class="assigned"/>
+        </composite-id>
+    </class>
+    <query name="selectStaticRouteOptions">
+        <![CDATA[
+            from msf.ecmm.db.pojo.StaticRouteOptions as static_route_option where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+    <query name="deleteStaticRouteOptions">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.StaticRouteOptions as static_route_option where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+    <query name="deleteStaticRouteOptionsAll">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.StaticRouteOptions as static_route_option where node_id = :key1 and vlan_if_id = :key2
+                  and static_route_address_type = :key3 and static_route_destination_address = :key4 and
+         ]]>      static_route_prefix = :key5 and static_route_nexthop_address = :key6
+    </query>
+</hibernate-mapping>

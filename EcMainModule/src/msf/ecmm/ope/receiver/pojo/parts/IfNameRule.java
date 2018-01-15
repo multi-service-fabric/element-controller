@@ -1,40 +1,85 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo.parts;
 
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.CheckDataException;
 
+/**
+ * Physical IF Naming Convention Information
+ */
 public class IfNameRule {
 
-	private String portPrefix;
+  /** Port Speed */
+  private String speed;
 
-	public String getSpeed() {
-		return speed;
-	}
+  /** Port Name Prefix */
+  private String portPrefix;
 
-	public void setSpeed(String speed) {
-		this.speed = speed;
-	}
+  /**
+   * Getting port speed.
+   *
+   * @return port speed
+   */
+  public String getSpeed() {
+    return speed;
+  }
 
-	public String getPortPrefix() {
-		return portPrefix;
-	}
+  /**
+   * Setting port speed.
+   *
+   * @param speed
+   *          port speed
+   */
+  public void setSpeed(String speed) {
+    this.speed = speed;
+  }
 
-	public void setPortPrefix(String portPrefix) {
-		this.portPrefix = portPrefix;
-	}
+  /**
+   * Getting port name prefix.
+   *
+   * @return port name prefix
+   */
+  public String getPortPrefix() {
+    return portPrefix;
+  }
 
-	@Override
-	public String toString() {
-		return "IfNameRule [speed=" + speed + ", portPrefix=" + portPrefix + "]";
-	}
+  /**
+   * Setting port name prefix.
+   *
+   * @param portPrefix
+   *          port name prefix
+   */
+  public void setPortPrefix(String portPrefix) {
+    this.portPrefix = portPrefix;
+  }
 
-	public void check(OperationType operationType) throws CheckDataException {
-		if (speed == null) {
-			throw new CheckDataException();
-		}
-		if (portPrefix == null) {
-			throw new CheckDataException();
-		}
-	}
+  /**
+   * Stringizing Instance
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "IfNameRule [speed=" + speed + ", portPrefix=" + portPrefix + "]";
+  }
+
+  /**
+   * Input Parameter Check
+   *
+   * @param operationType
+   *          operation type
+   * @throws CheckDataException
+   *           input check error
+   */
+  public void check(OperationType operationType) throws CheckDataException {
+    if (speed == null) {
+      throw new CheckDataException();
+    }
+    if (portPrefix == null) {
+      throw new CheckDataException();
+    }
+  }
 }

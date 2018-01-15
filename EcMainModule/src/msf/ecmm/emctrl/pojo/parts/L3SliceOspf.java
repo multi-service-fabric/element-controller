@@ -1,27 +1,56 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.emctrl.pojo.parts;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * OSPF Connection Information Class
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name="ospf")
+@XmlRootElement(name = "ospf")
 public class L3SliceOspf {
 
-	public L3SliceOspf() {
-		super();
-	}
+  /** Metric */
+  private Long metric = null;
 
-	public Long getMetric() {
-	    return metric;
-	}
+  /**
+   * Generating new instance.
+   */
+  public L3SliceOspf() {
+    super();
+  }
 
-	public void setMetric(Long metric) {
-	    this.metric = metric;
-	}
+  /**
+   * Getting metric.
+   *
+   * @return metric
+   */
+  public Long getMetric() {
+    return metric;
+  }
 
-	@Override
-	public String toString() {
-		return "L3SliceOspf [metric=" + metric + "]";
-	}
+  /**
+   * Setting metric.
+   *
+   * @param metric
+   *          metric
+   */
+  public void setMetric(Long metric) {
+    this.metric = metric;
+  }
+
+  /*
+   * (Non-Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "L3SliceOspf [metric=" + metric + "]";
+  }
 }

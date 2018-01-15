@@ -1,20 +1,27 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.notification;
 
 import static msf.ecmm.common.CommonDefinitions.*;
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.convert.LogicalPhysicalConverter;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
-import msf.ecmm.db.pojo.CpsList;
+import msf.ecmm.db.pojo.BreakoutIfs;
 import msf.ecmm.db.pojo.LagIfs;
 import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.PhysicalIfs;
+import msf.ecmm.db.pojo.VlanIfs;
 import msf.ecmm.devctrl.DevctrlException;
 import msf.ecmm.devctrl.SnmpController;
 import msf.ecmm.fcctrl.RestClient;
@@ -29,139 +36,252 @@ import msf.ecmm.ope.receiver.pojo.CheckDataException;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
 import msf.ecmm.ope.receiver.pojo.NotifyReceiveSnmpTrap;
 
+/**
+ * SNMPTrap Reception Notification.
+ */
 public class SNMPTrapSignalRecieveNotification extends Operation {
 
-	private static final String ERROR_CODE_330301 = "330301";
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_330101 = "330101";
 
-	private static final String ERROR_CODE_330303 = "330303";
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_330301 = "330301";
 
-	private static final String ERROR_CODE_330305 = "330305";
+  /** In case  REST request to FC has not succeeded even after the upper limit number of times of retries. */
+  private static final String ERROR_CODE_330302 = "330302";
 
-	public SNMPTrapSignalRecieveNotification(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.SNMPTrapSignalRecieveNotification);
-	}
+  /** In case the corresponding device information does not exist in DB. */
+  private static final String ERROR_CODE_330303 = "330303";
 
-	@Override
-	public AbstractResponseMessage execute() {
-		logger.trace(CommonDefinitions.START);
+  /** In case the acquired value from SNMP is invalid. */
+  private static final String ERROR_CODE_330304 = "330304";
 
-		AbstractResponseMessage response = null;
+  /** Other exceptions. */
+  private static final String ERROR_CODE_330399 = "330399";
+  /** Device Status: Running. */
+  private static final int NODE_STATE_OPERATION = 0;
+  /** Device Status: Out of order. */
+  private static final int NODE_STATE_MALFUNCTION = 7;
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_330101);
-		}
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public SNMPTrapSignalRecieveNotification(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.SNMPTrapSignalRecieveNotification);
+  }
 
-		try (DBAccessManager session = new DBAccessManager()) {
+  @Override
+  public AbstractResponseMessage execute() {
+    logger.trace(CommonDefinitions.START);
 
-			SnmpController snmpController = new SnmpController();
+    AbstractResponseMessage response = null;
 
-			NotifyReceiveSnmpTrap snmpTrap = (NotifyReceiveSnmpTrap) getInData();
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_330101);
+    }
 
-			Nodes nodesDb = session.searchNodes(-1, null, snmpTrap.getSrcHostIp());
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			if (nodesDb == null) {
-				logger.debug("There is no node info in DB.");
-				return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330303);
-			}
+      SnmpController snmpController = new SnmpController();
 
-			String ifName = "";
-			if (nodesDb.getEquipments().getSnmptrap_if_name_oid() == null) {
-				int ifIndex = SnmpController.getIfIndexForTrap(((NotifyReceiveSnmpTrap) getInData()).getVarbind());
+      NotifyReceiveSnmpTrap snmpTrap = (NotifyReceiveSnmpTrap) getInData();
 
-				if (ifIndex == SnmpController.IFINDEX_NOT_FOUND) {
-					logger.debug("Return values from SNMP is wrong.");
-					return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330304);
-				} else {
-				}
+      Nodes nodesDb = session.searchNodes(null, snmpTrap.getSrcHostIp());
 
-				ifName = snmpController.getIfName(nodesDb.getEquipments(), nodesDb, ifIndex);
+      boolean snmpflg = false;
 
-			} else {
-				ifName = SnmpController.getIfNameForTrap(((NotifyReceiveSnmpTrap) getInData()).getVarbind(), nodesDb
-						.getEquipments().getSnmptrap_if_name_oid());
-			}
+      if (nodesDb == null) {
+        logger.debug("There is no node info in DB.");
+        return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330303);
+      }
 
-			boolean pyhsFlug = false;
-			for (PhysicalIfs ifinfo : nodesDb.getPhysicalIfsList()) {
-				if ((ifinfo.getIf_name() != null)&&(ifinfo.getIf_name().equals(ifName))) {
-					pyhsFlug = true;
-					break;
-				} else {
-				}
-			}
+      String ifName = "";
+      if (nodesDb.getEquipments().getSnmptrap_if_name_oid() == null) {
+        int ifIndex = SnmpController.getIfIndexForTrap(((NotifyReceiveSnmpTrap)
+            getInData()).getVarbind());
 
-			CpsList cpsList = session.getCpsList(nodesDb.getNode_type(), nodesDb.getNode_id(), ifName);
-			LagIfs internalIF = null;
+        if (ifIndex == SnmpController.IFINDEX_NOT_FOUND) {
+          logger.debug("Return values from SNMP is wrong.");
+          return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330304);
+        }
 
-			if (!pyhsFlug) {
-				if ((cpsList.getL2CpsList().isEmpty()) && (cpsList.getL3CpsList().isEmpty())) {
-					for (LagIfs ifinfo : nodesDb.getLagIfsList()) {
-						if ((ifinfo.getIf_name() != null)&&(ifinfo.getIf_name().equals(ifName))) {
-							internalIF = ifinfo;
-							break;
-						} else {
-						}
-					}
-				} else {
-				}
-			} else {
-			}
+        try {
+          ifName = snmpController.getIfName(nodesDb.getEquipments(), nodesDb, ifIndex);
+        } catch (DevctrlException de) {
+          logger.debug("SNMP error", de);
+          snmpflg = true;
+        }
 
-			Operations snmpTrapData = RestMapper.toSnmpTrapNotificationInfo(nodesDb, cpsList, internalIF,getUriKeyMap().get(KEY_LINK_STATUS));
+      } else {
+        ifName = SnmpController.getIfNameForTrap(((NotifyReceiveSnmpTrap) getInData()).getVarbind(),
+            nodesDb.getEquipments().getSnmptrap_if_name_oid());
+      }
 
-			if (snmpTrapData == null) {
-				logger.debug("Data Mapping error");
-				return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330399);
-			}
+      String statusStr = null;
+      if (getUriKeyMap().get(KEY_LINK_STATUS).equals(LINK_STATUS_LINKUP)) {
+        statusStr = IF_STATE_OK_STRING;
+      } else if (getUriKeyMap().get(KEY_LINK_STATUS).equals(LINK_STATUS_LINKDOWN)) {
+        statusStr = IF_STATE_NG_STRING;
+      }
 
-			RestClient resultFC = new RestClient();
-			resultFC.request(RestClient.OPERATION, new HashMap<String, String>(), snmpTrapData,
-					CommonResponseFromFc.class);
+      List<Nodes> nodesList = new ArrayList<Nodes>();
+      for (Nodes elem : session.getNodesList()) {
+        if (elem.getManagement_if_address().equals(snmpTrap.getSrcHostIp())) {
+          nodesList.add(elem);
+        }
+      }
 
-			response = makeSuccessResponse(RESP_OK_200, new CommonResponse());
+      String ifType = null;
+      String ifId = null;
+      PhysicalIfs physicalIfs = null;
+      LagIfs lagIfs = null;
+      BreakoutIfs breakoutIfs = null;
+      List<VlanIfs> vlanIfsList = new ArrayList<VlanIfs>();
+      if (!snmpflg) {
+        searchNodesList: for (Nodes nodesElem : nodesList) {
+          for (PhysicalIfs ifinfo : nodesElem.getPhysicalIfsList()) {
+            if ((ifinfo.getIf_name() != null) && ifinfo.getIf_name().equals(ifName)) {
+              ifType = IF_TYPE_PHYSICAL_IF;
+              ifId = ifinfo.getPhysical_if_id();
+              physicalIfs = ifinfo;
+              physicalIfs.setIf_status(LogicalPhysicalConverter.toIntegerIFState(statusStr));
+              break searchNodesList;
+            }
 
-		} catch (DBAccessException dbe) {
-			logger.debug("DB access error", dbe);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330301);
-		} catch (DevctrlException de) {
-			logger.debug("SNMP error", de);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330305);
-		} catch (RestClientException re) {
-			logger.debug("Rest request failed", re);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330302);
-		}
+            for (BreakoutIfs boIfs : ifinfo.getBreakoutIfsList()) {
+              if ((boIfs.getIf_name() != null) && boIfs.getIf_name().equals(ifName)) {
+                ifType = IF_TYPE_BREAKOUT_IF;
+                ifId = boIfs.getBreakout_if_id();
+                breakoutIfs = new BreakoutIfs();
+                breakoutIfs.setNode_id(ifinfo.getNode_id());
+                breakoutIfs.setBreakout_if_id(ifId);
+                breakoutIfs.setIf_status(LogicalPhysicalConverter.toIntegerIFState(statusStr));
+                break searchNodesList;
+              }
+            }
+          }
 
-		logger.trace(CommonDefinitions.END);
+          for (LagIfs ifinfo : nodesElem.getLagIfsList()) {
+            if ((ifinfo.getIf_name() != null) && ifinfo.getIf_name().equals(ifName)) {
+              ifType = IF_TYPE_LAG_IF;
+              ifId = ifinfo.getLag_if_id();
+              lagIfs = ifinfo;
+              lagIfs.setIf_status(LogicalPhysicalConverter.toIntegerIFState(statusStr));
+              break searchNodesList;
+            }
+          }
+        }
 
-		return response;
-	}
+        for (Nodes nodesElem : nodesList) {
+          for (VlanIfs dbElem : session.getVlanIfsList(nodesElem.getNode_id())) {
+            VlanIfs vlanIfs = new VlanIfs();
+            if (nodesElem.getVpn_type() != null) {
+              if (nodesElem.getVpn_type().equals(CommonDefinitions.VPNTYPE_L2)) {
+                if (dbElem.getIf_name().equals(ifName)) {
+                  vlanIfs = dbElem;
+                  vlanIfs.setIf_status(LogicalPhysicalConverter.toIntegerIFState(statusStr));
+                  vlanIfsList.add(vlanIfs);
+                }
+              } else if (nodesElem.getVpn_type().equals(CommonDefinitions.VPNTYPE_L3)) {
+                String tmpIfName = dbElem.getIf_name() + nodesElem.getEquipments().getUnit_connector()
+                    + dbElem.getVlan_id();
+                if (tmpIfName.equals(ifName)) {
+                  vlanIfs = dbElem;
+                  vlanIfs.setIf_status(LogicalPhysicalConverter.toIntegerIFState(statusStr));
+                  vlanIfsList.add(vlanIfs);
+                }
+              }
+            }
+          }
+          if (!vlanIfsList.isEmpty()) {
+            break;
+          }
+        }
+      }
 
-	@Override
-	protected boolean checkInData() {
-		logger.trace(CommonDefinitions.START);
+      session.startTransaction();
 
-		boolean checkResult = true;
+      if ((nodesDb.getNode_state() != NODE_STATE_MALFUNCTION && snmpflg)
+          || ((nodesDb.getNode_state() == NODE_STATE_MALFUNCTION) && !snmpflg)) {
+        String nodeid = nodesDb.getNode_id();
+        int nodestate = nodesDb.getNode_state();
+        if (nodesDb.getNode_state() != NODE_STATE_MALFUNCTION && snmpflg) {
+          nodestate = NODE_STATE_MALFUNCTION;
+        } else if (nodesDb.getNode_state() == NODE_STATE_MALFUNCTION && !snmpflg) {
+          nodestate = NODE_STATE_OPERATION;
+        }
+        session.updateNodeState(nodeid, nodestate);
 
-		NotifyReceiveSnmpTrap notifyRecieveSnmpTrapRest = (NotifyReceiveSnmpTrap) getInData();
+      }
+      if (!snmpflg) {
+        session.updateNodeIfState(physicalIfs, lagIfs, null, breakoutIfs);
+        for (VlanIfs elem : vlanIfsList) {
+          session.updateNodeIfState(null, null, elem, null);
+        }
+      }
 
-		if (getUriKeyMap() == null) {
-			checkResult = false;
-		}else if ((!getUriKeyMap().containsKey(KEY_LINK_STATUS))
-				|| ((!getUriKeyMap().get(KEY_LINK_STATUS).equals("linkup")) && (!getUriKeyMap().get(KEY_LINK_STATUS).equals("linkdown")))) {
-			checkResult = false;
-		} else {
-			try {
-				notifyRecieveSnmpTrapRest.check(getOperationType());
-			} catch (CheckDataException e) {
-				logger.warn("check error :", e);
-				checkResult = false;
-			}
-		}
+      session.commit();
 
-		logger.trace(CommonDefinitions.END);
-		return checkResult;
-	}
+      if (ifType != null || snmpflg == true) {
+        Operations snmpTrapData = RestMapper.toSnmpTrapNotificationInfo(nodesDb.getNode_id(),
+            ifType, ifId, vlanIfsList, statusStr, snmpflg);
+
+        if (snmpTrapData == null) {
+          logger.debug("Data Mapping error");
+          return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330399);
+        }
+
+        RestClient restClient = new RestClient();
+        restClient.request(RestClient.OPERATION, new HashMap<String, String>(),
+            snmpTrapData, CommonResponseFromFc.class);
+      }
+      response = makeSuccessResponse(RESP_OK_200, new CommonResponse());
+
+    } catch (DBAccessException dbe) {
+      logger.debug("DB access error", dbe);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330301);
+    } catch (RestClientException re) {
+      logger.debug("Rest request failed", re);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_330302);
+    }
+
+    logger.trace(CommonDefinitions.END);
+
+    return response;
+  }
+
+  @Override
+  protected boolean checkInData() {
+    logger.trace(CommonDefinitions.START);
+
+    boolean checkResult = true;
+
+    NotifyReceiveSnmpTrap notifyRecieveSnmpTrapRest = (NotifyReceiveSnmpTrap) getInData();
+
+    if (getUriKeyMap() == null) {
+      checkResult = false;
+    } else if ((!getUriKeyMap().containsKey(KEY_LINK_STATUS))
+        || ((!getUriKeyMap().get(KEY_LINK_STATUS).equals(LINK_STATUS_LINKUP))
+            && (!getUriKeyMap().get(KEY_LINK_STATUS).equals(LINK_STATUS_LINKDOWN)))) {
+      checkResult = false;
+    } else {
+      try {
+        notifyRecieveSnmpTrapRest.check(getOperationType());
+      } catch (CheckDataException cde) {
+        logger.warn("check error :", cde);
+        checkResult = false;
+      }
+    }
+
+    logger.trace(CommonDefinitions.END);
+    return checkResult;
+  }
 
 }

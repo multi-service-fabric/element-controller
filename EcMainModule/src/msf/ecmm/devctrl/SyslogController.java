@@ -1,3 +1,7 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
+
 package msf.ecmm.devctrl;
 
 import java.io.File;
@@ -6,124 +10,193 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+/**
+ * Rsyslog Related Operations
+ */
 public class SyslogController {
-	private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  /**
+   * logger
+   */
+  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
+  /** Self(singleton) */
+  private static SyslogController me = new SyslogController();
 
-	private static final String SUCCESS_FILTER = ":msg, contains, \"%s\" ^%s/boot_success.sh;hostip";
+  /** the starting line of appending rsyslog.conf */
+  private static final String START_PARAGRAPH_KEY = "# $$EC_MONITOR_CONFIG$$";
 
-	private static final String[] RSYSLOG_RESTART = { "systemctl", "restart", "rsyslog.service" };
-	private static final String[] RSYSLOG_RESTART_NON_BLOCK = { "systemctl", "--no-block", "restart", "rsyslog.service" };
+  /** Filter which excludes the notifications received from the other devices */
+  private static final String IP_FILTER = ":fromhost-ip, !isequal, \"%s\" ~";
 
-	private SyslogController() {
+  /** Filter which captures the messages at the time start-up succeeded */
+  private static final String SUCCESS_FILTER = ":msg, contains, \"%s\" ^%s/boot_success.sh;hostip";
 
-	}
+  /** Filter which captures the messages at the time of start-up failure */
+  private static final String FAILURE_FILTER = ":msg, contains, \"%s\"  ^%s/boot_fail.sh;hostip";
 
-	public static SyslogController getInstance() {
-		return me;
-	}
+  /** Rsyslog Start-up */
+  private static final String[] RSYSLOG_RESTART = { "systemctl", "restart", "rsyslog.service" };
+  private static final String[] RSYSLOG_RESTART_NON_BLOCK = { "systemctl", "--no-block", "restart", "rsyslog.service" };
 
-	public void monitorStart(String mngAddr, String bootCompleteMsg, List<String> bootErrorMsgs)
-			throws DevctrlException {
-		logger.debug("syslog monitor start bootCompleteMsg=" + bootCompleteMsg + " bootErrorMsgs=" + bootErrorMsgs);
+  /**
+   * Constructor
+   */
+  private SyslogController() {
 
-		String syslogConfig = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_RSYSLOG_CONFIG);
+  }
 
-		try {
-			List<String> config = Files.readAllLines(new File(syslogConfig).toPath());
+  /**
+   * Getting Instance
+   *
+   * @return its own instance
+   */
+  public static SyslogController getInstance() {
+    return me;
+  }
 
-			ArrayList<String> rep = replace(false, config, mngAddr, bootCompleteMsg, bootErrorMsgs);
+  /**
+   * Syslog Monitoring Start
+   *
+   * @param mngAddr
+   *          device's management IF address
+   * @param bootCompleteMsg
+   *          start-up completion message
+   * @param bootErrorMsgs
+   *          list of start-up failure messages
+   * @throws DevctrlException
+   *           error has occurred in rsyslog operation
+   */
+  public void monitorStart(String mngAddr, String bootCompleteMsg, List<String> bootErrorMsgs) throws DevctrlException {
+    logger.debug("syslog monitor start bootCompleteMsg=" + bootCompleteMsg + " bootErrorMsgs=" + bootErrorMsgs);
 
-			Files.deleteIfExists(new File(syslogConfig).toPath());
+    String syslogConfig = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_RSYSLOG_CONFIG);
 
-			Files.write(new File(syslogConfig).toPath(), rep);
+    try {
+      List<String> config = Files.readAllLines(new File(syslogConfig).toPath());
 
-		} catch (IOException e) {
-			logger.error(LogFormatter.out.format(LogFormatter.MSG_505030, e), e);
-			throw new DevctrlException("rsyslog start fail.");
-		}
+      ArrayList<String> rep = replace(false, config, mngAddr, bootCompleteMsg, bootErrorMsgs);
 
-		rsyslogReboot(false);
+      Files.deleteIfExists(new File(syslogConfig).toPath());
 
-		logger.trace(CommonDefinitions.END);
+      Files.write(new File(syslogConfig).toPath(), rep);
 
-	}
+    } catch (IOException e) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_505030, e), e);
+      throw new DevctrlException("rsyslog start fail.");
+    }
 
-	public void monitorStop(boolean nonblockFlag) throws DevctrlException {
-		logger.debug("syslog monitor stop");
+    rsyslogReboot(false);
 
-		String syslogConfig = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_RSYSLOG_CONFIG);
+    logger.trace(CommonDefinitions.END);
 
-		try {
-			List<String> config = Files.readAllLines(new File(syslogConfig).toPath());
+  }
 
-			ArrayList<String> rep = replace(true, config, null, null, null);
+  /**
+   * Syslog Monitoring Stop
+   *
+   * @param nonblockFlag
+   *          systemctl command non block flag
+   * @throws DevctrlException
+   *           error has occurred in rsyslog operation
+   */
+  public void monitorStop(boolean nonblockFlag) throws DevctrlException {
+    logger.debug("syslog monitor stop");
 
-			Files.deleteIfExists(new File(syslogConfig).toPath());
+    String syslogConfig = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_RSYSLOG_CONFIG);
 
-			Files.write(new File(syslogConfig).toPath(), rep);
+    try {
+      List<String> config = Files.readAllLines(new File(syslogConfig).toPath());
 
-		} catch (IOException e) {
-			logger.error(LogFormatter.out.format(LogFormatter.MSG_505030, e), e);
-			throw new DevctrlException("rsyslog start fail.");
-		}
+      ArrayList<String> rep = replace(true, config, null, null, null);
 
-		rsyslogReboot(nonblockFlag);
+      Files.deleteIfExists(new File(syslogConfig).toPath());
 
-		logger.trace(CommonDefinitions.END);
-	}
+      Files.write(new File(syslogConfig).toPath(), rep);
 
-	private void rsyslogReboot(boolean nonblockFlag) throws DevctrlException {
+    } catch (IOException e) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_505030, e), e);
+      throw new DevctrlException("rsyslog start fail.");
+    }
 
-		List<String> stdList = new ArrayList<String>();
-		List<String> errList = new ArrayList<String>();
-		int ret = CommonDefinitions.NOT_SET;
-		if (nonblockFlag == false) {
-			ret = CommandExecutor.exec(RSYSLOG_RESTART, stdList, errList);
-		} else {
-			ret = CommandExecutor.exec(RSYSLOG_RESTART_NON_BLOCK, stdList, errList);
-		}
-		logger.debug("RSYSLOG RESTART : " + stdList);
+    rsyslogReboot(nonblockFlag);
 
-		if (ret != 0) {
-			logger.error(LogFormatter.out.format(LogFormatter.MSG_505030, stdList));
-			throw new DevctrlException("rsyslog start fail. ret=" + ret);
-		}
-	}
+    logger.trace(CommonDefinitions.END);
+  }
 
-	private ArrayList<String> replace(boolean del, List<String> lines, String mngAddr, String bootCompleteMsg,
-			List<String> bootErrorMsgs) {
+  /**
+   * Rsyslog Restart
+   *
+   * @param nonblockFlag
+   *          systemctl command non block flag
+   * @throws DevctrlException
+   *           in case command execution failed
+   */
+  private void rsyslogReboot(boolean nonblockFlag) throws DevctrlException {
 
-		String scriptPath = EcConfiguration.getInstance().get(String.class, EcConfiguration.SCRIPT_PATH);
+    List<String> stdList = new ArrayList<String>();
+    List<String> errList = new ArrayList<String>();
+    int ret = CommonDefinitions.NOT_SET;
+    if (nonblockFlag == false) {
+      ret = CommandExecutor.exec(RSYSLOG_RESTART, stdList, errList);
+    } else {
+      ret = CommandExecutor.exec(RSYSLOG_RESTART_NON_BLOCK, stdList, errList);
+    }
+    logger.debug("RSYSLOG RESTART : " + stdList);
 
-		ArrayList<String> ret = new ArrayList<>();
-		for (String line : lines) {
-			if (line.startsWith(START_PARAGRAPH_KEY) == true)
-				break;
-			ret.add(line);
-		}
+    if (ret != 0) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_505030, stdList));
+      throw new DevctrlException("rsyslog start fail. ret=" + ret);
+    }
+  }
 
-		if (del == true) {
-			logger.debug("rsyslog.conf : " + ret);
-			return ret;
-		}
+  /**
+   * Creating Monitoring Configuration
+   *
+   * @param lines
+   *          contents of rsyslog.conf
+   * @param mngAddr
+   *          device management IF address
+   * @param bootCompleteMsg
+   *          start-up succeeded
+   * @param bootErrorMsgs
+   *          start-up failed
+   * @param del
+   *          deletion mode
+   * @return created configuration
+   */
+  private ArrayList<String> replace(boolean del, List<String> lines, String mngAddr, String bootCompleteMsg,
+      List<String> bootErrorMsgs) {
 
-		ret.add(START_PARAGRAPH_KEY);
-		ret.add(String.format(IP_FILTER, mngAddr));
-		ret.add(String.format(SUCCESS_FILTER, bootCompleteMsg, scriptPath));
-		for (String msg : bootErrorMsgs) {
-			ret.add(String.format(FAILURE_FILTER, msg, scriptPath));
-		}
-		logger.debug("rsyslog.conf : " + ret);
-		return ret;
-	}
+    String scriptPath = EcConfiguration.getInstance().get(String.class, EcConfiguration.SCRIPT_PATH);
+
+    ArrayList<String> ret = new ArrayList<>();
+    for (String line : lines) {
+      if (line.startsWith(START_PARAGRAPH_KEY) == true)
+        break;
+      ret.add(line);
+    }
+
+    if (del == true) {
+      logger.debug("rsyslog.conf : " + ret);
+      return ret;
+    }
+
+    ret.add(START_PARAGRAPH_KEY);
+    ret.add(String.format(IP_FILTER, mngAddr));
+    ret.add(String.format(SUCCESS_FILTER, bootCompleteMsg, scriptPath));
+    for (String msg : bootErrorMsgs) {
+      ret.add(String.format(FAILURE_FILTER, msg, scriptPath));
+    }
+    logger.debug("rsyslog.conf : " + ret);
+    return ret;
+  }
 
 }

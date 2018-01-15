@@ -27,19 +27,12 @@ EC has the physical-logical mapping table for each device. The table records the
 
 ## How to use
 - installation
-  - [installation manual(English)](doc/Element_Controller_Installation_Manual_en.pdf) (PDF)
-  - [configuration specifications(English)](doc/Element_Controller_Configuration_Specifications-en.pdf) (PDF)
-  - [installation manual(Japanese)](doc/Element_Controller_Installation_Manual_ja.pdf) (PDF)
-  - [configuration specifications(Japanese)](doc/Element_Controller_Configuration_Specifications-ja.pdf) (PDF)
-
-
+  - [installation manual](doc/element_controller_installation_manual.md)
+  - [configuration specifications)](doc/element_controller_configuration_specifications.md)
+- build
+  - [building manual](doc/element_controller_building_guide.md)
 - user guide (when using ZTP(Zero-Touch provisioning))
-  - [user manual(English)](doc/Element_Controller_user-guide-for-ZTP_en.pdf) (PDF)
-  - [user manual(Japanse)](doc/Element_Controller_user-guide-for-ZTP_ja.pdf) (PDF)
-  - [configuration file sample](doc/ZTPsample.zip) (zip)
-- Executable file `/Exe`
-- source code `/EcMainModule`
-
+  - [user guide](doc/element_controller_user_guide_for_ztp.md)
 
 ## Hardware
 The following conditions are the minimum operation environment.

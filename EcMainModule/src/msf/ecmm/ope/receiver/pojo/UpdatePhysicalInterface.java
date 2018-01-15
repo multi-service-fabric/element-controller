@@ -1,40 +1,88 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.receiver.pojo;
 
 import msf.ecmm.ope.execute.OperationType;
 
+/**
+ * Physical IF Information Change.
+ */
 public class UpdatePhysicalInterface extends AbstractRestMessage {
 
-	private String speed;
+  /** Control Type. */
+  private String action;
 
-	public String getAction() {
-		return action;
-	}
+  /** IF Speed. */
+  private String speed;
 
-	public void setAction(String action) {
-		this.action = action;
-	}
+  /**
+   * Getting control type.
+   *
+   * @return control type
+   */
+  public String getAction() {
+    return action;
+  }
 
-	public String getSpeed() {
-		return speed;
-	}
+  /**
+   * Setting control type.
+   *
+   * @param action
+   *          control type
+   */
+  public void setAction(String action) {
+    this.action = action;
+  }
 
-	public void setSpeed(String speed) {
-		this.speed = speed;
-	}
+  /**
+   * Getting IF speed.
+   *
+   * @return IF speed
+   */
+  public String getSpeed() {
+    return speed;
+  }
 
-	@Override
-	public String toString() {
-		return "UpdatePhysicalInterface [action=" + action + ", speed=" + speed + "]";
-	}
+  /**
+   * Setting IF speed.
+   *
+   * @param speed
+   *          IF speed
+   */
+  public void setSpeed(String speed) {
+    this.speed = speed;
+  }
 
+  /**
+   * Stringizing Instance.
+   *
+   * @return instance string
+   */
+  @Override
+  public String toString() {
+    return "UpdatePhysicalInterface [action=" + action + ", speed=" + speed + "]";
+  }
 
-	public void check(OperationType ope) throws CheckDataException {
-		if(action == null){
-			throw new CheckDataException();
-		}
-		if((!action.equals("speed_set")) && (!action.equals("speed_delete"))){
-			throw new CheckDataException();
-		}
-	}
+  /**
+   * Input Parameter Check.
+   *
+   * @param ope
+   *          operation type
+   * @throws CheckDataException
+   *           input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+    if (action == null) {
+      throw new CheckDataException();
+    }
+    if ((!action.equals("speed_set")) && (!action.equals("speed_delete"))) {
+      throw new CheckDataException();
+    }
+
+    if (action.equals("speed_set") && speed == null) {
+      throw new CheckDataException();
+    }
+  }
 }

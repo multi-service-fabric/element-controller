@@ -1,45 +1,102 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.db;
-
-import msf.ecmm.common.CommonDefinitions;
-import msf.ecmm.common.LogFormatter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.LogFormatter;
+
+/**
+ * DB Exception Class.
+ */
 public class DBAccessException extends Exception {
 
-	private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  /** Serial Version UID. */
+  private static final long serialVersionUID = 1L;
 
-	public static final int DOUBLE_REGISTRATION = 1;
-	public static final int NO_DELETE_TARGET = 3;
-	public static final int INSERT_FAILURE = 5;
-	public static final int DELETE_FAILURE = 7;
-	public static final int SYSTEM_FAILURE = 9;
+  /** Log Output Instance. */
+  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-	public DBAccessException(int code, int errorMessage) {
-		super();
+  /** Internal Error Code. */
+  private int code;
 
-		logger.error(LogFormatter.out.format(errorMessage));
+  /**
+   * BD Internal Error Code.
+   */
+  /** Common error. */
+  public static final int DB_COMMON_ERROR = 0;
+  /** Registered. */
+  public static final int DOUBLE_REGISTRATION = 1;
+  /** No update target. */
+  public static final int NO_UPDATE_TARGET = 2;
+  /** No deletion target. */
+  public static final int NO_DELETE_TARGET = 3;
+  /** DB search failed. */
+  public static final int SERCH_FAILURE = 4;
+  /** DB registration failed. */
+  public static final int INSERT_FAILURE = 5;
+  /** DB update failed. */
+  public static final int UPDATE_FAILURE = 6;
+  /** DB deletion failed. */
+  public static final int DELETE_FAILURE = 7;
+  /** DB deletion failed (relation invalid). */
+  public static final int RELATIONSHIP_UNCONFORMITY = 8;
+  /** System error. */
+  public static final int SYSTEM_FAILURE = 9;
+  /** Commitment error. */
+  public static final int COMMIT_FAILURE = 10;
 
-		if (code == SYSTEM_FAILURE) {
-			logger.fatal(LogFormatter.out.format(errorMessage));
-		}
+  /**
+   * Data Base Exception.
+   *
+   * @param code
+   *          internal error code
+   * @param errorMessage
+   *          message numberO
+   */
 
-		this.code = code;
-	}
+  public DBAccessException(int code, int errorMessage) {
+    super();
 
-	public DBAccessException(int code, int errorMessage, Throwable e) {
-		super(e);
+    logger.error(LogFormatter.out.format(errorMessage));
 
-		logger.error(LogFormatter.out.format(errorMessage, e.getMessage()), e);
+    if (code == SYSTEM_FAILURE) {
+      logger.fatal(LogFormatter.out.format(errorMessage));
+    }
 
-		this.code = code;
+    this.code = code;
+  }
 
-	}
+  /**
+   * Data Base Exception.
+   *
+   * @param code
+   *          internal error code
+   * @param errorMessage
+   *          message number
+   * @param e1
+   *          Exeception information
+   */
+  public DBAccessException(int code, int errorMessage, Throwable e1) {
+    super(e1);
 
-	public int getCode() {
-		return code;
-	}
+    logger.error(LogFormatter.out.format(errorMessage, e1.getMessage()), e1);
+
+    this.code = code;
+
+  }
+
+  /**
+   * Internal Error Code Acquisition.
+   *
+   * @return internal error code
+   */
+  public int getCode() {
+    return code;
+  }
 
 }

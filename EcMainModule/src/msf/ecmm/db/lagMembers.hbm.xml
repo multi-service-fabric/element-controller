@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+    <!-- LAG Membar Information Class -->
+
+<hibernate-mapping>
+       <class name="msf.ecmm.db.pojo.LagMembers" table="lag_ifs_member" lazy="true">
+            <id name="num" type="integer" column="num">
+              <generator class="increment">
+              <param name="increment">
+              num_increment</param>
+              </generator>
+            </id>
+            <property name="node_id" type="text" />
+            <property name="lag_if_id" type="text" />
+            <property name="physical_if_id" type="text" />
+            <property name="breakout_if_id" type="text" />
+        </class>
+
+        <query name="selectLagMembers">
+            <![CDATA[
+                from msf.ecmm.db.pojo.LagMembers as lag_ifs_member where node_id = :key1 and lag_if_id = :key2
+             ]]>
+        </query>
+          <query name="selectAllLagMembers">
+            <![CDATA[
+                from msf.ecmm.db.pojo.LagMembers as lag_ifs_member where node_id = :key1 and lag_if_id = :key2 and physical_if_id = :key3 and breakout_if_id = :key4
+              ]]>
+        </query>
+        <query name="deleteLagMembers">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.LagMembers as lag_ifs_member where node_id = :key1 and lag_if_id = :key2
+             ]]>
+        </query>
+</hibernate-mapping>

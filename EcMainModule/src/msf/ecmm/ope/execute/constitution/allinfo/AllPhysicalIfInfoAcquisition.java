@@ -1,8 +1,10 @@
+/*
+ * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ */
 
 package msf.ecmm.ope.execute.constitution.allinfo;
 
 import static msf.ecmm.common.CommonDefinitions.*;
-import static msf.ecmm.convert.LogicalPhysicalConverter.*;
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
 import java.util.HashMap;
@@ -20,70 +22,79 @@ import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.GetPhysicalInterfaceList;
 
+/**
+ * Physical IF Information List Acquisition.
+ */
 public class AllPhysicalIfInfoAcquisition extends Operation {
 
-	private static final String ERROR_CODE_180301 = "180301";
+  /** In case input data check result is NG. */
+  private static final String ERROR_CODE_180101 = "180101";
+  /** In case error has occurred in DB access. */
+  private static final String ERROR_CODE_180301 = "180301";
 
-	public AllPhysicalIfInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
-		super(idt, ukm);
-		super.setOperationType(OperationType.AllPhysicalIfInfoAcquisition);
-	}
+  /**
+   * Constructor.
+   *
+   * @param idt
+   *          input data
+   * @param ukm
+   *          URI key information
+   */
+  public AllPhysicalIfInfoAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
+    super(idt, ukm);
+    super.setOperationType(OperationType.AllPhysicalIfInfoAcquisition);
+  }
 
-	@Override
-	public AbstractResponseMessage execute() {
+  @Override
+  public AbstractResponseMessage execute() {
 
-		logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.START);
 
-		AbstractResponseMessage response = null;
+    AbstractResponseMessage response = null;
 
-		GetPhysicalInterfaceList outputData = null;
+    GetPhysicalInterfaceList outputData = null;
 
-		if (!checkInData()) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
-			return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_180101);
-		}
+    if (!checkInData()) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
+      return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_180101);
+    }
 
-		try (DBAccessManager session = new DBAccessManager()) {
+    try (DBAccessManager session = new DBAccessManager()) {
 
-			int fabricType = toIntegerNodeType(getUriKeyMap().get(KEY_FABRIC_TYPE));
+      List<PhysicalIfs> physicalIfs = session.getPhysicalIfsList(getUriKeyMap().get(KEY_NODE_ID));
 
-			List<PhysicalIfs> physicalIfs = session.getPhysicalIfsList(fabricType, getUriKeyMap().get(KEY_NODE_ID));
+      outputData = RestMapper.toPhyInInfoList(physicalIfs);
 
-			outputData = RestMapper.toPhyInInfoList(physicalIfs);
+      response = makeSuccessResponse(RESP_OK_200, outputData);
 
-			response = makeSuccessResponse(RESP_OK_200, outputData);
+    } catch (DBAccessException dbae) {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
+      response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_180301);
+    }
 
-		} catch (DBAccessException e) {
-			logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), e);
-			response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_180301);
-		}
+    logger.trace(CommonDefinitions.END);
 
-		logger.trace(CommonDefinitions.END);
+    return response;
 
-		return response;
+  }
 
-	}
+  @Override
+  protected boolean checkInData() {
 
-	@Override
-	protected boolean checkInData() {
+    logger.trace(CommonDefinitions.START);
 
-		logger.trace(CommonDefinitions.START);
+    boolean checkResult = true;
 
-		boolean checkResult = true;
+    if (getUriKeyMap() == null) {
+      checkResult = false;
+    } else {
+      if (!(getUriKeyMap().containsKey(KEY_NODE_ID)) || getUriKeyMap().get(KEY_NODE_ID) == null) {
+        checkResult = false;
+      }
+    }
 
-		if (getUriKeyMap() == null) {
-			checkResult = false;
-		} else if (getUriKeyMap().get(KEY_FABRIC_TYPE) == null) {
-			checkResult = false;
-		} else if (!getUriKeyMap().get(KEY_FABRIC_TYPE).equals("leafs")
-				&& !getUriKeyMap().get(KEY_FABRIC_TYPE).equals("spines")) {
-			checkResult = false;
-		} else if (getUriKeyMap().get(KEY_NODE_ID) == null) {
-			checkResult = false;
-		}
-
-		logger.trace(CommonDefinitions.END);
-		return checkResult;
-	}
+    logger.trace(CommonDefinitions.END);
+    return checkResult;
+  }
 
 }

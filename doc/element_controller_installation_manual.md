@@ -71,8 +71,8 @@ Table 1-1 Included
 Accessories
 
 | \#      | Folder Structure | | | File    | Description | Remarks |
-|---------|---------|---------|---------|---------|---------|
-| 1.      | ec_main | \-      | \-      | \-      | \-        |
+|---------|---------|---------|---------|---------|---------|---------|
+| 1.      | ec_main | \-      | \-      | \-      | \-        | \-        |
 | 2.      |         | bin     |         | boot.sh | Inter-devices I/F Control Functinal Part <br> Device Start-up Notification Script |         |
 | 3.      |         |         |         | ec\_ctl.sh | EC Start-up Script |         |
 | 4.      |         |         |         | linkdown.sh | SNMPTrap Functional Part Link-down <br> Notification Script |         |
@@ -1816,6 +1816,7 @@ configuration, and you should answer it by entering \[N\] \[Enter\].
 
 Confirm the operational status of resource agent with the following
 command.
+
 
 **\[crm\_mon -fA -1\] \[Enter\]**
 

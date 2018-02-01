@@ -154,7 +154,7 @@ the device information. Please refer to the attached document for an
 actual example of the template file. The following table illustrates the
 list of attached document.
 
-  |\[dhcp.conf Template Files\] List of Attached Documents  |
+  |\[dhcp.conf Template Files\] List of Attached Documents  ||
   |---------------------------------------------------------|-------------------------------
   |File Name                                                | Overview
   |dhcpd.conf.qfx5100                                       | Juniper QFX5100 Template File
@@ -179,7 +179,7 @@ The following table shows the legends of modified sections in the
 initial configuration. Modify the highlighted part as required.
 
 
-| \[Initial Configuration\] (Juniper)        |
+| \[Initial Configuration\] (Juniper)        ||
 |-----------------------------------|-----------------------------------|
 | 1                                 | syslog {<br> host <font color="Red">\[EC Server Address\]</font> {<br> source-address <font color="Red">\[Address for administration\]</font>;<br> any info;<br> \--                               |
 | 2                                 | ntp {<br> server <font color="Red">\[NTP Server Address\]</font>;<br> source-address \[Address for administration\];<br> }                                 |
@@ -195,7 +195,7 @@ initial configuration. Modify the highlighted part as required.
 |                                   | targets {<br> <font color="Red">\[EC Server Address\]</font>;<br> }                                 |
 |                                   | }<br> \--                                 |
 
-| \[Initial Configuration\] (Cisco) |
+| \[Initial Configuration\] (Cisco) ||
 |-----------------------------------|-----------------------------------|
 | 5                                 | logging <font color="Red">\[EC Server Address\]</font> vrf default severity info port default |
 | 6                                 | snmp-server host <font color="Red">\[EC Server Address\]</font> traps version 2c dhcp     |

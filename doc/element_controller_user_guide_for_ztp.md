@@ -4,8 +4,7 @@
 **December 26, 2017**
 **Copyright(c) 2017 Nippon Telegraph and Telephone Corporation**
 
-1. Introduction
-============
+## 1.  Introduction
 
 This document describes how to operate ZTP in device installation or
 enhancement, which is conducted with Element Controller (EC).
@@ -42,8 +41,8 @@ required.)
 
 Enter ：pressing the Enter key
 
-2. ZTP Operational Flow
-====================
+## 2. ZTP Operational Flow
+
 
 The Figure 2-1 below illustrates the ZTP operational flow at the EC
 server.
@@ -52,8 +51,8 @@ server.
 
 The detail of each operation follows from the next section.
 
-3. Confirmation of Process Startup
-===============================
+## 3. Confirmation of Process Startup
+
 
 Sequences and file acquisition processes are different each time
 depending on the used device, and tftpd and httpd are used.
@@ -140,8 +139,8 @@ In case the result is not shown, confirm the configuration of httpd.
   \--------------------------<br>
   LISTEN 0 128 \*:80 \*:\*
 
-4. Locate the Configuration File
-=============================
+## 4. Locate the Configuration File
+
 
 4.1. Locate the dhcpd.conf Template
 ------------------------------
@@ -214,7 +213,7 @@ It should be noted that the attached document provides just a part of
 whole examples since the initial configuration may vary depending on the
 role of switches as well as the type of devices.
 
-| \[Initial Configuration\] (Juniper)     |
+| \[Initial Configuration\] (Juniper)     ||||
 |-----------------|-----------------|-----------------|-----------------|
 | File Name       | Section to be Modified<br>(line \#)   | Change Description         | Legend \#       |
 | ztp.conf.qfx5100-24q\_Spine | 23              | Enter the EC server address    | 1               |
@@ -253,7 +252,7 @@ role of switches as well as the type of devices.
 |                 | 88              | Enter the address for administration       | 4               |
 |                 | 93, 102         | Enter the EC server address    | 4               |
 
-| \[Initial Configuration\] (Cisco)     |
+| \[Initial Configuration\] (Cisco)     ||||
 |-----------------|-----------------|-----------------|-----------------|
 | File Name       | Section to be Modified<br>(line \#)   | Change Description         | Legend \#       |
 | ztp.script.ncs5001_L3Leaf | 17              | Enter the EC server address    | 5               |

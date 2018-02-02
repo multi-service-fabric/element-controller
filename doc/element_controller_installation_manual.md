@@ -1834,13 +1834,13 @@ If it injected successfully, a message will be displayed as follows.
 >
 > Resource Group: grpEC
 >
-> vipCheck (ocf::heartbeat:VIPcheck): Started (Active Node Name))
+> vipCheck (ocf:\:heartbeat\:VIPcheck): Started (Active Node Name))
 >
-> prmIP (ocf::heartbeat:IPaddr2): Started (Active Node Name)
+> prmIP (ocf:\:heartbeat\:IPaddr2): Started (Active Node Name)
 >
-> prmEC (ocf::heartbeat:ec): Started (Active Node Name)
+> prmEC (ocf:\:heartbeat\:ec): Started (Active Node Name)
 >
-> prmSNMPTrapd (ocf::heartbeat:snmptrapd): Started (Active Node Name)
+> prmSNMPTrapd (ocf:\:heartbeat\:snmptrapd): Started (Active Node Name)
 >
 > Clone Set: clnDiskd \[prmDiskd\]
 >

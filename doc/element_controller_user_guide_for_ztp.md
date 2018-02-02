@@ -26,7 +26,7 @@ unless otherwise specified.
 
 The legends of command input are described below.
 
-\# COMMAND parameter <parameter> [parameter] Enter
+\# COMMAND parameter \<parameter\> \[parameter\] Enter
 
 \# ：the prompt sign
 
@@ -96,9 +96,9 @@ Showing result reveals that the port is released.
 
 In case the result is not shown, confirm the configuration of xinetd.
 
-  \[Output Result\]<br>
-  \------------------------<br>
-  UNCONN 0 0 \*:69 \*:\*
+|  \[Output Result\]|
+|------------------------|
+|  UNCONN 0 0 \*:69 \*:\*|
 
 3.2. httpd
 -----
@@ -135,9 +135,9 @@ Showing result reveals that the port is released.
 
 In case the result is not shown, confirm the configuration of httpd.
 
-  \[Output Result\]<br>
-  \--------------------------<br>
-  LISTEN 0 128 \*:80 \*:\*
+|  \[Output Result\] |
+|--------------------------|
+|  LISTEN 0 128 \*:80 \*:\*|
 
 ## 4. Locate the Configuration File
 

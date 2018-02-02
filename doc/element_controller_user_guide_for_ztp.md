@@ -288,11 +288,11 @@ template. Please refer to the following figure.
 | \--<br> \#\#\#\#\#\#\#\#\#\#<br> \# host<br> \#\#\#\#\#\#\#\#\#\#     |
 | \#\# QFX5200 \#\#<br> host QFX5200-1 {                                                      |
 |   hardware ethernet \$\$MACADDRESS\$\$;<br>   fixed-address \$\$MANAGEMENTADDRESS\$\$;<br>   next-server \$\$TFTPHOSTNAME\$\$;<br>   option tftp-server-name \"\$\$TFTPHOSTNAME\$\$\";<br>                     |
-| option QFX.alt-image-file-name<br> <font color="Red">\"/junos-conf/jinstall-qfx-5e-flex-15.1X53-D30.5-domestic-signed.tgz\"</font>; |
+| option QFX.alt-image-file-name<br> **\"/junos-conf/jinstall-qfx-5e-flex-15.1X53-D30.5-domestic-signed.tgz\"**; |
 | option QFX.transfer-mode \"http\";<br> option QFX.config-file-name \"\$\$INITIALCONFIG\$\$\";<br> }                                                                     |
 | dhcpd.conf.qfx5200 (END)<br> \--                                                                   |
 
-(\*) The <font color="Red">file path (relative path) of the OS image.</font>
+(\*) **The file path (relative path) of the OS image.**
 
 > Since the QFX5200's acquisition process is httpd, the absolute path
 > here should be:

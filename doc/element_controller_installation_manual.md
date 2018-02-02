@@ -4,8 +4,7 @@
 **December 26, 2017**
 **Copyright(c) 2017 Nippon Telegraph and Telephone Corporation**
 
-1. Introduction
-------------
+## 1.  Introduction
 
 1.1. Objective
 ---------
@@ -263,8 +262,7 @@ Accessories
 | 189.    |       |         |         | ec      | Resource Agent |         |
 | 190.    |       |         |         | snmptrapd | Resource Agent |         |
 
-2. Operational Environment
-----------------------
+## 2. Operational Environment
 
 2.1. EC Main Module Start-up Server of Controller
 ------------------------------------------------
@@ -282,8 +280,7 @@ Table 2-1 Recommended Hardware Configuration
 | 4.   | HD Free Space | 500G or larger                       |
 | 5.   | NIC           | More than 1 port                     |
 
-3. Installation of Controller Server
--------------------------------------
+## 3. Installation of Controller Server
 
 The instructions described in this section must be performed by the root
 user unless any specific user is specified.

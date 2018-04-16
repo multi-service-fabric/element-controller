@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.control;
@@ -10,11 +10,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.config.EcConfiguration;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Number of REST Transmission Management Class Definition. Managing the number of transmissions on REST communication.

@@ -1,34 +1,34 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl.pojo;
 
 /**
- * ifOperStatus Information of SNMP
+ * ifOperStatus Information of SNMP.
  */
 public class SnmpIfOperStatus {
 
-  /** ifOperStatus : 1 - Up */
+  /** ifOperStatus : 1 - Up. */
   public static final int IF_OPER_STATUS_UP = 1;
 
-  /** ifOperStatus : 2 - Down */
+  /** ifOperStatus : 2 - Down. */
   public static final int IF_OPER_STATUS_DOWN = 2;
 
-  /** ifOperStatus : 3 - Testing */
+  /** ifOperStatus : 3 - Testing. */
   public static final int IF_OPER_STATUS_TESTING = 3;
 
-  /** ifOperStatus : 7 - LowerLayerDown */
+  /** ifOperStatus : 7 - LowerLayerDown. */
   public static final int IF_OPER_STATUS_LOWER_LAYER_DOWN = 7;
 
-  /** IF Name */
+  /** IF Name. */
   private String ifName;
 
-  /** ifOperStatus */
+  /** ifOperStatus. */
   private int ifOperStatus;
 
   /**
-   * Constructor
+   * Constructor.
    *
    * @param ifName
    *          IF name
@@ -42,7 +42,7 @@ public class SnmpIfOperStatus {
   }
 
   /**
-   * Getting IF name
+   * Getting IF name.
    *
    * @return IF name
    */
@@ -51,7 +51,7 @@ public class SnmpIfOperStatus {
   }
 
   /**
-   * Setting IF name
+   * Setting IF name.
    *
    * @param ifName
    *          IF name
@@ -61,7 +61,7 @@ public class SnmpIfOperStatus {
   }
 
   /**
-   * Getting ifOperStatus
+   * Getting ifOperStatus.
    *
    * @return ifOperStatus
    */
@@ -70,7 +70,7 @@ public class SnmpIfOperStatus {
   }
 
   /**
-   * Setting ifOperStatus
+   * Setting ifOperStatus.
    *
    * @param ifOperStatus
    *          ifOperStatus

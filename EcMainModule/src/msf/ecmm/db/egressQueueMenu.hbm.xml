@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+    <!-- Egress Queue Menus Information Class -->
+
+<hibernate-mapping>
+    <class name="msf.ecmm.db.pojo.EgressQueueMenus" table="egress_queue_menu" lazy="true">
+        <composite-id>
+            <key-property name="equipment_type_id" type="text">
+                <column name="equipment_type_id" not-null="true"/>
+            </key-property>
+            <key-property name="egress_queue_menu" type="text">
+                <column name="egress_queue_menu" not-null="true"/>
+            </key-property>
+            <generator class="assigned"/>
+        </composite-id>
+    </class>
+    <query name="selectEgressQueueMenus">
+        <![CDATA[
+            from msf.ecmm.db.pojo.EgressQueueMenus as egress_queue_menu where equipment_type_id = :key1
+         ]]>
+    </query>
+    <query name="deleteEgressQueueMenus">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.EgressQueueMenus as egress_queue_menu where equipment_type_id = :key1
+         ]]>
+    </query>
+</hibernate-mapping>

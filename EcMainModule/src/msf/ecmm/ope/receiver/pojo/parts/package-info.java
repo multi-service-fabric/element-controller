@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Operation Request Reception Functional Part (POJO Component)
  */
 

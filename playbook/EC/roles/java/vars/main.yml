@@ -1,0 +1,5 @@
+folder_name: 'java.v8u92'
+
+file_list:
+  - file_name: 'jdk-8u92-linux-x64.rpm'
+    url: 'http://download.oracle.com/otn/java/jdk/8u92-b14/jdk-8u92-linux-x64.rpm'

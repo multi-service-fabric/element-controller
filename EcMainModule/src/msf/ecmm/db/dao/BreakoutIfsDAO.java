@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,12 +9,12 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.BreakoutIfs;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
-
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.BreakoutIfs;
 
 /**
  * The class in which breakoutIF information related DB process is performed.
@@ -36,6 +36,8 @@ public class BreakoutIfsDAO extends BaseDAO {
    *
    * @param breakoutIfs
    *          breakoutIF information to be registered
+   * @param check
+   *          check
    * @throws DBAccessException
    *           data base exception
    */
@@ -43,7 +45,7 @@ public class BreakoutIfsDAO extends BaseDAO {
     try {
       BreakoutIfs regbreakoutIfs = this.search(breakoutIfs.getNode_id(), breakoutIfs.getBreakout_if_id());
       if (regbreakoutIfs != null) {
-        if (check) { 
+        if (check) {
           this.updateIP(breakoutIfs);
         } else {
           this.errorMessage(DOUBLE_REGISTRATION, BREAKOUT_IFS, null);
@@ -78,13 +80,13 @@ public class BreakoutIfsDAO extends BaseDAO {
         BreakoutIfs breakoutIfs = this.search(node_id, breakout_if_id);
         if (breakoutIfs == null) {
           this.errorMessage(NO_DELETE_TARGET, BREAKOUT_IFS, null);
-        } 
+        }
         query = session.getNamedQuery("deleteBreakoutIfs");
         query.setString("key2", breakout_if_id);
       } else {
         List<BreakoutIfs> breakoutIfsList = this.getList(node_id);
         if (breakoutIfsList == null) {
-          if (check) { 
+          if (check) {
             return;
           }
           this.errorMessage(NO_DELETE_TARGET, BREAKOUT_IFS, null);
@@ -187,7 +189,7 @@ public class BreakoutIfsDAO extends BaseDAO {
   }
 
   /**
-   * breakoutIF IP Status Information Table UPDATE.
+   * breakoutIF IP Information Table UPDATE.
    *
    * @param breakoutIfs
    *          breakoutIF information
@@ -205,6 +207,34 @@ public class BreakoutIfsDAO extends BaseDAO {
         query.setString("key2", breakoutIfs.getBreakout_if_id());
         query.setString("key3", breakoutIfs.getIpv4_address());
         query.setParameter("key4", breakoutIfs.getIpv4_prefix(), StandardBasicTypes.INTEGER);
+        query.executeUpdate();
+      }
+    } catch (DBAccessException e1) {
+      throw e1;
+    } catch (Throwable e2) {
+      logger.debug("breakout_ifs update failed.", e2);
+      this.errorMessage(UPDATE_FAILURE, BREAKOUT_IFS, e2);
+    }
+  }
+
+  /**
+   * breakoutIF Name Information Table UPDATE.
+   *
+   * @param breakoutIfs
+   *          breakoutIF information
+   * @throws DBAccessException
+   *           data base exception
+   */
+  public void updateIfName(BreakoutIfs breakoutIfs) throws DBAccessException {
+    try {
+      BreakoutIfs regBreakoutIfs = this.search(breakoutIfs.getNode_id(), breakoutIfs.getBreakout_if_id());
+      if (regBreakoutIfs == null) {
+        this.errorMessage(NO_UPDATE_TARGET, BREAKOUT_IFS, null);
+      } else {
+        Query query = session.getNamedQuery("updateBreakoutIfName");
+        query.setString("key1", breakoutIfs.getNode_id());
+        query.setString("key2", breakoutIfs.getBreakout_if_id());
+        query.setString("key3", breakoutIfs.getIf_name());
 
         query.executeUpdate();
       }
@@ -215,4 +245,5 @@ public class BreakoutIfsDAO extends BaseDAO {
       this.errorMessage(UPDATE_FAILURE, BREAKOUT_IFS, e2);
     }
   }
+
 }

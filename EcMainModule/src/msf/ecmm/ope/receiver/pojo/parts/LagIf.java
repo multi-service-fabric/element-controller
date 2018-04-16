@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -31,7 +31,10 @@ public class LagIf {
   /** IPv4 Address Prefix. */
   private String ipv4Prefix;
 
-  /**
+  /** QoS capability. */
+  private QosCapabilities qos;
+
+    /**
    * Getting LagIF ID.
    *
    * @return LagIF ID
@@ -165,14 +168,34 @@ public class LagIf {
   }
 
   /**
-   * Stringizing Instance.
+   * Getting QoS capability.
    *
-   * @return instance string
+   * @return qos
+   */
+  public QosCapabilities getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QoS capability.
+   *
+   * @param qos
+   *          setting qos
+   */
+  public void setQos(QosCapabilities qos) {
+    this.qos = qos;
+  }
+
+  /*
+   *  Stringizing Instance.
+   *
+   * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
     return "LagIf [lagIfId=" + lagIfId + ", ifName=" + ifName + ", lagMember=" + lagMember + ", ifState=" + ifState
-        + ", linkSpeed=" + linkSpeed + ", ipv4Address=" + ipv4Address + ", ipv4Prefix=" + ipv4Prefix + "]";
+        + ", linkSpeed=" + linkSpeed + ", ipv4Address=" + ipv4Address + ", ipv4Prefix=" + ipv4Prefix + ", qos=" + qos
+        + "]";
   }
 
 }

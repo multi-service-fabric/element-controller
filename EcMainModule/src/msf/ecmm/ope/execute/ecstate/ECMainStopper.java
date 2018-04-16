@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.ecstate;
@@ -9,13 +9,16 @@ import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
 import java.util.HashMap;
 
-import org.hibernate.HibernateException;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.fcctrl.RestClient;
+import msf.ecmm.fcctrl.RestClientException;
+import msf.ecmm.fcctrl.pojo.CommonResponseFromFc;
+import msf.ecmm.fcctrl.pojo.ControllerStatusToFc;
+import msf.ecmm.fcctrl.pojo.parts.Controller;
 import msf.ecmm.ope.control.ECMainState;
 import msf.ecmm.ope.control.OperationControlManager;
 import msf.ecmm.ope.execute.Operation;
@@ -25,6 +28,8 @@ import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
 import msf.ecmm.traffic.InterfaceIntegrityValidationManager;
 import msf.ecmm.traffic.TrafficDataGatheringManager;
+
+import org.hibernate.HibernateException;
 
 /**
  * EC Termination Class Definition. Terminate EC.
@@ -42,6 +47,12 @@ public class ECMainStopper extends Operation {
 
   /** Switch systems */
   private final String CHANGE_OVER = "chgover";
+
+  /** Systems Switch Start. */
+  private static final String STARTSYSTEMSWITCHING = "start system switching";
+
+  /** Controller Type (EC). */
+  private static final String CONTROLLER_TYPE = "ec";
 
   /**
    * Constructor
@@ -90,7 +101,7 @@ public class ECMainStopper extends Operation {
     synchronized (OperationControlManager.getInstance()) {
       try {
         OperationControlManager.getInstance().updateEcMainState(false, state);
-      } catch (DBAccessException e) {
+      } catch (DBAccessException e1) {
       }
     }
 
@@ -116,17 +127,31 @@ public class ECMainStopper extends Operation {
 
         session.commit();
 
+        try {
+          OperationControlManager.getInstance().updateEcMainState(false, ECMainState.Stop);
+        } catch (DBAccessException e1) {
+        }
+
       } catch (DBAccessException | HibernateException dae) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dae);
       }
     } else {
-    }
+      RestClient rc = new RestClient();
+      HashMap<String, String> keyMap = new HashMap<String, String>();
+      ControllerStatusToFc outputData = new ControllerStatusToFc();
+      Controller ecController = new Controller();
+      ecController.setController_type(CONTROLLER_TYPE);
+      ecController.setEvent(STARTSYSTEMSWITCHING);
+      outputData.setController(ecController);
+      try {
+        rc.request(RestClient.CONTROLLER_STATE_NOTIFICATION, keyMap, outputData, CommonResponseFromFc.class);
 
-    try {
-      OperationControlManager.getInstance().updateEcMainState(false, ECMainState.Stop);
-    } catch (DBAccessException e) {
-    }
+      } catch (RestClientException rce) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_513031, "REST request"), rce);
+      }
+      logger.info(LogFormatter.out.format(LogFormatter.MSG_303091, "Complete to system switch notification:[start]"));
 
+    }
     logger.trace(CommonDefinitions.END);
 
     return ret;

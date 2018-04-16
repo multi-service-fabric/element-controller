@@ -1,0 +1,13 @@
+rpm_path: /root/setup/ec
+ec_path: /root/setup/ec
+install_flag: false
+download_flag: false
+db_address: 192.168.0.253
+db_name: msf_ec_2
+controller_cidr: 192.168.0.0/24
+ha_flag: false
+act_address: none
+act_node_name: none
+sby_address: none
+sby_node_name: none
+cluster_name: none

@@ -1,0 +1,7 @@
+folder_name: 'RA'
+
+file_list:
+  - file_name: 'ec'
+    url: 'https://github.com/multi-service-fabric/element-controller/raw/master/script/RA/ec'
+  - file_name: 'snmptrapd '
+    url: 'https://github.com/multi-service-fabric/element-controller/raw/master/script/RA/snmptrapd'

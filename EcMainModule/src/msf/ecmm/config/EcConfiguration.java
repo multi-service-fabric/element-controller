@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.config;
@@ -11,14 +11,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
- * Configuration Management Class
+ * Configuration Management Class.
  */
 public class EcConfiguration {
 
@@ -110,13 +110,13 @@ public class EcConfiguration {
 
 
   /**
-   * Configuration Management Functional Part Class Constructor
+   * Configuration Management Functional Part Class Constructor.
    */
   private EcConfiguration() {
   }
 
   /**
-   * Returning Instance of Configuration Management Functional Part Class
+   * Returning Instance of Configuration Management Functional Part Class.
    *
    * @return Configuration Management Functional Part Class Instance
    */
@@ -125,7 +125,7 @@ public class EcConfiguration {
   }
 
   /**
-   * Reading Properties
+   * Reading Properties.
    *
    * @param filename
    *          Property File Path
@@ -153,7 +153,7 @@ public class EcConfiguration {
   }
 
   /**
-   * Checking configuration data values
+   * Checking configuration data values.
    *
    * @return property data check result
    */
@@ -489,7 +489,7 @@ public class EcConfiguration {
   }
 
   /**
-   * Configuration Acquisition
+   * Configuration Acquisition.
    *
    * @param cls
    *          class (Integer or String)
@@ -519,7 +519,7 @@ public class EcConfiguration {
   }
 
   /**
-   * Property Value Check (String)
+   * Property Value Check (String).
    *
    * @param key
    *          property key
@@ -542,7 +542,7 @@ public class EcConfiguration {
   }
 
   /**
-   * Property Value Check (Integer)
+   * Property Value Check (Integer).
    *
    * @param key
    *          property key
@@ -584,20 +584,16 @@ public class EcConfiguration {
   }
 
   /**
-   * Inner Class for Configuration Data Check
+   * Inner Class for Configuration Data Check.
    */
   protected class InnerConfigCheck {
-    /** mandatory/optional check: mandatory(true), optional(false) */
     private Boolean requiredCheck = true;
-    /** Checks have done?: checked(true), not checked(false) */
     private Boolean checkExec = false;
-    /** check result: normal(true), abnormal(false) */
     private Boolean checkRet = false;
-    /** default value */
     private String defaultValue = "";
 
     /**
-  	* Constructor (Mandatory Configuration)
+     * Constructor (Mandatory Configuration).
      *
      * @param execCheck
      *          mandatory/optional check
@@ -609,7 +605,7 @@ public class EcConfiguration {
     }
 
     /**
-  	* Constructor (Optional Configuration)
+     * Constructor (Optional Configuration).
      *
      * @param defaultValue
      *          Default Value

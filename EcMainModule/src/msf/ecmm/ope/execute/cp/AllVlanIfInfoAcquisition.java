@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.cp;
@@ -15,6 +15,7 @@ import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.VlanIfs;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
@@ -64,8 +65,9 @@ public class AllVlanIfInfoAcquisition extends Operation {
     try (DBAccessManager session = new DBAccessManager()) {
 
       List<VlanIfs> vlanIfsDb = session.getVlanIfsList(nodeId);
+      Nodes nodes = session.searchNodes(nodeId, null);
 
-      getVlanIfList = RestMapper.toVlanIfsInfoList(vlanIfsDb);
+      getVlanIfList = RestMapper.toVlanIfsInfoList(vlanIfsDb, nodes);
 
       response = makeSuccessResponse(RESP_OK_200, getVlanIfList);
 

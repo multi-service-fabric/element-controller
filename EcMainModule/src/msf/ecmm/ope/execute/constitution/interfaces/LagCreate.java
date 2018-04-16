@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
@@ -14,6 +14,7 @@ import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.DbMapper;
 import msf.ecmm.convert.EmMapper;
+import msf.ecmm.convert.LogicalPhysicalConverter;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.LagIfs;
@@ -117,13 +118,20 @@ public class LagCreate extends Operation {
         }
       }
 
-      LagIfs lagIfsDb = DbMapper.toLagIfCreate(inputData, nodesDb);
+      String lagIfId = null;
+      if (nodesDb.getEquipments().getRouter_type() == 0) {
+        lagIfId = LogicalPhysicalConverter.getLagIfId(nodesDb);
+      } else {
+        lagIfId = inputData.getLagIf().getLagIfId();
+      }
+
+      LagIfs lagIfsDb = DbMapper.toLagIfCreate(inputData, nodesDb, lagIfId);
 
       session.startTransaction();
 
       session.addLagIfs(lagIfsDb);
 
-      CeLagAddDelete ceLagAddDeleteEm = EmMapper.toLagIfCreate(inputData, nodesDb);
+      CeLagAddDelete ceLagAddDeleteEm = EmMapper.toLagIfCreate(inputData, nodesDb, lagIfId);
 
       AbstractMessage result = EmController.getInstance().request(ceLagAddDeleteEm);
 

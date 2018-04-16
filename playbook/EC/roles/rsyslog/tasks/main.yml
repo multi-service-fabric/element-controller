@@ -1,0 +1,28 @@
+# Setting rsyslog
+  - name: replace rsyslog setting 1
+    replace: dest=/etc/rsyslog.conf regexp='#\$ModLoad' replace='$ModLoad'
+  - name: replace rsyslog setting 2
+    replace: dest=/etc/rsyslog.conf regexp='#\$UDPServerRun' replace='$UDPServerRun'
+  - name: replace rsyslog setting 3
+    replace: dest=/etc/rsyslog.conf regexp='#\$InputTCPServerRun' replace='$InputTCPServerRun'
+  - name: check before add setting
+    find: paths=/etc/rsyslog.conf
+          patterns='$template hostip, "%fromhost-ip%"'
+    register: found_files
+  - name: add rsyslog setting 1
+    lineinfile:
+      dest=/etc/rsyslog.conf
+      insertafter='\$UDPServerRun'
+      line='$AllowedSender UDP, 127.0.0.1, {{ device_cidr }}'
+    when: found_files.matched == 0
+  - name: add rsyslog setting 2
+    lineinfile:
+      dest=/etc/rsyslog.conf
+      insertafter='\$InputTCPServerRun'
+      line='$AllowedSender TCP, 127.0.0.1, {{ device_cidr }}'
+    when: found_files.matched == 0
+  - name: add rsyslog setting 3
+    lineinfile:
+      dest=/etc/rsyslog.conf
+      line='$template hostip, "%fromhost-ip%"'
+    when: found_files.matched == 0

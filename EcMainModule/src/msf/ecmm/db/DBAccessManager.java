@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db;
@@ -14,6 +14,7 @@ import msf.ecmm.db.dao.BGPOptionsDAO;
 import msf.ecmm.db.dao.BaseDAO;
 import msf.ecmm.db.dao.BootErrorMessagesDAO;
 import msf.ecmm.db.dao.BreakoutIfsDAO;
+import msf.ecmm.db.dao.EgressQueueMenusDAO;
 import msf.ecmm.db.dao.EquipmentIfsDAO;
 import msf.ecmm.db.dao.EquipmentsDAO;
 import msf.ecmm.db.dao.IfNameRulesDAO;
@@ -22,6 +23,7 @@ import msf.ecmm.db.dao.LagMembersDAO;
 import msf.ecmm.db.dao.NodesDAO;
 import msf.ecmm.db.dao.NodesStartupNotificationDAO;
 import msf.ecmm.db.dao.PhysicalIfsDAO;
+import msf.ecmm.db.dao.RemarkMenusDAO;
 import msf.ecmm.db.dao.StaticRouteOptionsDAO;
 import msf.ecmm.db.dao.SystemStatusDAO;
 import msf.ecmm.db.dao.VRRPOptionsDAO;
@@ -204,6 +206,12 @@ public class DBAccessManager implements AutoCloseable {
     logger.trace(CommonDefinitions.START);
     logger.debug("equipment_type_id:" + equipment_type_id);
 
+    RemarkMenusDAO remarkMenusDao = new RemarkMenusDAO(session);
+    remarkMenusDao.delete(equipment_type_id);
+
+    EgressQueueMenusDAO egressMenusDao = new EgressQueueMenusDAO(session);
+    egressMenusDao.delete(equipment_type_id);
+
     EquipmentIfsDAO equipmentIfsDao = new EquipmentIfsDAO(session);
     equipmentIfsDao.delete(equipment_type_id);
 
@@ -264,7 +272,7 @@ public class DBAccessManager implements AutoCloseable {
    * @param node_id
    *          device ID
    * @param management_if_address
-	*          management IF address (NULL is permitted)
+   *          management IF address (NULL is permitted)
    * @return device information
    * @throws DBAccessException
    *           data base exception
@@ -283,7 +291,7 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-	* Device Information Acquisition (Model ID).
+   * Device Information Acquisition (Model ID).
    *
    * @param equipment_type_id
    *          model ID
@@ -383,7 +391,7 @@ public class DBAccessManager implements AutoCloseable {
         }
       }
       PhysicalIfsDAO physicalIfsDao = new PhysicalIfsDAO(session);
-      physicalIfsDao.delete(node_id, true);
+      physicalIfsDao.deleteAll(node_id, true);
     }
 
     nodesDao.delete(node_id);
@@ -872,6 +880,24 @@ public class DBAccessManager implements AutoCloseable {
 
 
   /**
+   * Device Start-up Notification Information Registration.
+   *
+   * @param nodeInfo
+   *          Device Start-up Notification Information
+   * @throws DBAccessException
+   *           data base exception
+   */
+  public void addNodesStartupNotification(NodesStartupNotification nodeInfo) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("nodeInfo:" + nodeInfo.toString());
+
+    NodesStartupNotificationDAO nodesStartupNotificationDao = new NodesStartupNotificationDAO(session);
+    nodesStartupNotificationDao.save(nodeInfo);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
    * Device Start-up Notification Information List Acquisition.
    *
    * @return device start-up notification information list
@@ -961,6 +987,8 @@ public class DBAccessManager implements AutoCloseable {
    *          LagIf
    * @param vlanIfs
    *          VLANIf
+   * @param breakoutIfs
+   *          breakoutIF
    * @throws DBAccessException
    *           data base exception
    */
@@ -1001,6 +1029,8 @@ public class DBAccessManager implements AutoCloseable {
    *          LagIf
    * @param vlanIfs
    *          VLANIf
+   * @param breakoutIfs
+   *          breakoutIF
    * @throws DBAccessException
    *           data base exception
    */
@@ -1124,6 +1154,83 @@ public class DBAccessManager implements AutoCloseable {
 
     StaticRouteOptionsDAO staticRouteOptionsDao = new StaticRouteOptionsDAO(session);
     staticRouteOptionsDao.delete(staticRouteOptions);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * VLAN QoS Information Update.
+   *
+   * @param vlanIfs
+   *          VLANIf
+   * @throws DBAccessException
+   *           data base exception
+   */
+  public void updateVlanIfs(VlanIfs vlanIfs) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("vlanIfList:" + vlanIfs.toString());
+
+    VlanIfsDAO vlanIfsDao = new VlanIfsDAO(session);
+    vlanIfsDao.updateQos(vlanIfs);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+
+  /**
+   * Change in Additional Service Recovery device information.
+   *
+   * @param nodes
+   *          Device information after recovery
+   * @param addPhysiIfsList
+   *          Physical IF information list to be added
+   * @param delPhysiIfsList
+   *          Physical IF information list to be deleted
+   * @param vlanIfsList
+   *          VLAN IF Information list after recovery
+   * @throws DBAccessException
+   *           data base exception
+   */
+  public void updateForRecover(Nodes nodes, List<PhysicalIfs> addPhysiIfsList, List<PhysicalIfs> delPhysiIfsList,
+      List<VlanIfs> vlanIfsList) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("nodes:" + nodes + ", addPhysiIfsList:" + addPhysiIfsList + ", delPhysiIfsList:" + delPhysiIfsList
+        + ", vlanIfsList:" + vlanIfsList);
+
+    NodesDAO nodesDao = new NodesDAO(session);
+    nodesDao.updateNodes(nodes);
+
+    PhysicalIfsDAO physicalIfsDao = new PhysicalIfsDAO(session);
+    BreakoutIfsDAO boIfsDao = new BreakoutIfsDAO(session);
+    for (PhysicalIfs elem : nodes.getPhysicalIfsList()) {
+      if (elem.getIf_name() != null) {
+        physicalIfsDao.update(elem);
+      }
+      if (elem.getBreakoutIfsList() != null) {
+        for (BreakoutIfs boElem : elem.getBreakoutIfsList()) {
+          boIfsDao.updateIfName(boElem);
+        }
+      }
+    }
+
+    for (PhysicalIfs elem : addPhysiIfsList) {
+      physicalIfsDao.save(elem);
+    }
+
+    for (PhysicalIfs elem : delPhysiIfsList) {
+      physicalIfsDao.delete(elem.getNode_id(), elem.getPhysical_if_id());
+    }
+
+    LagIfsDAO lagIfsDao = new LagIfsDAO(session);
+    for (LagIfs elem : nodes.getLagIfsList()) {
+      lagIfsDao.updateName(elem);
+    }
+
+    VlanIfsDAO vlanIfsDao = new VlanIfsDAO(session);
+    for (VlanIfs elem : vlanIfsList) {
+      vlanIfsDao.updateIfName(elem);
+      vlanIfsDao.updateQos(elem);
+    }
 
     logger.trace(CommonDefinitions.END);
   }

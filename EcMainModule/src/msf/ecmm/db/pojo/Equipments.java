@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.pojo;
@@ -52,12 +52,24 @@ public class Equipments implements Serializable {
   private Boolean l2vpn_capability;
   /** L3VPN Configuration Feasibility. */
   private Boolean l3vpn_capability;
+  /** QoS in/out-flow shaping rate Configuration Feasibility. */
+  private Boolean qos_shaping_flg = null;
+  /** QoS Remark menu Configuration Feasibility. */
+  private Boolean qos_remark_flg = null;
+  /** Remark menu default value. */
+  private String default_remark_menu = null;
+  /** Egress queue menu default menu. */
+  private String default_egress_queue_menu = null;
   /** Model IF Information List. */
   private Set<EquipmentIfs> equipmentIfsList;
   /** Physical IF Naming Convention Information. */
   private Set<IfNameRules> ifNameRulesList;
   /** Start-up Failure Determination Message Information. */
   private Set<BootErrorMessages> bootErrorMessagesList;
+  /** Remark menu Information. */
+  private Set<RemarkMenus> remarkMenusList;
+  /** Egress queue menu Information. */
+  private Set<EgressQueueMenus> egressQueueMenusList;
 
   /**
    * Generating new instance.
@@ -316,7 +328,7 @@ public class Equipments implements Serializable {
   /**
    * Getting DHCP type information.
    *
-   * @return DHCP type information 
+   * @return DHCP type information
    */
   public String getDhcp_template() {
     return dhcp_template;
@@ -448,6 +460,82 @@ public class Equipments implements Serializable {
   }
 
   /**
+   * Getting QoS in/out-flow shaping rate Configuration Feasibility information.
+   *
+   * @return QoS in/out-flow shaping rate Configuration Feasibility information
+   */
+  public Boolean getQos_shaping_flg() {
+    return qos_shaping_flg;
+  }
+
+  /**
+   * Setting QoS in/out-flow shaping rate Configuration Feasibility information.
+   *
+   * @param qos_shaping_flg
+   *          QoS in/out-flow shaping rate Configuration Feasibility information
+   */
+  public void setQos_shaping_flg(Boolean qos_shaping_flg) {
+    this.qos_shaping_flg = qos_shaping_flg;
+  }
+
+  /**
+   * Getting QoS Remark menu Configuration Feasibility information.
+   *
+   * @return QoS Remark menu Configuration Feasibility information
+   */
+  public Boolean getQos_remark_flg() {
+    return qos_remark_flg;
+  }
+
+  /**
+   * Setting QoS Remark menu Configuration Feasibility information.
+   *
+   * @param qos_remark_flg
+   *          QoS Remark menu Configuration Feasibility information
+   */
+  public void setQos_remark_flg(Boolean qos_remark_flg) {
+    this.qos_remark_flg = qos_remark_flg;
+  }
+
+  /**
+   * Getting Remark menu default value information.
+   *
+   * @return Remark menu default value information
+   */
+  public String getDefault_remark_menu() {
+    return default_remark_menu;
+  }
+
+  /**
+   * Setting Remark menu default value information.
+   *
+   * @param default_remark_menu
+   *          Remark menu default value information
+   */
+  public void setDefault_remark_menu(String default_remark_menu) {
+    this.default_remark_menu = default_remark_menu;
+  }
+
+  /**
+   * Getting Egress queue menu default menu information.
+   *
+   * @return Egress queue menu default menu information
+   */
+  public String getDefault_egress_queue_menu() {
+    return default_egress_queue_menu;
+  }
+
+  /**
+   * Setting Egress queue menu default menu information.
+   *
+   * @param default_egress_queue_menu
+   *          Egress queue menu default menu information
+   */
+  public void setDefault_egress_queue_menu(String default_egress_queue_menu) {
+    this.default_egress_queue_menu = default_egress_queue_menu;
+  }
+
+  /**
    * Getting model IF information list.
    *
    * @return model IF information list
@@ -502,6 +590,44 @@ public class Equipments implements Serializable {
    */
   public void setBootErrorMessagesList(Set<BootErrorMessages> bootErrorMessagesList) {
     this.bootErrorMessagesList = bootErrorMessagesList;
+  }
+
+  /**
+   * Getting Remark menu Information.
+   *
+   * @return Remark menu Information
+   */
+  public Set<RemarkMenus> getRemarkMenusList() {
+    return remarkMenusList;
+  }
+
+  /**
+   * Setting Remark menu Information.
+   *
+   * @param remarkMenusList
+   *          Remark menu Information
+   */
+  public void setRemarkMenusList(Set<RemarkMenus> remarkMenusList) {
+    this.remarkMenusList = remarkMenusList;
+  }
+
+  /**
+   * Getting Egress queue menu Information.
+   *
+   * @return Egress queue menu Information
+   */
+  public Set<EgressQueueMenus> getEgressQueueMenusList() {
+    return egressQueueMenusList;
+  }
+
+  /**
+   * Setting Egress queue menu Information.
+   *
+   * @param egressQueueMenusList
+   *          Egress queue menu Information
+   */
+  public void setEgressQueueMenusList(Set<EgressQueueMenus> egressQueueMenusList) {
+    this.egressQueueMenusList = egressQueueMenusList;
   }
 
   /*
@@ -560,9 +686,11 @@ public class Equipments implements Serializable {
         + breakout_if_name_syntax + ", breakout_if_name_suffix_list=" + breakout_if_name_suffix_list
         + ", dhcp_template=" + dhcp_template + ", config_template=" + config_template + ", initial_config="
         + initial_config + ", boot_complete_msg=" + boot_complete_msg + ", evpn_capability=" + evpn_capability
-        + ", l2vpn_capability=" + l2vpn_capability + ", l3vpn_capability=" + l3vpn_capability + ", equipmentIfsList="
-        + equipmentIfsList + ", ifNameRulesList=" + ifNameRulesList + ", bootErrorMessagesList=" + bootErrorMessagesList
-        + "]";
+        + ", l2vpn_capability=" + l2vpn_capability + ", l3vpn_capability=" + l3vpn_capability + ", qos_shaping_flg="
+        + qos_shaping_flg + ", qos_remark_flg=" + qos_remark_flg + ", default_remark_menu=" + default_remark_menu
+        + ", default_egress_queue_menu=" + default_egress_queue_menu + ", equipmentIfsList=" + equipmentIfsList
+        + ", ifNameRulesList=" + ifNameRulesList + ", bootErrorMessagesList=" + bootErrorMessagesList
+        + ", remarkMenusList=" + remarkMenusList + ", egressQueueMenusList=" + egressQueueMenusList + "]";
   }
 
 }

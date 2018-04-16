@@ -6,21 +6,25 @@
     <!-- Start-up Failure Determination Message Information Class -->
 
 <hibernate-mapping>
-        <class name="msf.ecmm.db.pojo.BootErrorMessages" table="boot_error_msgs" lazy="true">
-            <id name="equipment_type_id" type="text">
-                <column name="equipment_type_id" sql-type="TEXT" not-null="true"/>
-                <generator class="assigned" />
-            </id>
-            <property name="boot_error_msgs" type="text"  not-null="false"/>
-        </class>
-        <query name="selectBootErrorMessages">
-            <![CDATA[
-                from msf.ecmm.db.pojo.BootErrorMessages as boot_error_messages where equipment_type_id = :key1
-             ]]>
-        </query>
-        <query name="deleteBootErrorMessages">
-            <![CDATA[
-                delete from msf.ecmm.db.pojo.BootErrorMessages as boot_error_messages where equipment_type_id = :key1
-             ]]>
-        </query>
+    <class name="msf.ecmm.db.pojo.BootErrorMessages" table="boot_error_msgs" lazy="true">
+        <composite-id>
+            <key-property name="equipment_type_id" type="text">
+                <column name="equipment_type_id" not-null="true"/>
+            </key-property>
+            <key-property name="boot_error_msgs" type="text">
+                <column name="boot_error_msgs" not-null="false"/>
+            </key-property>
+            <generator class="assigned"/>
+        </composite-id>
+    </class>
+    <query name="selectBootErrorMessages">
+        <![CDATA[
+            from msf.ecmm.db.pojo.BootErrorMessages as boot_error_messages where equipment_type_id = :key1
+         ]]>
+    </query>
+    <query name="deleteBootErrorMessages">
+        <![CDATA[
+            delete from msf.ecmm.db.pojo.BootErrorMessages as boot_error_messages where equipment_type_id = :key1
+         ]]>
+    </query>
 </hibernate-mapping>

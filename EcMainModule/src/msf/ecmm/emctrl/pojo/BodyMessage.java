@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo;
@@ -35,6 +35,14 @@ public class BodyMessage extends AbstractMessage {
   /** LAG Add/Delete for Internal Link POJO Class. */
   @XmlElement(name = "internal-link")
   private InternalLinkAddDelete internalLinkLagAddDelete = null;
+
+  /** Recover Update Node POJO Class. */
+  @XmlElement(name = "recover-node")
+  private RecoverUpdateNode recoverUpdateNode = null;
+
+	/** Recover Update Node (servise reconfiguration) POJO Class. */
+  @XmlElement(name = "recover-service")
+  private RecoverUpdateService recoverUpdateService = null;
 
   /** LAG Add/Delete for CE POJO Class. */
   @XmlElement(name = "ce-lag")
@@ -155,6 +163,44 @@ public class BodyMessage extends AbstractMessage {
   }
 
   /**
+   * Getting Recover update node POJO class.
+   *
+   * @return recoverUpdateNode
+   */
+  public RecoverUpdateNode getRecoverUpdateNode() {
+    return recoverUpdateNode;
+  }
+
+  /**
+   * Setting Recover update node  POJO class.
+   *
+   * @param recoverUpdateNode
+   *          setting recoverUpdateNode 
+   */
+  public void setRecoverUpdateNode(RecoverUpdateNode recoverUpdateNode) {
+    this.recoverUpdateNode = recoverUpdateNode;
+  }
+
+  /**
+   * Getting Recover Update Node (servise reconfiguration).
+   *
+   * @return recoverUpdateService
+   */
+  public RecoverUpdateService getRecoverUpdateService() {
+    return recoverUpdateService;
+  }
+
+  /**
+   * Setting Recover Update Node (servise reconfiguration).
+   *
+   * @param recoverUpdateService
+   *          set recoverUpdateService
+   */
+  public void setRecoverUpdateService(RecoverUpdateService recoverUpdateService) {
+    this.recoverUpdateService = recoverUpdateService;
+  }
+
+  /**
    * Getting LAG add/delete for CE POJO class.
    *
    * @return LAG add/delete for CE POJO class
@@ -211,7 +257,7 @@ public class BodyMessage extends AbstractMessage {
     this.betweenClustersLinkAddDelete = betweenClustersLinkAddDelete;
   }
 
-  /**
+ /**
    * Getting breakoutIF registration/deletion POJO class.
    *
    * @return breakoutIF registration/deletion POJO class
@@ -238,8 +284,9 @@ public class BodyMessage extends AbstractMessage {
   @Override
   public String toString() {
     return "BodyMessage [l2SliceAddDelete=" + l2SliceAddDelete + ", l3SliceAddDelete=" + l3SliceAddDelete
-        + ", leafAddDelete=" + leafAddDelete + ", spineAddDelete=" + spineAddDelete + ", internalLinkAddDelete="
-        + internalLinkLagAddDelete + ", ceLagAddDelete=" + ceLagAddDelete + ", bLeafAddDelete=" + bLeafAddDelete
+        + ", leafAddDelete=" + leafAddDelete + ", spineAddDelete=" + spineAddDelete + ", internalLinkLagAddDelete="
+        + internalLinkLagAddDelete + ", recoverUpdateNode=" + recoverUpdateNode + ", recoverUpdateService="
+        + recoverUpdateService + ", ceLagAddDelete=" + ceLagAddDelete + ", bLeafAddDelete=" + bLeafAddDelete
         + ", betweenClustersLinkAddDelete=" + betweenClustersLinkAddDelete + ", breakoutIfAddDelete="
         + breakoutIfAddDelete + "]";
   }

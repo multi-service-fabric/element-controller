@@ -1,8 +1,8 @@
 # Element Controller User Guide for ZTP
 
 **Version 1.0**
-**December 26, 2017**
-**Copyright(c) 2017 Nippon Telegraph and Telephone Corporation**
+**March 28, 2018**
+**Copyright(c) 2018 Nippon Telegraph and Telephone Corporation**
 
 ## 1.  Introduction
 
@@ -161,118 +161,58 @@ list of attached document.
   |dhcpd.conf.qfx5200                                       | Juniper QFX5200 Template File
   |dhcpd.conf.ncs5001                                       | Cisco NCS5001 Template File
   |dhcpd.conf.ncs5011                                       | Cisco NCS5011 Template File
-  |dhcpd.conf.ncs5501                                       | CISCONCS5501 Template File
+  |dhcpd.conf.ncs5501                                       | Cisco NCS5501 Template File
 
-4.2. Locate the Initial Configuration
+4.2. Initial Configuration Template
 --------------------------------
 
-The initial configurations are different each time depending on the
+### 4.2.1. List of reserved words in file
+
+The following table illustrates the list of reserved words to be converted
+in the initial configuration template.
+
+  | No.|reserved words                       |converted value        |
+  |----|-------------------------------------|-----------------------|
+  | 1  |\$\$DEVICEMANAGEMENTADDRESS\$\$      |Device Management Address
+  | 2  |\$\$NTPSERVER\$\$                    |NTP Server Address
+  | 3  |\$\$SUBNETMASK\$\$                   |Device Subnet Mask
+  | 4  |\$\$DEVICEMANAGEMENT_CIDRADDRESS\$\$ |Maximum Number of Prefixes of the Device
+  | 5  |\$\$ECMANAGEMENTADDRESS\$\$          |Management IF of EC <br> (element_controller_configuration_specifications.md: **REST Waiting Interface Address**)
+  | 6  |\$\$COMMUNITYMEMBERS\$\$             |BGP Community Value
+  | 7  |\$\$BELONGINGSIDEMEMBERS\$\$         |BGP Community Value both priority and not priority
+
+### 4.2.2. Locate the Initial Configuration
+
+The initial configuration templates are different each time depending on the
 usage and type of the used device.
 
-Locate the initial configuration corresponding to the type and usage of
+Locate the initial configuration template files corresponding to the type and usage of
 device to be enhanced into the file path configured at the time of
-registering the device information.
+registering the device information. Please refer to the attached document for an
+actual example of the template file. The following table illustrates the
+list of attached document and each used reserved words.
 
-### 4.2.1. Legends of the file's section to be modified
+  |\[Initial Configuration Template File\] List of Attached Documents   ||||
+  |----|-----------------------------------------------|-------------------------------------------------------|-----------------------------|
+  | No.|File Name                                      |Overview                                               |Number of used reserved word |
+  | 1  |qfx5100\_L2Leaf\_1\_0\_ztp\_init.conf.template |Juniper QFX5100 Configuration Template File for L2Leaf |1,2,4,5,6,7
+  | 2  |qfx5100\_L3Leaf\_1\_0\_ztp\_init.conf.template |Juniper QFX5100 Configuration Template File for L3Leaf |1,2,4,5,6,7
+  | 3  |qfx5100\_Spine\_1\_0\_ztp\_init.conf.template  |Juniper QFX5100 Configuration Template File for Spine  |1,2,4,5
+  | 4  |qfx5200\_L3Leaf\_0\_8\_ztp\_init.conf.template |Juniper QFX5200 Configuration Template File for L3Leaf |1,2,4,5,6,7
+  | 5  |qfx5200\_Spine\_0\_8\_ztp\_init.conf.template  |Juniper QFX5200 Configuration Template File for Spine  |1,2,4,5
+  | 6  |ncs5001\_L3Leaf\_0.8\_ztp\_init.sh.template    |Cisco NCS5001 Configuration Template File for L3Leaf   |1,2,3,5,6,7
+  | 7  |ncs5011\_Spine\_0.8\_ztp\_init.sh.template     |Cisco NCS5011 Configuration Template File for Spine    |1,2,3,5
+  | 8  |ncs5501\_L3Leaf\_0.8\_ztp\_init.sh.template    |Cisco NCS5011 Configuration Template File for L3Leaf   |1,2,3,5,6,7
 
-The following table shows the legends of modified sections in the
-initial configuration. Modify the highlighted part as required.
+### 4.2.3. Example of Sections in the File To Be Modified
 
+The following table illustrates the example of the correction part of the file
+that needs modification in the initial configuration template.
 
-| \[Initial Configuration\] (Juniper)        ||
-|-----------------------------------|-----------------------------------|
-| 1                                 | syslog {<br> host <font color="Red">\[EC Server Address\]</font> {<br> source-address <font color="Red">\[Address for administration\]</font>;<br> any info;<br> \--                               |
-| 2                                 | ntp {<br> server <font color="Red">\[NTP Server Address\]</font>;<br> source-address \[Address for administration\];<br> }                                 |
-| 3                                 | interfaces {<br> vme {<br> unit 0 {<br> family inet {                     |
-|                                   | address <font color="Red">\[Address/Prefix foradministration\]</font>;      |
-|                                   | }<br> }<br> }                                |
-| 4                                 | snmp { |
-|                                   | community dhcp-provisioning-only<br> {<br> authorization read-only;<br> }                                 |
-|                                   | community ntt-msf {<br> authorization read-only;<br> }               |
-|                                   | trap-options {<br> source-address <font color="Red">\[Address for administration\]</font>;<br> }      |
-|                                   | trap-group ntt-msf {<br> version v2;<br> targets {<br> <font color="Red">\[EC Server Address\]</font>;<br> } <br> }                                 |
-|                                   | trap-group rmon-trap-group {<br> version v2;<br> categories {<br> rmon-alarm;<br> }      |
-|                                   | targets {<br> <font color="Red">\[EC Server Address\]</font>;<br> }                                 |
-|                                   | }<br> \--                                 |
+| \[Initial Configuration Template\] (For Juniper, Spine)     ||File Number of target |
+|---|-------------------------------------------------------------------------|-----------------|
+| 1 |policy-options {<br>    prefix-list EL_Prefix {<br>        **\[First Opposite L2Leaf Management Address\]/\[Prefix\],**<br>        **\[Second Opposite L2Leaf Management Address\]/\[Prefix\]**<br>    }<br> (\*)Make the list of the number of opposite L2Leafs. | 3,5 |
 
-| \[Initial Configuration\] (Cisco) ||
-|-----------------------------------|-----------------------------------|
-| 5                                 | logging <font color="Red">\[EC Server Address\]</font> vrf default severity info port default |
-| 6                                 | snmp-server host <font color="Red">\[EC Server Address\]</font> traps version 2c dhcp     |
-| 7                                 | snmp-server host <font color="Red">\[EC Server Address\]</font> traps version 2c ntt-msf    |
-| 8                                 | ntp server <font color="Red">\[NTP Server Address\]</font> |
-| 9                                 | interface MgmtEth0/RP0/CPU0/0<br> ipv4 address <font color="Red">\[Address for administration\] \[Subnet mask\]</font>     |
-
-
-### 4.2.2. Example of Sections in the File To Be Modified
-
-The following tables show actual examples of sections to be modified.
-Please refer to the attached document for more details.
-
-It should be noted that the attached document provides just a part of
-whole examples since the initial configuration may vary depending on the
-role of switches as well as the type of devices.
-
-| \[Initial Configuration\] (Juniper)     ||||
-|-----------------|-----------------|-----------------|-----------------|
-| File Name       | Section to be Modified<br>(line \#)   | Change Description         | Legend \#       |
-| ztp.conf.qfx5100-24q\_Spine | 23              | Enter the EC server address    | 1               |
-|                 | 25              | Enter the address for administration       | 1               |
-|                 | 54              | Enter the NTP server address    | 2               |
-|                 | 55              | Enter the address for administration       | 2               |
-|                 | 75              | Enter the address/prefix for administration.       | 3               |
-|                 | 88              | Enter the address for administration       | 4               |
-|                 | 93, 102         | Enter the EC server address    | 4               |
-| ztp.conf.qfx5100-48s\_L2Leaf | 23              | Enter the EC server address    | 1               |
-|                 | 25              | Enter the address for administration       | 1               |
-|                 | 54              | Enter the NTP server address    | 2               |
-|                 | 55              | Enter the address for administration       | 2               |
-|                 | 73              | Enter the address/prefix for administration.       | 3               |
-|                 | 86              | Enter the address for administration       | 4               |
-|                 | 91, 100         | Enter the EC server address    | 4               |
-| ztp.conf.qfx5100-48s\_L3Leaf | 23              | Enter the EC server address    | 1               |
-|                 | 25              | Enter the address for administratione       | 1               |
-|                 | 54              | Enter the NTP server address    | 2               |
-|                 | 55              | Enter the address for administration       | 2               |
-|                 | 75              | Enter the address/prefix for administration.       | 3               |
-|                 | 88              | Enter the address for administration       | 4               |
-|                 | 93, 102         | Enter the EC server address    | 4               |
-| ztp.conf.qfx5200-32c\_Spine | 23              | Enter the EC server address    | 1               |
-|                 | 25              | Enter the address for administration       | 1               |
-|                 | 54              | Enter the NTP server address    | 2               |
-|                 | 55              | Enter the address for administration       | 2               |
-|                 | 75              | Enter the address/prefix for administration.e       | 3               |
-|                 | 88              | Enter the address for administration       | 4               |
-|                 | 93, 102         | Enter the EC server address    | 4               |
-| ztp.conf.qfx5200-32c\_L3Leaf | 23              | Enter the EC server address    | 1               |
-|                 | 25              | Enter the address for administration       | 1               |
-|                 | 54              | Enter the NTP server address    | 2               |
-|                 | 55              | Enter the address for administration       | 2               |
-|                 | 75              | Enter the address/prefix for administration.       | 3               |
-|                 | 88              | Enter the address for administration       | 4               |
-|                 | 93, 102         | Enter the EC server address    | 4               |
-
-| \[Initial Configuration\] (Cisco)     ||||
-|-----------------|-----------------|-----------------|-----------------|
-| File Name       | Section to be Modified<br>(line \#)   | Change Description         | Legend \#       |
-| ztp.script.ncs5001_L3Leaf | 17              | Enter the EC server address    | 5               |
-|                 | 36              | Enter the EC server address    | 6               |
-|                 | 37              | Enter the EC server address    | 7               |
-|                 | 70              | Enter the NTP server address    | 8               |
-|                 | 249             | Enter the address for administration.       | 9               |
-|                 | 249             | Enter the subnet mask for administration address.       | 9               |
-| ztp.script.ncs5011\_Spine | 17              | Enter the EC server address    | 5               |
-|                 | 36              | Enter the EC server address    | 6               |             |
-|                 | 37              | Enter the EC server address    | 7               |
-|                 | 70              | Enter the NTP server address    | 8               |
-|                 | 213             | Enter the address for administration.       | 9               |
-|                 | 213             | Enter the subnet mask for administration address.       | 9               |
-| ztp.script.ncs5501\_L3Leaf | 17              | Enter the EC server address    | 5               |             |
-|                 | 36              | Enter the EC server address    | 6               |
-|                 | 37              | Enter the EC server address    | 7               |
-|                 | 70              | Enter the NTP server address    | 8               |
-|                 | 109             | Enter the address for administration.      | 9               |
-|                 | 109             | Enter the subnet mask for administration address.       | 9               |
 
 4.3. Locate the OS Image
 -------------------

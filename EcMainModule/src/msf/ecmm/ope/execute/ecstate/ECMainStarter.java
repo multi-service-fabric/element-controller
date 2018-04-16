@@ -1,19 +1,18 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.ecstate;
 
 import java.util.HashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.SystemStatus;
 import msf.ecmm.devctrl.DhcpController;
 import msf.ecmm.emctrl.EmController;
 import msf.ecmm.fcctrl.RestClient;
@@ -27,17 +26,20 @@ import msf.ecmm.ope.receiver.RestServer;
 import msf.ecmm.traffic.InterfaceIntegrityValidationManager;
 import msf.ecmm.traffic.TrafficDataGatheringManager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * EC Start-up Class Definition. Start up EC.
  */
 public class ECMainStarter {
 
   /**
-   * Logger
+   * Logger.
    */
   private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-  /** Stop Flar for Test. */
+  /** Stop Flag for Test. */
   public static boolean nonstop = true;
 
   /** Systems Switch Completion. */
@@ -45,6 +47,9 @@ public class ECMainStarter {
 
   /** Controller Type (EC). */
   private static final String CONTROLLER_TYPE = "ec";
+
+  /** EC status. */
+  private static int status = ECMainState.StartReady.getValue();
 
   /**
    * EC Start-up
@@ -58,10 +63,24 @@ public class ECMainStarter {
 
     try {
       EcConfiguration.getInstance().read(args[0]);
-    } catch (Exception e) {
-      logger.error(LogFormatter.out.format(LogFormatter.MSG_503038, e));
+    } catch (Exception e1) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_503038, e1));
       System.exit(1);
       return;
+    }
+
+    logger.debug("Read db.");
+    try (DBAccessManager session = new DBAccessManager()) {
+      SystemStatus dbstate = session.getSystemStatus();
+      if (dbstate == null) {
+        status = ECMainState.Stop.getValue();
+      } else {
+        status = dbstate.getService_status();
+      }
+    } catch (Throwable e2) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_503090, e2));
+      System.exit(1);
+      logger.trace(CommonDefinitions.END);
     }
 
     OperationControlManager check1 = OperationControlManager.boot();
@@ -83,8 +102,8 @@ public class ECMainStarter {
         }
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.StopReady);
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.Stop);
-      } catch (Exception e) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e);
+      } catch (Exception e1) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e1);
       }
       System.exit(1);
       return;
@@ -93,8 +112,7 @@ public class ECMainStarter {
 
     boolean check3 = InterfaceIntegrityValidationManager.boot();
     if (!check3) {
-      logger.error(LogFormatter.out.format(LogFormatter.MSG_503039,
-          "InterfaceIntegrityValidationManager"));
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_503039, "InterfaceIntegrityValidationManager"));
       try {
         if (OperationControlManager.getInstance().getEcMainState(false) == ECMainState.ChangeOver) {
           logger.debug("EC main module state is ChangeOver.");
@@ -103,8 +121,8 @@ public class ECMainStarter {
         }
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.StopReady);
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.Stop);
-      } catch (Exception e) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e);
+      } catch (Exception e1) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e1);
       }
       System.exit(1);
       return;
@@ -122,8 +140,8 @@ public class ECMainStarter {
         }
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.StopReady);
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.Stop);
-      } catch (Exception e) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e);
+      } catch (Exception e1) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e1);
       }
       System.exit(1);
       return;
@@ -141,8 +159,8 @@ public class ECMainStarter {
         }
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.StopReady);
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.Stop);
-      } catch (Exception e) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e);
+      } catch (Exception e1) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e1);
       }
       System.exit(1);
       return;
@@ -160,8 +178,8 @@ public class ECMainStarter {
         }
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.StopReady);
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.Stop);
-      } catch (Exception e) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e);
+      } catch (Exception e1) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e1);
       }
       System.exit(1);
       return;
@@ -170,7 +188,7 @@ public class ECMainStarter {
 
     try {
       OperationControlManager.getInstance().updateEcMainState(true, ECMainState.InService);
-    } catch (DBAccessException e) {
+    } catch (DBAccessException e1) {
       logger.error(LogFormatter.out.format(LogFormatter.MSG_503039, "State updete to in-service"));
       try {
         if (OperationControlManager.getInstance().getEcMainState(false) == ECMainState.ChangeOver) {
@@ -180,35 +198,38 @@ public class ECMainStarter {
         }
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.StopReady);
         OperationControlManager.getInstance().updateEcMainState(true, ECMainState.Stop);
-      } catch (Exception e1) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e);
+      } catch (Exception e2) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_503068), e2);
       }
       System.exit(1);
       return;
     }
-
-    OperationControlManager.getInstance().startSendingUnsentNodeStateNotification();
 
     RestClient rc = new RestClient();
     HashMap<String, String> keyMap = new HashMap<String, String>();
     ControllerStatusToFc outputData = new ControllerStatusToFc();
     Controller ecController = new Controller();
     ecController.setController_type(CONTROLLER_TYPE);
-    ecController.setEvent(ENDSYSTEMSWITCHING);
-    outputData.setController(ecController);
-    try {
-      rc.request(RestClient.CONTROLLER_STATE_NOTIFICATION,
-          keyMap, outputData, CommonResponseFromFc.class);
+    if (ECMainState.getState(status) == ECMainState.ChangeOver) {
+      ecController.setEvent(ENDSYSTEMSWITCHING);
+      outputData.setController(ecController);
+      try {
+        rc.request(RestClient.CONTROLLER_STATE_NOTIFICATION, keyMap, outputData, CommonResponseFromFc.class);
 
-    } catch (RestClientException rce) {
-      logger.warn(LogFormatter.out.format(LogFormatter.MSG_513031, "REST request"), rce);
+      } catch (RestClientException rce) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_513031, "REST request"), rce);
+      }
+      logger.info(LogFormatter.out.format(LogFormatter.MSG_303091, "Complete to system switch notification:[end]"));
     }
 
     logger.info(LogFormatter.out.format(LogFormatter.MSG_303067));
 
+    OperationControlManager.getInstance().startSendingUnsentNodeStateNotification();
+
     while (nonstop) {
       CommonUtil.sleep(10000);
     }
+
   }
 
 }

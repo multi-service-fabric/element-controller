@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute;
@@ -35,6 +35,10 @@ public enum OperationType {
   AllL3VlanIfRemove(1004),
   /** L2VLAN IF Batch Deletion/Change. */
   AllL2VlanIfRemove(1005),
+  /** L3VLAN IF Batch Change. */
+  AllL3VlanIfChange(1006),
+  /** L2VLAN IF Batch Change. */
+  AllL2VlanIfChange(1007),
 
   /** SNMPTrap Reception Notification. */
   SNMPTrapSignalRecieveNotification(2001),
@@ -69,6 +73,10 @@ public enum OperationType {
   NodeInfoRegistration(3018),
   /** Device Change. */
   LeafChange(3019),
+  /** Additional service recovery. */
+  NodeRecover(3020),
+  /** Acception Additional service recovery. */
+  AcceptNodeRecover(3021),
 
   /** Physical IF Information Acquisition. */
   PhysicalIfInfoAcquisition(3101),

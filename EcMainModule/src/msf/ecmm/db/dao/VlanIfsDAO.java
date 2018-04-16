@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,18 +9,24 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.VlanIfs;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
-
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.VlanIfs;
 
 /**
  * The class in which VLANIF information related DB process is performed.
  */
 public class VlanIfsDAO extends BaseDAO {
 
+  /**
+   * VLANIF Information Class Constructor.
+   *
+   * @param session
+   *          data base session
+   */
   public VlanIfsDAO(Session session) {
     this.session = session;
   }
@@ -111,12 +117,75 @@ public class VlanIfsDAO extends BaseDAO {
   }
 
   /**
+   * VLAN IF QoS Information Table UPDATE.
+   *
+   * @param vlanIfs
+   *          VLANIF information
+   * @throws DBAccessException
+   *           data base exception
+   */
+  public void updateQos(VlanIfs vlanIfs) throws DBAccessException {
+    try {
+      VlanIfs regVlanIfs = this.search(vlanIfs.getNode_id(), vlanIfs.getVlan_if_id());
+      if (regVlanIfs == null) {
+        this.errorMessage(NO_UPDATE_TARGET, VLAN_IFS, null);
+      } else {
+        Query query = session.getNamedQuery("updateVlanIfsQos");
+        query.setString("key1", vlanIfs.getNode_id());
+        query.setString("key2", vlanIfs.getVlan_if_id());
+        query.setParameter("key3", vlanIfs.getInflow_shaping_rate(), StandardBasicTypes.FLOAT);
+        query.setParameter("key4", vlanIfs.getOutflow_shaping_rate(), StandardBasicTypes.FLOAT);
+        query.setString("key5", vlanIfs.getRemark_menu());
+        query.setString("key6", vlanIfs.getEgress_queue_menu());
+
+        query.executeUpdate();
+      }
+    } catch (DBAccessException e1) {
+      throw e1;
+    } catch (Throwable e2) {
+      logger.debug("vlan_ifs update failed.", e2);
+      this.errorMessage(UPDATE_FAILURE, VLAN_IFS, e2);
+    }
+  }
+
+  /**
+   * VLAN IF IP Information Table UPDATE(Name).
+   *
+   * @param vlanIfs
+   *          VLANIF information
+   * @throws DBAccessException
+   *           data base exception
+   */
+  public void updateIfName(VlanIfs vlanIfs) throws DBAccessException {
+    try {
+      VlanIfs regVlanIfs = this.search(vlanIfs.getNode_id(), vlanIfs.getVlan_if_id());
+      if (regVlanIfs == null) {
+        this.errorMessage(NO_UPDATE_TARGET, VLAN_IFS, null);
+      } else {
+        Query query = session.getNamedQuery("updateVlanIfsName");
+        query.setString("key1", vlanIfs.getNode_id());
+        query.setString("key2", vlanIfs.getVlan_if_id());
+        query.setString("key3", vlanIfs.getIf_name());
+
+        query.executeUpdate();
+      }
+    } catch (DBAccessException e1) {
+      throw e1;
+    } catch (Throwable e2) {
+      logger.debug("vlan_ifs update failed.", e2);
+      this.errorMessage(UPDATE_FAILURE, VLAN_IFS, e2);
+    }
+  }
+
+  /**
    * VLAN IF Information Table DELETE.
    *
    * @param node_id
    *          device ID (primary key 1)
    * @param vlan_if_id
    *          VLANIF ID information (primary key 2)(NULL is permitted) * @param check Whether is it a target to be deleted from the other relations or not?
+   * @param check
+   *          check
    * @throws DBAccessException
    *           data base exception
    */
@@ -127,13 +196,13 @@ public class VlanIfsDAO extends BaseDAO {
         VlanIfs vlanIfs = this.search(node_id, vlan_if_id);
         if (vlanIfs == null) {
           this.errorMessage(NO_DELETE_TARGET, VLAN_IFS, null);
-        } 
+        }
         query = session.getNamedQuery("deleteVlanIfs");
         query.setString("key2", vlan_if_id);
       } else {
         List<VlanIfs> vlanIfsList = this.getList(node_id);
         if (vlanIfsList == null) {
-          if (check) { 
+          if (check) {
             return;
           }
           this.errorMessage(NO_DELETE_TARGET, VLAN_IFS, null);

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -32,6 +32,9 @@ public class CreateVlanIfs {
 
   /** LACP system-id. */
   private String lacpSystemId = null;
+
+  /** QoS Configuration. */
+  private QosValues qos = null;
 
   /**
    * Getting ID information of CP to be controlled.
@@ -167,6 +170,22 @@ public class CreateVlanIfs {
   }
 
   /**
+   * Getting QoS Configuration.
+   * @return qos
+   */
+  public QosValues getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QoS Configuration.
+   * @param qos setting qos
+   */
+  public void setQos(QosValues qos) {
+    this.qos = qos;
+  }
+
+  /**
    * Stringizing Instance.
    *
    * @return instance string
@@ -174,7 +193,7 @@ public class CreateVlanIfs {
   @Override
   public String toString() {
     return "CreateVlanIfs [vlanIfId=" + vlanIfId + ", nodeId=" + nodeId + ", baseIf=" + baseIf + ", vlanId=" + vlanId
-        + ", portMode=" + portMode + ", esi=" + esi + ", lacpSystemId=" + lacpSystemId + "]";
+        + ", portMode=" + portMode + ", esi=" + esi + ", lacpSystemId=" + lacpSystemId + ", qos=" + qos + "]";
   }
 
   /**

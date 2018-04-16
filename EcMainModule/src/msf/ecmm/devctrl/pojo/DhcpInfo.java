@@ -1,39 +1,39 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl.pojo;
 
 /**
- * DHCP Start-up Information
+ * DHCP Start-up Information.
  */
 public class DhcpInfo {
-  /** DHCP Configuration Template Name */
+  /** DHCP Configuration Template Name. */
   private String configTemplete;
 
-  /** Initialization File for Zero Touch Configuration */
+  /** Initialization File for Zero Touch Configuration. */
   private String initialConfig;
 
-  /** Host Name */
+  /** Host Name. */
   private String hostname;
 
-  /** MAC Address */
+  /** MAC Address. */
   private String macAddress;
 
-  /** TFTP Host Name */
+  /** TFTP Host Name. */
   private String tftpHostname;
 
-  /** NTP Server Address */
+  /** NTP Server Address. */
   private String ntpServerAddress;
 
-  /** Device's Management IF Address */
+  /** Device's Management IF Address. */
   private String eqManagementAddress;
 
-  /** Device's Prefix */
+  /** Device's Prefix. */
   private int prefix;
 
   /**
-   * @param configTemplete
+   * @param configTemplete.
    *          DHCP configuration template name
    * @param initialConfig
    *          initializaiton file for zero touch configuration
@@ -64,7 +64,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Getting DHCP configuration template name
+   * Getting DHCP configuration template name.
    *
    * @return DHCP configuration template name
    */
@@ -73,7 +73,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Setting DHCP configuration template name
+   * Setting DHCP configuration template name.
    *
    * @param configTemplete
    *          DHCP configuration template name
@@ -83,7 +83,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Getting initialization file for zero touch configuration
+   * Getting initialization file for zero touch configuration.
    *
    * @return initialization file for zero touch configuration
    */
@@ -92,7 +92,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Setting initialization file for zero touch configuration
+   * Setting initialization file for zero touch configuration.
    *
    * @param initialConfig
    *          initialization file for zero touch configuration
@@ -102,7 +102,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Getting host name
+   * Getting host name.
    *
    * @return host name
    */
@@ -111,7 +111,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Setting host name
+   * Setting host name.
    *
    * @param hostname
    *          host name
@@ -121,7 +121,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Getting MAC address
+   * Getting MAC address.
    *
    * @return MAC address
    */
@@ -130,7 +130,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Setting MAC address
+   * Setting MAC address.
    *
    * @param macAddress
    *          MAC address
@@ -140,7 +140,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Getting TFTP host name
+   * Getting TFTP host name.
    *
    * @return TFTP host name
    */
@@ -149,7 +149,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Setting TFTP host name
+   * Setting TFTP host name.
    *
    * @param tftpHostname
    *          TFTP host name
@@ -159,7 +159,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Getting NTP server address
+   * Getting NTP server address.
    *
    * @return NTP server address
    */
@@ -168,7 +168,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Setting NTP server address
+   * Setting NTP server address.
    *
    * @param ntpServerAddress
    *          NTP server address
@@ -178,7 +178,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Gettomg device's management IF address
+   * Gettomg device's management IF address.
    *
    * @return device's management IF address
    */
@@ -187,7 +187,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Setting device's management IF address
+   * Setting device's management IF address.
    *
    * @param eqManagementAddress
    *          device's management IF address
@@ -197,7 +197,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Getting device's Prefix
+   * Getting device's Prefix.
    *
    * @return device's Prefix
    */
@@ -206,7 +206,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Setting device's Prefix
+   * Setting device's Prefix.
    *
    * @param prefix
    *          device's Prefix

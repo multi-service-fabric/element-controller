@@ -1,11 +1,11 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.fcctrl;
 
 /**
- * REST Client Exception
+ * REST Client Exception.
  */
 public class RestClientException extends Exception {
 
@@ -26,7 +26,7 @@ public class RestClientException extends Exception {
   public static final int JSON_FORMAT_NG = 4;
 
   /**
-   * REST Client Exception
+   * REST Client Exception.
    *
    * @param code
    *          error code
@@ -36,7 +36,7 @@ public class RestClientException extends Exception {
   }
 
   /**
-   * Getting error code
+   * Getting error code.
    *
    * @return error code
    */

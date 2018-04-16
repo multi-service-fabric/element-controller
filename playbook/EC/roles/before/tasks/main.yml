@@ -1,0 +1,6 @@
+# Before installing
+  - name: mkdir data
+    shell: mkdir -p {{ rpm_path }}
+  - name: copy data
+    copy: src="{{ rpm_path }}/" dest={{ rpm_path }}
+    when: download_flag == false

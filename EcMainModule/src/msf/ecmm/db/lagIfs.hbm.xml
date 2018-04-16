@@ -17,6 +17,7 @@
                 <generator class="assigned"/>
             </composite-id>
             <property name="if_name" type="text" not-null="true"/>
+            <property name="fc_lag_if_id" type="text" not-null="true"/>
             <property name="minimum_link_num" type="int" not-null="true"/>
             <property name="if_speed" type="string" />
             <property name="if_status" type="int" not-null="true"/>
@@ -48,7 +49,7 @@
         </query>
         <query name="deleteLagIfsByNode">
             <![CDATA[
-                delete from msf.ecmm.db.pojo.LagIfs as lag_ifs where  node_id = :key1
+                delete from msf.ecmm.db.pojo.LagIfs as lag_ifs where node_id = :key1
              ]]>
         </query>
         <query name="updateLagIfsState">
@@ -58,7 +59,12 @@
         </query>
         <query name="updateLagIfsIP">
             <![CDATA[
-                 update msf.ecmm.db.pojo.LagIfs as lag_ifs set ipv4_prefix = :key4, ipv4_address = :key3 where node_id = :key1 and lag_if_id = :key2
+                update msf.ecmm.db.pojo.LagIfs as lag_ifs set ipv4_prefix = :key4, ipv4_address = :key3 where node_id = :key1 and lag_if_id = :key2
+             ]]>
+        </query>
+        <query name="updateLagIfName">
+            <![CDATA[
+                update msf.ecmm.db.pojo.LagIfs as lag_ifs set if_name = :key3 where node_id = :key1 and lag_if_id = :key2
              ]]>
         </query>
 </hibernate-mapping>

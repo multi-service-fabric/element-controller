@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo.parts;
@@ -37,9 +37,27 @@ public class Cp {
   @XmlElement(name = "multicast-group")
   private String multicastGroup = null;
 
+  /** ESI Value (used in L2VLAN IF processing). */
+  private String esi = null;
+
+  /** &ltesi&gt Tag Attribute Configuration Field. */
+  @XmlElement(name = "esi")
+  private AttributeOperation esiAttr = null;
+
+  /** SystemID (used in L2VLAN IF processing). */
+  @XmlElement(name = "system-id")
+  private String systemId = null;
+
+  /** &ltsystem-id&gt Tag Attribute Configuration Field. */
+  @XmlElement(name = "system-id")
+  private AttributeOperation sysIdAttr = null;
+
   /** IP Address Information Granted by CP (only for L3VLAN IF Batch Generation). */
   @XmlElement(name = "ce-interface")
   private CeInterface ceInterface = null;
+
+  /** QoS configuration. */
+  private Qos qos = null;
 
   /** VRRP Configuration Information (only for L3VLAN IF Batch Generation). */
   private Vrrp vrrp = null;
@@ -55,21 +73,6 @@ public class Cp {
   /** OSPF Connection Information (only for L3VLAN IF Batch Generation). */
   @XmlElement(name = "ospf")
   private L3SliceOspf l3SliceOspf = null;
-
-  /** ESI Value (used in L2VLAN IF processing). */
-  private String esi = null;
-
-  /** &ltesi&gt Tag Attribute Configuration Field. */
-  @XmlElement(name = "esi")
-  private AttributeOperation esiAttr = null;
-
-  /** SystemID (used in L2VLAN IF processing). */
-  @XmlElement(name = "system-id")
-  private String systemId = null;
-
-  /** &ltsystem-id&gt Tag Attribute Configuration Field. */
-  @XmlElement(name = "system-id")
-  private AttributeOperation sysIdAttr = null;
 
   /**
    * Generating new instance.
@@ -353,7 +356,7 @@ public class Cp {
     return sysIdAttr;
   }
 
-  /**
+ /**
    * Setting the value of "operation" attribute of &ltsystem-id&gt tag
    *
    * @param sysIdAttr
@@ -364,15 +367,35 @@ public class Cp {
   }
 
   /**
+   * Getting QoS configuration.
+   *
+   * @return qos
+   */
+  public Qos getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QoS configuration.
+   *
+   * @param qos
+   *          set qos
+   */
+  public void setQos(Qos qos) {
+    this.qos = qos;
+  }
+
+  /*
    * Stringizing Instance.
    *
+   * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
     return "Cp [operation=" + operation + ", name=" + name + ", vlanId=" + vlanId + ", portMode=" + portMode + ", vni="
         + vni + ", multicastGroup=" + multicastGroup + ", ceInterface=" + ceInterface + ", vrrp=" + vrrp
         + ", l3SliceBgp=" + l3SliceBgp + ", l3SliceStatic=" + l3SliceStatic + ", l3SliceOspf=" + l3SliceOspf + ", esi="
-        + esi + ", systemId=" + systemId + "]";
+        + esi + ", esiAttr=" + esiAttr + ", systemId=" + systemId + ", sysIdAttr=" + sysIdAttr + ", qos=" + qos + "]";
   }
 
 }

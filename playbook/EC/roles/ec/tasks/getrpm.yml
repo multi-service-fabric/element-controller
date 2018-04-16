@@ -1,0 +1,6 @@
+# Getting ec rpm
+- shell: mkdir -p {{ ec_path }}/{{ folder_name_lib }}
+- name: wget rpm
+  shell: wget --no-check-certificate --no-cookies {{ item.url }} -O {{ ec_path }}/{{ folder_name_lib }}/{{ item.file_name }}
+  with_items:
+    - "{{ file_list }}"

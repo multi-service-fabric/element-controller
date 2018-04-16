@@ -1,8 +1,8 @@
 ## Element Controller Configuration Specifications
 
 **Version 1.0**
-**December 26, 2017**
-**Copyright(c) 2017 Nippon Telegraph and Telephone Corporation**
+**March 28, 2018**
+**Copyright(c) 2018 Nippon Telegraph and Telephone Corporation**
 
 ### Configuration Definitions
 

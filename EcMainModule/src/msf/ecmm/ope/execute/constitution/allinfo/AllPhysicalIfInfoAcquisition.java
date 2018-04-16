@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.allinfo;
@@ -15,6 +15,7 @@ import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.PhysicalIfs;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
@@ -63,7 +64,9 @@ public class AllPhysicalIfInfoAcquisition extends Operation {
 
       List<PhysicalIfs> physicalIfs = session.getPhysicalIfsList(getUriKeyMap().get(KEY_NODE_ID));
 
-      outputData = RestMapper.toPhyInInfoList(physicalIfs);
+      Nodes nodes = session.searchNodes(getUriKeyMap().get(KEY_NODE_ID), null);
+
+      outputData = RestMapper.toPhyInInfoList(physicalIfs, nodes.getEquipments());
 
       response = makeSuccessResponse(RESP_OK_200, outputData);
 

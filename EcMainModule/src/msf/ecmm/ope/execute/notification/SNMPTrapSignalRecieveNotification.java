@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.notification;
@@ -104,8 +104,7 @@ public class SNMPTrapSignalRecieveNotification extends Operation {
 
       String ifName = "";
       if (nodesDb.getEquipments().getSnmptrap_if_name_oid() == null) {
-        int ifIndex = SnmpController.getIfIndexForTrap(((NotifyReceiveSnmpTrap)
-            getInData()).getVarbind());
+        int ifIndex = SnmpController.getIfIndexForTrap(((NotifyReceiveSnmpTrap) getInData()).getVarbind());
 
         if (ifIndex == SnmpController.IFINDEX_NOT_FOUND) {
           logger.debug("Return values from SNMP is wrong.");
@@ -171,7 +170,7 @@ public class SNMPTrapSignalRecieveNotification extends Operation {
           for (LagIfs ifinfo : nodesElem.getLagIfsList()) {
             if ((ifinfo.getIf_name() != null) && ifinfo.getIf_name().equals(ifName)) {
               ifType = IF_TYPE_LAG_IF;
-              ifId = ifinfo.getLag_if_id();
+              ifId = ifinfo.getFc_lag_if_id();
               lagIfs = ifinfo;
               lagIfs.setIf_status(LogicalPhysicalConverter.toIntegerIFState(statusStr));
               break searchNodesList;
@@ -230,8 +229,8 @@ public class SNMPTrapSignalRecieveNotification extends Operation {
       session.commit();
 
       if (ifType != null || snmpflg == true) {
-        Operations snmpTrapData = RestMapper.toSnmpTrapNotificationInfo(nodesDb.getNode_id(),
-            ifType, ifId, vlanIfsList, statusStr, snmpflg);
+        Operations snmpTrapData = RestMapper.toSnmpTrapNotificationInfo(nodesDb.getNode_id(), ifType, ifId, vlanIfsList,
+            statusStr, snmpflg);
 
         if (snmpTrapData == null) {
           logger.debug("Data Mapping error");
@@ -239,8 +238,8 @@ public class SNMPTrapSignalRecieveNotification extends Operation {
         }
 
         RestClient restClient = new RestClient();
-        restClient.request(RestClient.OPERATION, new HashMap<String, String>(),
-            snmpTrapData, CommonResponseFromFc.class);
+        restClient.request(RestClient.OPERATION, new HashMap<String, String>(), snmpTrapData,
+            CommonResponseFromFc.class);
       }
       response = makeSuccessResponse(RESP_OK_200, new CommonResponse());
 

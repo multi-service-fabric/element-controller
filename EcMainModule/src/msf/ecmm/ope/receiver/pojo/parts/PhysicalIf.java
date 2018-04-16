@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -17,7 +17,10 @@ public class PhysicalIf {
   /** IF Name. */
   private String ifName;
 
-  /** IF Status. */
+  /** breakoutIF Information List. */
+  private ArrayList<BreakoutIfId> breakoutIf = new ArrayList<BreakoutIfId>();
+
+/** IF Status. */
   private String ifState;
 
   /** Line Speed. */
@@ -29,10 +32,10 @@ public class PhysicalIf {
   /** Accommodated Device IF Prefix. */
   private String ipv4Prefix;
 
-  /** breakoutIF Information List. */
-  private ArrayList<BreakoutIfId> breakoutIf = new ArrayList<BreakoutIfId>();
+  /** QoS capability. */
+  private QosCapabilities qos;
 
-  /**
+ /**
    * Getting physical IF ID.
    *
    * @return physical IF ID
@@ -51,7 +54,7 @@ public class PhysicalIf {
     this.physicalIfId = physicalIfId;
   }
 
-  /**
+   /**
    * Getting IF name.
    *
    * @return IF name
@@ -60,7 +63,7 @@ public class PhysicalIf {
     return ifName;
   }
 
-  /**
+ /**
    * Setting IF name.
    *
    * @param ifName
@@ -68,6 +71,25 @@ public class PhysicalIf {
    */
   public void setIfName(String ifName) {
     this.ifName = ifName;
+  }
+
+  /**
+   * Getting breakoutIF information list.
+   *
+   * @return breakoutIF information list
+   */
+  public ArrayList<BreakoutIfId> getBreakoutIf() {
+    return breakoutIf;
+  }
+
+  /**
+   * Setting breakoutIF information list.
+   *
+   * @param breakoutIf
+   *          breakoutIF information list
+   */
+  public void setBreakoutIf(ArrayList<BreakoutIfId> breakoutIf) {
+    this.breakoutIf = breakoutIf;
   }
 
   /**
@@ -99,7 +121,7 @@ public class PhysicalIf {
   }
 
   /**
-   * Getting line speed.
+   * Setting line speed.
    *
    * @param linkSpeed
    *          line speed
@@ -147,33 +169,34 @@ public class PhysicalIf {
   }
 
   /**
-   * Getting breakoutIF information list.
+   * Getting QoS capability.
    *
-   * @return breakoutIF information list
+   * @return qos
    */
-  public ArrayList<BreakoutIfId> getBreakoutIf() {
-    return breakoutIf;
+  public QosCapabilities getQos() {
+    return qos;
   }
 
   /**
-   * Setting breakoutIF information list.
+   * Setting QoS capability.
    *
-   * @param breakoutIf
-   *          breakoutIF information list
+   * @param qos
+   *          setting qos
    */
-  public void setBreakoutIf(ArrayList<BreakoutIfId> breakoutIf) {
-    this.breakoutIf = breakoutIf;
+  public void setQos(QosCapabilities qos) {
+    this.qos = qos;
   }
 
-  /**
+  /*
    * Stringizing Instance.
    *
-   * @return instance string
+   * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "PhysicalIf [physicalIfId=" + physicalIfId + ", ifName=" + ifName + ", ifState=" + ifState + ", linkSpeed="
-        + linkSpeed + ", ipv4Address=" + ipv4Address + ", ipv4Prefix=" + ipv4Prefix + ", breakoutIf=" + breakoutIf
-        + "]";
+    return "PhysicalIf [physicalIfId=" + physicalIfId + ", ifName=" + ifName + ", breakoutIf=" + breakoutIf
+        + ", ifState=" + ifState + ", linkSpeed=" + linkSpeed + ", ipv4Address=" + ipv4Address + ", ipv4Prefix="
+        + ipv4Prefix + ", qos=" + qos + "]";
   }
+
 }

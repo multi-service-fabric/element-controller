@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.traffic;
@@ -46,7 +46,7 @@ public class IntegrityExecutor extends Thread {
    */
   private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-  /** IF Information (Device Origin)*/
+  /** IF Information (Device Origin) */
   private HashMap<NodeKeySet, ArrayList<SnmpIfOperStatus>> ifStateFromDevice;
 
   /** Device Information */
@@ -67,6 +67,9 @@ public class IntegrityExecutor extends Thread {
 
   }
 
+  /**
+   * IF Status Integrit.
+   */
   public void run() {
 
     logger.trace(CommonDefinitions.START);
@@ -103,7 +106,7 @@ public class IntegrityExecutor extends Thread {
 
               deviceDetail.get(nodeKey).setLagIfData(new HashMap<>());
               for (LagIfs li : lagIfList) {
-                deviceDetail.get(nodeKey).getLagIfData().put(Integer.valueOf(li.getLag_if_id()), li);
+                deviceDetail.get(nodeKey).getLagIfData().put(Integer.valueOf(li.getFc_lag_if_id()), li);
               }
 
               deviceDetail.get(nodeKey).setPhysicalIfData(new HashMap<>());
@@ -123,12 +126,11 @@ public class IntegrityExecutor extends Thread {
           integrityResult.setUpdateLogicalIfStatusOption(check);
           integrityResult.setAction("update_logical_if_status");
 
-
           if (check != null) {
             if (check.getIfs() != null) {
               try (DBAccessManager updateSession = new DBAccessManager()) {
                 for (IfsLogical ifs : check.getIfs()) {
-                  logger.trace("IF状態_DB更新処理START");
+                  logger.trace("IF status_DB update process START");
                   session.startTransaction();
                   PhysicalIfs physicalIfs = new PhysicalIfs();
                   LagIfs lagIfs = new LagIfs();
@@ -144,7 +146,17 @@ public class IntegrityExecutor extends Thread {
 
                     case CommonDefinitions.IF_TYPE_LAG_IF:
                       lagIfs.setNode_id(ifs.getNodeId());
-                      lagIfs.setLag_if_id(ifs.getIfId());
+                      for (NodeKeySet nodeElem : deviceDetail.keySet()) {
+                        if (nodeElem.getEquipmentsData().getNode_id().equals(ifs.getNodeId())
+                            && nodeElem.getEquipmentsData().getLagIfsList() != null) {
+                          for (LagIfs lagElem : nodeElem.getEquipmentsData().getLagIfsList()) {
+                            if (lagElem.getFc_lag_if_id().equals(ifs.getIfId())) {
+                              lagIfs.setLag_if_id(lagElem.getLag_if_id());
+                            }
+                          }
+                        }
+                      }
+                      lagIfs.setFc_lag_if_id(ifs.getIfId());
                       lagIfs.setIf_status(LogicalPhysicalConverter.toIntegerIFState(ifs.getStatus()));
                       session.updateNodeIfState(null, lagIfs, null, null);
                       break;
@@ -167,23 +179,23 @@ public class IntegrityExecutor extends Thread {
                   }
                   session.commit();
                 }
-                logger.trace("IF状態_DB更新処理END");
+                logger.trace("IF status_DB update process END");
               } catch (DBAccessException db) {
-                logger.debug("IF状態更新時DBエラー", db);
-              }  catch (Exception db) {
-                logger.debug("IF状態更新時その他エラー", db);
+                logger.debug("DB access error when IF status_DB update process", db);
+              } catch (Exception db) {
+                logger.debug("Other error when IF status_DB update process", db);
               }
             }
-            RestClient resultFC = new RestClient();
-            resultFC.request(RestClient.OPERATION, new HashMap<String, String>(), integrityResult,
+            RestClient resultFc = new RestClient();
+            resultFc.request(RestClient.OPERATION, new HashMap<String, String>(), integrityResult,
                 CommonResponseFromFc.class);
           } else {
           }
         }
       } else {
       }
-    } catch (Exception e) {
-    	logger.trace("エラー内容",e);
+    } catch (Exception e1) {
+      logger.trace("error contents", e1);
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_407043));
     }
 
@@ -252,8 +264,7 @@ public class IntegrityExecutor extends Thread {
       for (NodeKeySet node : deviceDetail.keySet()) {
         if (getSnmp) {
           try {
-            ifStateFromDevice.put(node, snmp.getIfOperStatus(
-                node.getEquipmentsType(), node.getEquipmentsData()));
+            ifStateFromDevice.put(node, snmp.getIfOperStatus(node.getEquipmentsType(), node.getEquipmentsData()));
             if (NODE_STATE_MALFUNCTION == node.getEquipmentsData().getNode_state()) {
               String nodeid = node.getEquipmentsData().getNode_id();
               int nodestate = NODE_STATE_OPERATION;
@@ -265,8 +276,8 @@ public class IntegrityExecutor extends Thread {
               tmpstate.setFailureStatus(CommonDefinitions.IF_NODE_UP_STRING);
               ret.getNodes().add(tmpstate);
             }
-          } catch (DevctrlException e) {
-            logger.trace("ノード障害発生");
+          } catch (DevctrlException e1) {
+            logger.trace("node failure occurred");
             if (NODE_STATE_OPERATION == node.getEquipmentsData().getNode_state()) {
               String nodeid = node.getEquipmentsData().getNode_id();
               int nodestate = NODE_STATE_MALFUNCTION;
@@ -279,11 +290,10 @@ public class IntegrityExecutor extends Thread {
               ret.getNodes().add(tmpstate);
             }
           }
-        } else { 
+        } else {
           ifStateFromDevice.put(node, ifStateFromDevice.get(tmpNode));
         }
-        if (node.getEquipmentsType().getRouter_type()
-            == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
+        if (node.getEquipmentsType().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
           getSnmp = false;
           break;
         }
@@ -343,7 +353,7 @@ public class IntegrityExecutor extends Thread {
               if (!beforeState.equals(afterState)) {
                 IfsLogical tmpState = new IfsLogical();
                 tmpState.setNodeId(nodeId);
-                tmpState.setIfId(lagif.getLag_if_id());
+                tmpState.setIfId(lagif.getFc_lag_if_id());
                 tmpState.setIfType(CommonDefinitions.IF_TYPE_LAG_IF);
                 tmpState.setStatus(afterState);
                 ret.getIfs().add(tmpState);
@@ -404,8 +414,9 @@ public class IntegrityExecutor extends Thread {
           }
         }
       } else {
-        logger.warn(LogFormatter.out.format(LogFormatter.MSG_407059,
-            deviceDetail.get(nl).getEquipmentsData().getNode_id(),deviceDetail.get(nl).getEquipmentsType().getRouter_type(), "none"));
+        logger.warn(
+            LogFormatter.out.format(LogFormatter.MSG_407059, deviceDetail.get(nl).getEquipmentsData().getNode_id(),
+                deviceDetail.get(nl).getEquipmentsType().getRouter_type(), "none"));
       }
     }
 

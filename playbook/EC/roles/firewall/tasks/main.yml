@@ -1,0 +1,6 @@
+# Setting firewall
+  - name: check firewall
+    shell: firewall-cmd --state
+    register: firewall_check
+  - include: firewall.yml
+    when: firewall_check.stdout.find('running') == 0

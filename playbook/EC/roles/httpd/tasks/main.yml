@@ -1,0 +1,21 @@
+# Setting httpd
+  - include: getrpm.yml
+    when: download_flag
+  - name: httpd install 1
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/apr-1.4.8-3.el7.x86_64.rpm
+  - name: httpd install 2
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/apr-util-1.5.2-6.el7.x86_64.rpm
+  - name: httpd install 3
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/mailcap-2.1.41-2.el7.noarch.rpm
+  - name: httpd install 4
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/httpd-tools-2.4.6-40.el7.centos.4.x86_64.rpm
+  - name: httpd install 5
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/httpd-2.4.6-40.el7.centos.4.x86_64.rpm
+  - name: httpd install 6
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/httpd-manual-2.4.6-40.el7.centos.4.noarch.rpm
+  - name: httpd install 7
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/mod_ssl-2.4.6-40.el7.centos.4.x86_64.rpm
+  - name: reboot httpd
+    shell: systemctl start httpd
+  - name: register httpd
+    shell: systemctl enable httpd

@@ -1,0 +1,9 @@
+folder_name: 'script'
+
+file_list:
+  - file_name: 'create_table.sql'
+    url: 'https://github.com/multi-service-fabric/element-controller/raw/master/script/DatabaseScript/create_table.sql'
+  - file_name: 'delete_data.sql '
+    url: 'https://github.com/multi-service-fabric/element-controller/raw/master/script/DatabaseScript/delete_data.sql'
+  - file_name: 'drop_table.sql '
+    url: 'https://github.com/multi-service-fabric/element-controller/raw/master/script/DatabaseScript/drop_table.sql'

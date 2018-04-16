@@ -1,0 +1,233 @@
+# Setting ec
+  - name: make ec library folder
+    shell: mkdir -p {{ ec_path }}/lib
+  - name: make ec conf folder
+    shell: mkdir -p {{ ec_path }}/conf
+  - name: make ec script folder
+    shell: mkdir -p {{ ec_path }}/bin
+  - name: make ec log folder
+    shell: mkdir -p {{ ec_path }}/{{ log_path }}
+  - include: getrpm.yml
+    when: download_flag
+  - copy: src={{ installing_ec_path }}/lib/ dest={{ ec_path }}/lib
+    when: download_flag == false
+  - include: getconf.yml
+    when: download_flag
+  - copy: src={{ installing_ec_path }}/conf/ dest={{ ec_path }}/conf
+    when: download_flag == false
+  - include: getbin.yml
+    when: download_flag
+  - copy: src={{ installing_ec_path }}/bin/ dest={{ ec_path }}/bin
+    when: download_flag == false
+  - shell: chmod 755 {{ ec_path }}/bin/*
+  - shell: rm -rf {{ ec_path }}/bin/boot_fail.sh
+  - shell: rm -rf {{ ec_path }}/bin/boot_success.sh
+  - shell: ln -s {{ ec_path }}/bin/boot.sh {{ ec_path }}/bin/boot_fail.sh
+  - shell: ln -s {{ ec_path }}/bin/boot.sh {{ ec_path }}/bin/boot_success.sh
+  - name: check path setting
+    find: paths=/etc/profile
+          patterns='{{ ec_path }}/bin'
+    register: found_files
+  - name: add path setting 1
+    lineinfile:
+      dest=/etc/profile
+      line='export PATH=$PATH:{{ ec_path }}/bin'
+    when: found_files.matched == 0
+  - shell: source /etc/profile
+  - name: hibernate.cfg.xml data set
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/hibernate.cfg.xml'
+      state=present
+      backrefs=yes
+      regexp='<property name="connection.url">jdbc:postgresql:.*</property>'
+      line='<property name="connection.url">jdbc:postgresql://{{ db_address }}:5432/{{ db_name }}</property>'
+  - name: log4j2.xml data set
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/log4j2.xml'
+      state=present
+      backrefs=yes
+      regexp='<Property name="log-path">.*</Property>'
+      line='        <Property name="log-path">{{ ec_path }}/{{ log_path }}</Property>'
+  - name: ec_main.conf data set 1
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='rest_server_address.*'
+      line='rest_server_address={{ ec_rest_address }}'
+  - name: ec_main.conf data set 2
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='rest_server_port.*'
+      line='rest_server_port={{ ec_rest_port }}'
+  - name: ec_main.conf data set 3
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='fc_address.*'
+      line='fc_address={{ fc_rest_address }}'
+  - name: ec_main.conf data set 4
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='fc_port.*'
+      line='fc_port={{ fc_rest_port }}'
+  - name: ec_main.conf data set 5
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='em_address.*'
+      line='em_address={{ em_netconf_address }}'
+  - name: ec_main.conf data set 6
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='em_port.*'
+      line='em_port={{ em_netconf_port }}'
+  - name: ec_main.conf data set 7
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='em_rest_address.*'
+      line='em_rest_address={{ em_rest_address }}'
+  - name: ec_main.conf data set 8
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='em_rest_port.*'
+      line='em_rest_port={{ em_rest_port }}'
+  - name: ec_main.conf data set 9
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='server_physical_address.*'
+      line='server_physical_address={{ ec_physical_address }}'
+  - name: ec_main.conf data set 10
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='request_log_path.*'
+      line='request_log_path={{ ec_path }}/{{ log_path }}'
+  - name: ec_main.conf data set 11
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='log_file_path.*'
+      line='log_file_path={{ ec_path }}/{{ log_path }}'
+  - name: boot.sh data set 1
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/boot.sh'
+      state=present
+      backrefs=yes
+      regexp='HOST=.*'
+      line='HOST="{{ ec_rest_address }}"'
+  - name: boot.sh data set 2
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/boot.sh'
+      state=present
+      backrefs=yes
+      regexp='PORT=.*'
+      line='PORT="{{ ec_rest_port }}"'
+  - name: linkdown.sh data set 1
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/linkdown.sh'
+      state=present
+      backrefs=yes
+      regexp='HOST=.*'
+      line='HOST="{{ ec_rest_address }}"'
+  - name: linkdown.sh data set 2
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/linkdown.sh'
+      state=present
+      backrefs=yes
+      regexp='PORT=.*'
+      line='PORT="{{ ec_rest_port }}"'
+  - name: linkup.sh data set 1
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/linkup.sh'
+      state=present
+      backrefs=yes
+      regexp='HOST=.*'
+      line='HOST="{{ ec_rest_address }}"'
+  - name: linkup.sh data set 2
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/linkup.sh'
+      state=present
+      backrefs=yes
+      regexp='PORT=.*'
+      line='PORT="{{ ec_rest_port }}"'
+  - name: ec_ctl.sh data set 1
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/ec_ctl.sh'
+      state=present
+      backrefs=yes
+      regexp='^HOST=.*'
+      line='HOST="{{ ec_rest_address }}"'
+  - name: ec_ctl.sh data set 2
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/ec_ctl.sh'
+      state=present
+      backrefs=yes
+      regexp='^PORT=.*'
+      line='PORT="{{ ec_rest_port }}"'
+  - name: ec_ctl.sh data set 3
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/ec_ctl.sh'
+      state=present
+      backrefs=yes
+      regexp='^FC_HOST=.*'
+      line='FC_HOST="{{ fc_rest_address }}"'
+  - name: ec_ctl.sh data set 4
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/ec_ctl.sh'
+      state=present
+      backrefs=yes
+      regexp='^FC_PORT=.*'
+      line='FC_PORT="{{ fc_rest_port }}"'
+  - name: ec_ctl.sh data set 5
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/ec_ctl.sh'
+      state=present
+      backrefs=yes
+      regexp='CONFFILE=.*'
+      line='CONFFILE="{{ ec_path }}/conf/ec_main.conf"'
+  - name: ec_ctl.sh data set 6
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/ec_ctl.sh'
+      state=present
+      backrefs=yes
+      regexp='CHECKFILE=.*'
+      line='CHECKFILE="{{ ec_path }}/lib/EcMainModule.jar:"'
+  - name: ec_ctl.sh data set 7
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/ec_ctl.sh'
+      state=present
+      backrefs=yes
+      regexp='CLASSPATH=\"\/.*'
+      line='CLASSPATH="{{ ec_path }}/conf/"'
+  - name: ec_ctl.sh data set 8
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/ec_ctl.sh'
+      state=present
+      backrefs=yes
+      regexp='DEFINE=.*'
+      line='DEFINE="-Dlog4j.configurationFile=file://{{ ec_path }}/conf/log4j2.xml"'
+  - name: ec_ctl.sh data set 9
+    lineinfile: >-
+      dest='{{ ec_path }}/bin/ec_ctl.sh'
+      state=present
+      backrefs=yes
+      regexp='for name in .*'
+      line='for name in `ls {{ ec_path }}/lib/*.jar`; do'
+  - include: getec.yml

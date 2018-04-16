@@ -1,0 +1,733 @@
+system {
+    time-zone Asia/Tokyo;
+    root-authentication {
+        encrypted-password "$1$osUf/onb$HbE0.Do5tmDp3ywLVnRdM/"; ## SECRET-DATA
+    }
+    login {
+        user nslab {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$1$zCVxLjUU$5QWFBU/IIoT7G/M0ooEld."; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh;
+        telnet;
+        netconf {
+            ssh;
+        }
+    }
+    syslog {
+        host $$ECMANAGEMENTADDRESS$$ {
+            any info;
+            source-address $$DEVICEMANAGEMENTADDRESS$$;
+        }
+        archive size 4m;
+        user * {
+            any emergency;
+        }
+        file messages {
+            any any;
+            authorization info;
+            archive size 4m;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+        console {
+            kernel any;
+        }
+        time-format millisecond;
+    }
+    commit synchronize;
+    processes {
+        app-engine-virtual-machine-management-service {
+            traceoptions {
+                level notice;
+                flag all;
+            }
+        }
+    }
+    ntp {
+        server $$NTPSERVER$$;
+        source-address $$DEVICEMANAGEMENTADDRESS$$;
+    }
+}
+chassis {
+    maximum-ecmp 16;
+    aggregated-devices {
+        ethernet {
+            device-count 1;
+        }
+    }
+    forwarding-options {
+        lpm-profile {
+            prefix-65-127-disable;
+        }
+    }
+}
+interfaces {
+    vme {
+        unit 0 {
+            family inet {
+                address $$DEVICEMANAGEMENT_CIDRADDRESS$$;
+            }
+        }
+    }
+}
+snmp {
+    community dhcp-provisioning-only {
+        authorization read-only;
+    }
+    community ntt-msf {
+        authorization read-only;
+    }
+    trap-options {
+        source-address $$DEVICEMANAGEMENTADDRESS$$;
+    }
+    trap-group ntt-msf {
+        version v2;
+        targets {
+            $$ECMANAGEMENTADDRESS$$;
+        }
+    }
+    trap-group rmon-trap-group {
+        version v2;
+        categories {
+            rmon-alarm;
+        }
+        targets {
+            $$ECMANAGEMENTADDRESS$$;
+        }
+    }
+    rmon {
+        alarm 60 {
+            interval 5;
+            variable .1.3.6.1.4.1.2636.3.1.13.1.8.9.1.0.0;
+            sample-type absolute-value;
+            startup-alarm rising-or-falling-alarm;
+            rising-threshold 60;
+            falling-threshold 50;
+            rising-event-index 1;
+            falling-event-index 1;
+        }
+        alarm 80 {
+            interval 5;
+            variable .1.3.6.1.4.1.2636.3.1.13.1.8.9.1.0.0;
+            sample-type absolute-value;
+            startup-alarm rising-or-falling-alarm;
+            rising-threshold 80;
+            falling-threshold 50;
+            rising-event-index 1;
+            falling-event-index 1;
+        }
+        event 1 {
+            description "RMON Event";
+            type log-and-trap;
+            community rmon-trap-group;
+        }
+    }
+}
+forwarding-options {
+    storm-control-profiles default {
+        all;
+    }
+    enhanced-hash-key {
+        hash-mode {
+            layer2-payload;
+        }
+    }
+}
+protocols {
+    ospf {
+        spf-options {
+            delay 200;
+            holddown 2000;
+            rapid-runs 10;
+        }
+    }
+    vrrp {
+        asymmetric-hold-time;
+    }
+}
+policy-options {
+    prefix-list EL_Prefix {
+    }
+    policy-statement EL_To_LDP {
+        term Term1 {
+            from interface lo0.0;
+            then accept;
+        }
+        term Term2 {
+            from {
+                rib inet.0;
+                prefix-list EL_Prefix;
+            }
+            then accept;
+        }
+    }
+    policy-statement ECMP {
+        then {
+            load-balance per-packet;
+        }
+    }
+    policy-statement VPN_export {
+        term 99 {
+            then {
+                community add MSF_belonging_side;
+            }
+        }
+    }
+    policy-statement VPN_import {
+        term high {
+            from community MSF_belonging_side;
+            then {
+                local-preference 200;
+                accept;
+            }
+        }
+        term other {
+            then {
+                local-preference 50;
+                accept;
+            }
+        }
+    }
+    policy-statement v4_active-direct_To_OSPF_export {
+        term 1 {
+            from protocol direct;
+            then {
+                metric 10;
+                external {
+                    type 1;
+                }
+                accept;
+            }
+        }
+        term 2 {
+            then reject;
+        }
+    }
+    policy-statement eBGPv4_To_active-CE_export {
+        term 1 {
+            from protocol [ direct static bgp ];
+            then {
+                metric 500;
+                origin igp;
+                community delete MSF_community;
+                community delete Target_community;
+                community delete ALL_ext_communities;
+                accept;
+            }
+        }
+        term 2 {
+            then reject;
+        }
+    }
+    policy-statement eBGPv4_To_standby-CE_export {
+        term 1 {
+            from protocol [ direct static bgp ];
+            then {
+                metric 1000;
+                origin igp;
+                community delete MSF_community;
+                community delete Target_community;
+                community delete ALL_ext_communities;
+                accept;
+            }
+        }
+        term 2 {
+            then reject;
+        }
+    }
+    policy-statement eBGPv4_To_CE_import {
+        term 1 {
+            from protocol bgp;
+            then {
+                community delete MSF_community;
+                accept;
+            }
+        }
+    }
+    community MSF_community members $$COMMUNITYMEMBERS$$;
+    community Target_community members target:*:*;
+    community MSF_belonging_side members $$BELONGINGSIDEMEMBERS$$;
+    community ALL_ext_communities members 0x*:*:*;
+}
+class-of-service {
+    classifiers {
+        dscp msf_unicast_dscp_classify {
+            forwarding-class unicast_ef {
+                loss-priority low code-points [ 101110 110000 111000 ];
+            }
+            forwarding-class unicast_be {
+                loss-priority low code-points 000000;
+            }
+            forwarding-class unicast_af1 {
+                loss-priority low code-points 001000;
+            }
+            forwarding-class unicast_af2 {
+                loss-priority low code-points 010000;
+            }
+            forwarding-class unicast_af3 {
+                loss-priority low code-points 011000;
+            }
+            forwarding-class unicast_af4 {
+                loss-priority low code-points 100000;
+            }
+        }
+        dscp ce_unicast_dscp_classify {
+            forwarding-class unicast_be {
+                loss-priority low code-points 000000;
+            }
+            forwarding-class unicast_af1 {
+                loss-priority low code-points 001000;
+            }
+            forwarding-class unicast_af2 {
+                loss-priority low code-points 100000;
+            }
+            forwarding-class unicast_af3 {
+                loss-priority low code-points 101110;
+            }
+        }
+        dscp multicast_dscp_classify {
+            forwarding-class multicast_be {
+                loss-priority low code-points [ 000000 010000 100000 ];
+            }
+        }
+        exp msf_mpls_exp_classify {
+            forwarding-class unicast_ef {
+                loss-priority low code-points [ 101 110 111 ];
+            }
+            forwarding-class unicast_be {
+                loss-priority low code-points 000;
+            }
+            forwarding-class unicast_af1 {
+                loss-priority low code-points 001;
+            }
+            forwarding-class unicast_af2 {
+                loss-priority low code-points 010;
+            }
+            forwarding-class unicast_af3 {
+                loss-priority low code-points 011;
+            }
+            forwarding-class unicast_af4 {
+                loss-priority low code-points 100;
+            }
+        }
+    }
+    host-outbound-traffic {
+        forwarding-class unicast_ef;
+        dscp-code-point 101110;
+    }
+    shared-buffer {
+        ingress {
+            percent 100;
+            buffer-partition lossless {
+                percent 5;
+            }
+            buffer-partition lossless-headroom {
+                percent 0;
+            }
+            buffer-partition lossy {
+                percent 95;
+            }
+        }
+        egress {
+            percent 100;
+            buffer-partition lossless {
+                percent 5;
+            }
+            buffer-partition lossy {
+                percent 50;
+            }
+            buffer-partition multicast {
+                percent 45;
+            }
+        }
+    }
+    forwarding-classes {
+        class unicast_ef queue-num 0;
+        class unicast_be queue-num 1;
+        class unicast_af1 queue-num 2;
+        class unicast_af2 queue-num 3;
+        class unicast_af3 queue-num 4;
+        class unicast_af4 queue-num 5;
+        class multicast_be queue-num 8;
+        class multicast_af3 queue-num 9;
+    }
+    system-defaults {
+        classifiers {
+            exp msf_mpls_exp_classify;
+        }
+    }
+    rewrite-rules {
+        dscp msf_dscp_remark {
+            forwarding-class unicast_ef {
+                loss-priority low code-point 101110;
+            }
+            forwarding-class unicast_be {
+                loss-priority low code-point 000000;
+            }
+            forwarding-class unicast_af1 {
+                loss-priority low code-point 001000;
+            }
+            forwarding-class unicast_af2 {
+                loss-priority low code-point 010000;
+            }
+            forwarding-class unicast_af3 {
+                loss-priority low code-point 011000;
+            }
+            forwarding-class unicast_af4 {
+                loss-priority low code-point 100000;
+            }
+            forwarding-class multicast_be {
+                loss-priority low code-point 000000;
+            }
+        }
+        dscp ce_dscp_remark {
+            forwarding-class unicast_be {
+                loss-priority low code-point 000000;
+            }
+            forwarding-class unicast_af1 {
+                loss-priority low code-point 001000;
+            }
+            forwarding-class unicast_af2 {
+                loss-priority low code-point 100000;
+            }
+            forwarding-class unicast_af3 {
+                loss-priority low code-point 101110;
+            }
+            forwarding-class multicast_be {
+                loss-priority low code-point 000000;
+            }
+        }
+        exp msf_mpls_exp_remark {
+            forwarding-class unicast_ef {
+                loss-priority low code-point 101;
+            }
+            forwarding-class unicast_be {
+                loss-priority low code-point 000;
+            }
+            forwarding-class unicast_af1 {
+                loss-priority low code-point 001;
+            }
+            forwarding-class unicast_af2 {
+                loss-priority low code-point 010;
+            }
+            forwarding-class unicast_af3 {
+                loss-priority low code-point 011;
+            }
+            forwarding-class unicast_af4 {
+                loss-priority low code-point 100;
+            }
+        }
+    }
+    scheduler-maps {
+        queue_scheduler_mapping {
+            forwarding-class unicast_ef scheduler unicast_ef_schedule;
+            forwarding-class unicast_be scheduler unicast_be_schedule;
+            forwarding-class unicast_af1 scheduler unicast_af1_schedule;
+            forwarding-class unicast_af2 scheduler unicast_af2_schedule;
+            forwarding-class unicast_af3 scheduler unicast_af3_schedule;
+            forwarding-class unicast_af4 scheduler unicast_af4_schedule;
+            forwarding-class multicast_be scheduler multicast_be_schedule;
+            forwarding-class multicast_af3 scheduler multicast_af3_schedule;
+        }
+        queue_scheduler_mapping_pt2 {
+            forwarding-class unicast_ef scheduler unicast_ef_schedule_pt2;
+            forwarding-class unicast_be scheduler unicast_be_schedule_pt2;
+            forwarding-class unicast_af1 scheduler unicast_af1_schedule_pt2;
+            forwarding-class unicast_af2 scheduler unicast_af2_schedule_pt2;
+            forwarding-class unicast_af3 scheduler unicast_af3_schedule_pt2;
+            forwarding-class unicast_af4 scheduler unicast_af4_schedule_pt2;
+            forwarding-class multicast_be scheduler multicast_be_schedule_pt2;
+            forwarding-class multicast_af3 scheduler multicast_af3_schedule_pt2;
+        }
+    }
+    schedulers {
+        unicast_ef_schedule {
+            priority strict-high;
+        }
+        unicast_af1_schedule {
+            transmit-rate percent 10;
+            buffer-size percent 10;
+            priority low;
+        }
+        unicast_af2_schedule {
+            transmit-rate percent 20;
+            buffer-size percent 20;
+            priority low;
+        }
+        unicast_af3_schedule {
+            transmit-rate percent 15;
+            buffer-size percent 15;
+            priority low;
+        }
+        unicast_af4_schedule {
+            transmit-rate percent 15;
+            buffer-size percent 15;
+            priority low;
+        }
+        unicast_be_schedule {
+            transmit-rate percent 2;
+            buffer-size percent 2;
+            priority low;
+        }
+        multicast_be_schedule {
+            transmit-rate percent 22;
+            buffer-size percent 22;
+            priority low;
+        }
+        multicast_af3_schedule {
+            transmit-rate percent 15;
+            buffer-size percent 15;
+            priority low;
+        }
+        unicast_ef_schedule_pt2 {
+            priority strict-high;
+        }
+        unicast_af1_schedule_pt2 {
+            transmit-rate percent 10;
+            buffer-size percent 10;
+            priority low;
+        }
+        unicast_af2_schedule_pt2 {
+            transmit-rate percent 15;
+            buffer-size percent 15;
+            priority low;
+        }
+        unicast_af3_schedule_pt2 {
+            transmit-rate percent 25;
+            buffer-size percent 25;
+            priority low;
+        }
+        unicast_af4_schedule_pt2 {
+            transmit-rate percent 1;
+            buffer-size percent 1;
+            priority low;
+        }
+        unicast_be_schedule_pt2 {
+            transmit-rate percent 4;
+            buffer-size percent 4;
+            priority low;
+        }
+        multicast_be_schedule_pt2 {
+            transmit-rate percent 19;
+            buffer-size percent 19;
+            priority low;
+        }
+        multicast_af3_schedule_pt2 {
+            transmit-rate percent 25;
+            buffer-size percent 25;
+            priority low;
+        }
+    }
+    multi-destination {
+        classifiers {
+            dscp multicast_dscp_classify;
+        }
+    }
+}
+firewall {
+    family inet {
+        filter ipv4_filter_msf_input {
+            term in_ipv4_msf_ospf_pim_af3_class_permit {
+                from {
+                    protocol [ ospf pim ];
+                }
+                then {
+                    count in_ipv4_msf_ospf_pim_af3_class_permit;
+                    loss-priority low;
+                    forwarding-class multicast_af3;
+                }
+            }
+            term in_ipv4_msf_ldp_af3_class_permit1 {
+                from {
+                    protocol udp;
+                    source-port ldp;
+                }
+                then {
+                    count in_ipv4_msf_ldp_af3_class_permit1;
+                    loss-priority low;
+                    forwarding-class multicast_af3;
+                }
+            }
+            term in_ipv4_msf_ldp_af3_class_permit2 {
+                from {
+                    protocol udp;
+                    destination-port ldp;
+                }
+                then {
+                    count in_ipv4_msf_ldp_af3_class_permit2;
+                    loss-priority low;
+                    forwarding-class multicast_af3;
+                }
+            }
+            term in_ipv4_msf_tcp_ef_class_permit1 {
+                from {
+                    protocol tcp;
+                    source-port [ bgp msdp ldp ];
+                }
+                then {
+                    count in_ipv4_msf_tcp_ef_class_permit1;
+                    loss-priority low;
+                    forwarding-class unicast_ef;
+                }
+            }
+            term in_ipv4_msf_tcp_ef_class_permit2 {
+                from {
+                    protocol tcp;
+                    destination-port [ bgp msdp ldp ];
+                }
+                then {
+                    count in_ipv4_msf_tcp_ef_class_permit2;
+                    loss-priority low;
+                    forwarding-class unicast_ef;
+                }
+            }
+            term in_ipv4_msf_tcp_af4_class_permit1 {
+                from {
+                    protocol tcp;
+                    source-port [ telnet ssh ftp ftp-data ];
+                }
+                then {
+                    count in_ipv4_msf_tcp_af4_class_permit1;
+                    loss-priority low;
+                    forwarding-class unicast_af4;
+                }
+            }
+            term in_ipv4_msf_tcp_af4_class_permit2 {
+                from {
+                    protocol tcp;
+                    destination-port [ telnet ssh ftp ftp-data ];
+                }
+                then {
+                    count in_ipv4_msf_tcp_af4_class_permit2;
+                    loss-priority low;
+                    forwarding-class unicast_af4;
+                }
+            }
+            term in_ipv4_msf_udp_af4_class_permit1 {
+                from {
+                    protocol udp;
+                    source-port [ snmp ntp tftp ];
+                }
+                then {
+                    count in_ipv4_msf_udp_af4_class_permit1;
+                    loss-priority low;
+                    forwarding-class unicast_af4;
+                }
+            }
+            term in_ipv4_msf_udp_af4_class_permit2 {
+                from {
+                    protocol udp;
+                    destination-port [ snmp snmptrap syslog ntp tftp 5600 ];
+                }
+                then {
+                    count in_ipv4_msf_udp_af4_class_permit2;
+                    loss-priority low;
+                    forwarding-class unicast_af4;
+                }
+            }
+            term in_ipv4_msf_other_multicast {
+                from {
+                    destination-address {
+                        224.0.0.0/4;
+                    }
+                    dscp [ cs1 cs4 cs5 cs6 cs7 af11 af12 af13 af21 af22 af23 af31 af32 af33 af41 af42 af43 ef ];
+                }
+                then {
+                    count in_ipv4_msf_other_multicast;
+                    loss-priority low;
+                    forwarding-class multicast_be;
+                }
+            }
+            term in_ipv4_msf_other_unicast {
+                from {
+                    dscp [ cs5 cs6 cs7 af11 af12 af13 af21 af22 af23 af31 af32 af33 af41 af42 af43 ];
+                }
+                then {
+                    count in_ipv4_msf_other_unicast;
+                    loss-priority low;
+                    forwarding-class unicast_be;
+                }
+            }
+            term in_ipv4_msf_default {
+                then {
+                    count in_ipv4_msf_default;
+                    accept;
+                }
+            }
+        }
+        filter ipv4_filter_input {
+            term in_ipv4_ce_other_multicast {
+                from {
+                    destination-address {
+                        224.0.0.0/4;
+                    }
+                    dscp [ cs1 cs2 cs5 cs6 cs7 af11 af12 af13 af21 af22 af23 af31 af32 af33 af41 af42 af43 ef ];
+                }
+                then {
+                    count in_ipv4_ce_other_multicast;
+                    loss-priority low;
+                    forwarding-class multicast_be;
+                }
+            }
+            term in_ipv4_ce_other_unicast {
+                from {
+                    dscp [ cs2 cs5 cs6 cs7 af11 af12 af13 af21 af22 af23 af31 af32 af33 af41 af42 af43 ];
+                }
+                then {
+                    count in_ipv4_ce_other_unicast;
+                    loss-priority low;
+                    forwarding-class unicast_be;
+                }
+            }
+            term in_ipv4_ce_default {
+                then {
+                    count in_ipv4_ce_default;
+                    accept;
+                }
+            }
+        }
+        filter ipv4_vpnbulk_af3_filter_input {
+            term in_ipv4_ce_input_interface_unicast_af3 {
+                then {
+                    count in_ipv4_ce_input_interface_unicast_af3;
+                    loss-priority low;
+                    forwarding-class unicast_af3;
+                }
+            }
+        }
+        filter ipv4_vpnbulk_af2_filter_input {
+            term in_ipv4_ce_input_interface_unicast_af2 {
+                then {
+                    count in_ipv4_ce_input_interface_unicast_af2;
+                    loss-priority low;
+                    forwarding-class unicast_af2;
+                }
+            }
+        }
+        filter ipv4_vpnbulk_af1_filter_input {
+            term in_ipv4_ce_input_interface_unicast_af1 {
+                then {
+                    count in_ipv4_ce_input_interface_unicast_af1;
+                    loss-priority low;
+                    forwarding-class unicast_af1;
+                }
+            }
+        }
+        filter ipv4_vpnbulk_be_filter_input {
+            term in_ipv4_ce_input_interface_unicast_be {
+                then {
+                    count in_ipv4_ce_input_interface_unicast_be;
+                    loss-priority low;
+                    forwarding-class unicast_be;
+                }
+            }
+        }
+    }
+}

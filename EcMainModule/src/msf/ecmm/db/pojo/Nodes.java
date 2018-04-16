@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.pojo;
@@ -20,6 +20,8 @@ public class Nodes implements Serializable {
   private String equipment_type_id = null;
   /** Management IF Address. */
   private String management_if_address = null;
+  /** Management IF Address prefix. */
+  private int mng_if_addr_prefix = 0;
   /** SNMP COMMUNITY. */
   private String snmp_community = null;
   /** Device Status. */
@@ -30,6 +32,8 @@ public class Nodes implements Serializable {
   private Integer plane = null;
   /** VPN Type. */
   private String vpn_type = null;
+  /** AS number. */
+  private String as_number = null;
   /** Loopback IF Address. */
   private String loopback_if_address = null;
   /** User Name. */
@@ -135,6 +139,25 @@ public class Nodes implements Serializable {
   }
 
   /**
+   * Getting management IF address prefix.
+   *
+   * @return management IF address prefix
+   */
+  public int getMng_if_addr_prefix() {
+    return mng_if_addr_prefix;
+  }
+
+  /**
+   * Setting management IF address prefix.
+   *
+   * @param mng_if_addr_prefix
+   *          management IF address prefix
+   */
+  public void setMng_if_addr_prefix(int mng_if_addr_prefix) {
+    this.mng_if_addr_prefix = mng_if_addr_prefix;
+  }
+
+  /**
    * Getting SNMP COMMUNITY.
    *
    * @return SNMP COMMUNITY
@@ -227,6 +250,26 @@ public class Nodes implements Serializable {
    */
   public void setVpn_type(String vpn_type) {
     this.vpn_type = vpn_type;
+  }
+
+
+  /**
+   * Getting AS number.
+   *
+   * @return AS number
+   */
+  public String getAs_number() {
+    return as_number;
+  }
+
+  /**
+   * Setting AS number.
+   *
+   * @param as_number
+   *          AS number
+   */
+  public void setAs_number(String as_number) {
+    this.as_number = as_number;
   }
 
   /**
@@ -467,11 +510,13 @@ public class Nodes implements Serializable {
   @Override
   public String toString() {
     return "Nodes [node_id=" + node_id + ", node_name=" + node_name + ", equipment_type_id=" + equipment_type_id
-        + ", management_if_address=" + management_if_address + ", snmp_community=" + snmp_community + ", node_state="
-        + node_state + ", provisioning=" + provisioning + ", plane=" + plane + ", vpn_type=" + vpn_type
-        + ", loopback_if_address=" + loopback_if_address + ", username=" + username + ", password=" + password
-        + ", ntp_server_address=" + ntp_server_address + ", host_name=" + host_name + ", mac_addr=" + mac_addr
-        + ", equipments=" + equipments + ", nodesStartupNotificationList=" + nodesStartupNotificationList
-        + ", physicalIfsList=" + physicalIfsList + ", lagIfsList=" + lagIfsList + "]";
+        + ", management_if_address=" + management_if_address + ", mng_if_addr_prefix=" + mng_if_addr_prefix
+        + ", snmp_community=" + snmp_community + ", node_state=" + node_state + ", provisioning=" + provisioning
+        + ", plane=" + plane + ", vpn_type=" + vpn_type + ", as_number=" + as_number + ", loopback_if_address="
+        + loopback_if_address + ", username=" + username + ", password=" + password + ", ntp_server_address="
+        + ntp_server_address + ", host_name=" + host_name + ", mac_addr=" + mac_addr + ", equipments=" + equipments
+        + ", nodesStartupNotificationList=" + nodesStartupNotificationList + ", physicalIfsList=" + physicalIfsList
+        + ", lagIfsList=" + lagIfsList + "]";
   }
+
 }

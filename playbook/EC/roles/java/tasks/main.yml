@@ -1,0 +1,17 @@
+# Setting java
+  - include: getrpm.yml
+    when: download_flag
+  - name: java install
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/jdk-8u92-linux-x64.rpm
+  - name: check before add setting
+    find: paths=/etc/profile
+          patterns='JRE_HOME=/usr/java/jdk1.8.0_92/'
+    register: found_files
+  - name: enviroment data set
+    lineinfile:
+      dest=/etc/profile
+      line={{ item }}
+    with_items:
+        - 'JRE_HOME=/usr/java/jdk1.8.0_92/'
+        - 'export JRE_HOME'
+    when: found_files.matched == 0

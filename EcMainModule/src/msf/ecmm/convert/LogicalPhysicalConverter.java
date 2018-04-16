@@ -1,14 +1,24 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.convert;
 
+import static msf.ecmm.common.CommonDefinitions.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.db.pojo.BreakoutIfs;
 import msf.ecmm.db.pojo.EquipmentIfs;
 import msf.ecmm.db.pojo.IfNameRules;
+import msf.ecmm.db.pojo.LagIfs;
+import msf.ecmm.db.pojo.LagMembers;
 import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.PhysicalIfs;
+import msf.ecmm.db.pojo.VlanIfs;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,6 +120,66 @@ public class LogicalPhysicalConverter {
    */
   public static String toPhysicalIfName(String suffix, String slotName) {
     return new String(suffix + slotName);
+  }
+
+
+  /**
+   * Generating Physical IF Name (for DB configuration).
+   *
+   * @param physicalIfId
+   *          physical IFID
+   * @param speed
+   *          physical IF speed
+   * @param nodes
+   *          device information
+   * @return physical IF name (port name suffix + IF slot name)
+   * @throws IllegalArgumentException
+   *           IllegalArgumentException
+   */
+  public static String toPhysicalIfName(String physicalIfId, String speed, Nodes nodes)
+      throws IllegalArgumentException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("physicalIfId=" + physicalIfId + " speed=" + speed + " nodes=" + nodes);
+
+    String physicalIfName = null;
+
+    if (nodes.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_NORMAL) {
+      String prefix = null;
+      for (IfNameRules ifNameRules : nodes.getEquipments().getIfNameRulesList()) {
+        if (ifNameRules.getSpeed().equals(speed)) {
+          prefix = ifNameRules.getPort_prefix();
+          break;
+        }
+      }
+
+      String slot = null;
+      for (EquipmentIfs equipmentIfs : nodes.getEquipments().getEquipmentIfsList()) {
+        if (equipmentIfs.getPhysical_if_id().equals(physicalIfId) && equipmentIfs.getPort_speed().equals(speed)) {
+          slot = equipmentIfs.getIf_slot();
+          break;
+        }
+      }
+
+      if (prefix != null && slot != null) {
+        physicalIfName = toPhysicalIfName(prefix, slot);
+      } else {
+        logger.warn("Create physical IF name error. prefix=%s, slot=%s", prefix, slot);
+        throw new IllegalArgumentException();
+      }
+    } else if (nodes.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
+      physicalIfName = toCoreRouterIfName(nodes, physicalIfId, speed);
+      if (physicalIfName.isEmpty()) {
+        logger.warn("Create physical IF name error.");
+        throw new IllegalArgumentException();
+      }
+    } else {
+      logger.warn("Router type invalid. RouterType=%d", nodes.getEquipments().getRouter_type());
+      throw new IllegalArgumentException();
+    }
+
+    logger.debug("physicalIfName=" + physicalIfName);
+    logger.trace(CommonDefinitions.END);
+    return physicalIfName;
   }
 
   /**
@@ -349,8 +419,7 @@ public class LogicalPhysicalConverter {
 
     String ret = null;
 
-    OK:
-    switch (keywordStr) {
+    OK: switch (keywordStr) {
       case "PHYSICALIFID":
         ret = physicalIfId;
         break;
@@ -402,8 +471,152 @@ public class LogicalPhysicalConverter {
         break;
     }
     logger.debug(ret);
-    logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.END);
     return ret;
 
   }
+
+  /**
+   * Lag IFID's payout function.
+   *
+   * @param nodesDb
+   *          device information(DB)
+   * @return LagIFID
+   */
+  public static String getLagIfId(Nodes nodesDb) {
+    logger.trace(START);
+    logger.debug("nodesDb:" + nodesDb);
+
+    String ret = null;
+    List<Integer> lagIfIdList = new ArrayList<Integer>();
+    if (nodesDb.getLagIfsList() != null && nodesDb.getLagIfsList().isEmpty() == false) {
+      for (LagIfs lagIfs : nodesDb.getLagIfsList()) {
+        lagIfIdList.add(Integer.parseInt(lagIfs.getLag_if_id()));
+      }
+      Collections.sort(lagIfIdList);
+      for (int i = 1; i < lagIfIdList.size() + 1; i++) {
+        if ((lagIfIdList.get(i - 1)) != i) {
+          ret = String.valueOf(i);
+          break;
+        } else if (lagIfIdList.get(lagIfIdList.size() - 1) == i) {
+          ret = String.valueOf(i + 1);
+        }
+      }
+
+    } else {
+      ret = "1";
+    }
+
+    logger.debug("LAG IF ID: " + ret);
+    logger.trace(END);
+    return ret;
+
+  }
+
+  /**
+   * Search from each IF information list possessed by the device information by using the IF ID as a key and obtain the IF speed (numerical value).<br>
+   * physicalIF：The speed of the relevant IF<br>
+   * LAGIF：The speed of the LAG (total value of the IF speeds defined as members of the LAG)<br>
+   * breakoutIF：breakout Speed after breakout of the original physical IF
+   *
+   * @param ifType
+   *          IF type
+   * @param ifId
+   *          IF ID
+   * @param nodes
+   *          device information
+   * @return IF speed (numerical value)
+   */
+  public static int getIfSpeed(String ifType, String ifId, Nodes nodes) {
+    logger.trace(START);
+    logger.debug("ifType:" + ifType + ", ifId: " + ifId + ", nodes: " + nodes);
+
+    int ret = 0;
+    if (ifType.equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
+      for (PhysicalIfs physicalIfs : nodes.getPhysicalIfsList()) {
+        if (physicalIfs.getPhysical_if_id().equals(ifId)) {
+          ret = Integer.parseInt(physicalIfs.getIf_speed().replace(SPEED_UNIT_GIGA, ""));
+          break;
+        }
+      }
+    } else if (ifType.equals(CommonDefinitions.IF_TYPE_LAG_IF)) {
+      for (LagIfs lagIfs : nodes.getLagIfsList()) {
+        if (lagIfs.getFc_lag_if_id().equals(ifId) && lagIfs.getLagMembersList() != null) {
+          for (LagMembers lagMembers : lagIfs.getLagMembersList()) {
+            int lagMemberSpeed = 0;
+            if (lagMembers.getPhysical_if_id() != null) {
+              for (PhysicalIfs physicalIfs : nodes.getPhysicalIfsList()) {
+                if (physicalIfs.getPhysical_if_id().equals(lagMembers.getPhysical_if_id())) {
+                  lagMemberSpeed = Integer.parseInt(physicalIfs.getIf_speed().replace(SPEED_UNIT_GIGA, ""));
+                  break;
+                }
+              }
+            } else if (lagMembers.getBreakout_if_id() != null) {
+              physiIfsLoop: for (PhysicalIfs physicalIfs : nodes.getPhysicalIfsList()) {
+                if (physicalIfs.getBreakoutIfsList() != null) {
+                  for (BreakoutIfs breakoutIfs : physicalIfs.getBreakoutIfsList()) {
+                    if (breakoutIfs.getBreakout_if_id().equals(lagMembers.getBreakout_if_id())) {
+                      lagMemberSpeed = Integer.parseInt(breakoutIfs.getSpeed().replace(SPEED_UNIT_GIGA, ""));
+                      break physiIfsLoop;
+                    }
+                  }
+                }
+              }
+            }
+            ret += lagMemberSpeed;
+          }
+          break;
+        }
+      }
+    } else if (ifType.equals(CommonDefinitions.IF_TYPE_BREAKOUT_IF)) {
+      physiIfsLoop: for (PhysicalIfs physicalIfs : nodes.getPhysicalIfsList()) {
+        if (physicalIfs.getBreakoutIfsList() != null) {
+          for (BreakoutIfs breakoutIfs : physicalIfs.getBreakoutIfsList()) {
+            if (breakoutIfs.getBreakout_if_id().equals(ifId)) {
+              ret = Integer.parseInt(breakoutIfs.getSpeed().replace(SPEED_UNIT_GIGA, ""));
+              break physiIfsLoop;
+            }
+          }
+        }
+      }
+    }
+
+    logger.debug("IfSpeed: " + ret);
+    logger.trace(END);
+    return ret;
+  }
+
+  /**
+   * Acquire the speed of the real IF (physical / LAG / Breakout) for which the VLAN is set.
+   *
+   * @param vlanIfs
+   *          VLANIF information
+   * @param nodes
+   *          device information
+   * @return IF speed (numerical value)
+   */
+  public static int getVlanIfSpeed(VlanIfs vlanIfs, Nodes nodes) {
+
+    String ifType = null;
+    String ifId = null;
+    if (vlanIfs.getPhysical_if_id() != null) {
+      ifType = IF_TYPE_PHYSICAL_IF;
+      ifId = vlanIfs.getPhysical_if_id();
+    } else if (vlanIfs.getLag_if_id() != null) {
+      ifType = IF_TYPE_LAG_IF;
+      if (nodes.getLagIfsList() != null) {
+        for (LagIfs elem : nodes.getLagIfsList()) {
+          if (elem.getLag_if_id().equals(vlanIfs.getLag_if_id())) {
+            ifId = elem.getFc_lag_if_id();
+          }
+        }
+      }
+    } else if (vlanIfs.getBreakout_if_id() != null) {
+      ifType = IF_TYPE_BREAKOUT_IF;
+      ifId = vlanIfs.getBreakout_if_id();
+    }
+
+    return getIfSpeed(ifType, ifId, nodes);
+  }
+
 }

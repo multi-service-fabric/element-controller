@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
@@ -15,6 +15,7 @@ import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.BreakoutIfs;
+import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
@@ -66,12 +67,18 @@ public class BreakoutIfInfoAcquisition extends Operation {
 
       BreakoutIfs breakoutIfsDb = session.searchBreakoutIf(nodeId, breakoutIfId);
 
+      Nodes nodes = session.searchNodes(nodeId, null);
+
       if (breakoutIfsDb == null) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [breakoutIfs]"));
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_350201);
       }
+      if (nodes == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [nodes]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_350201);
+      }
 
-      getBreakoutIf = RestMapper.toBreakoutIfsInfo(breakoutIfsDb);
+      getBreakoutIf = RestMapper.toBreakoutIfsInfo(breakoutIfsDb, nodes.getEquipments());
 
       response = makeSuccessResponse(RESP_OK_200, getBreakoutIf);
 

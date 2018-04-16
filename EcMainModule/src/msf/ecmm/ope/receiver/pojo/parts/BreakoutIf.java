@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -30,7 +30,10 @@ public class BreakoutIf {
   /** IPv4 Prefix. */
   private String ipv4Prefix;
 
-  /**
+  /** QoS capability. */
+  private QosCapabilities qos;
+
+/**
    * Getting breakoutIF ID.
    *
    * @return breakoutIF ID
@@ -163,13 +166,34 @@ public class BreakoutIf {
     this.ipv4Prefix = ipv4Prefix;
   }
 
-  /* (Non-Javadoc)
+  /**
+   * Getting QoS capability.
+   *
+   * @return qos
+   */
+  public QosCapabilities getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QoS capability.
+   *
+   * @param qos
+   *          setting qos
+   */
+  public void setQos(QosCapabilities qos) {
+    this.qos = qos;
+  }
+
+  /*
+   *   Stringizing Instance.
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
     return "BreakoutIf [breakoutIfId=" + breakoutIfId + ", basePhysicalIfId=" + basePhysicalIfId + ", linkSpeed="
         + linkSpeed + ", ifName=" + ifName + ", ifState=" + ifState + ", ipv4Address=" + ipv4Address + ", ipv4Prefix="
-        + ipv4Prefix + "]";
+        + ipv4Prefix + ", qos=" + qos + "]";
   }
 }

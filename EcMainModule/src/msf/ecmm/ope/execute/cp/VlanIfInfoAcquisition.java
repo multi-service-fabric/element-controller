@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.cp;
@@ -14,6 +14,7 @@ import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.VlanIfs;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
@@ -65,13 +66,18 @@ public class VlanIfInfoAcquisition extends Operation {
     try (DBAccessManager session = new DBAccessManager()) {
 
       VlanIfs vlanIfsDb = session.searchVlanIfs(nodeId, vlanIfId);
+      Nodes nodes = session.searchNodes(nodeId, null);
 
       if (vlanIfsDb == null) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [VlanIfs]"));
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_400201);
       }
+      if (nodes == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [nodes]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_400201);
+      }
 
-      getVlanIf = RestMapper.toVlanIfsInfo(vlanIfsDb);
+      getVlanIf = RestMapper.toVlanIfsInfo(vlanIfsDb, nodes);
 
       response = makeSuccessResponse(RESP_OK_200, getVlanIf);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -20,7 +20,10 @@ public class L3VlanOption {
   /** Static Route Information List. */
   private ArrayList<UpdateStaticRoute> staticRoutes = new ArrayList<UpdateStaticRoute>();
 
-  /**
+  /** QoS Configuration Infomation. */
+  private QosUpdateVlanIf qos = null;
+
+   /**
    * Getting VRF ID.
    *
    * @return vrfId
@@ -59,13 +62,32 @@ public class L3VlanOption {
   }
 
   /**
+   * Getting QoS Configuration Infomation.
+   *
+   * @return qos
+   */
+  public QosUpdateVlanIf getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QoS Configuration Infomation.
+   *
+   * @param qos
+   *          setting qos
+   */
+  public void setQos(QosUpdateVlanIf qos) {
+    this.qos = qos;
+  }
+
+  /*
    * Stringizing Instance.
    *
-   * @return instance string
+   * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "L3VlanOption [vrfId=" + vrfId + ", staticRoutes=" + staticRoutes + "]";
+    return "L3VlanOption [vrfId=" + vrfId + ", staticRoutes=" + staticRoutes + ", qos=" + qos + "]";
   }
 
   /**
@@ -77,15 +99,22 @@ public class L3VlanOption {
    *           input check error
    */
   public void check(OperationType ope) throws CheckDataException {
+
     if (vrfId == null) {
       throw new CheckDataException();
     }
-    if (staticRoutes.isEmpty()) {
+    if (staticRoutes == null && qos == null) {
       throw new CheckDataException();
-    } else {
+    }
+
+    if (staticRoutes != null) {
       for (UpdateStaticRoute sr : staticRoutes) {
         sr.check(ope);
       }
+    }
+
+    if (qos != null) {
+      qos.check(ope);
     }
   }
 

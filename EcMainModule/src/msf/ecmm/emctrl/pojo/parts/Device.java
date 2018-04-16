@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo.parts;
@@ -30,6 +30,10 @@ public class Device {
   /** Name of Device To Be Extended. */
   private String name = null;
 
+  /** Node Type Name(only for Service Update Node/Service reconfiguration). */
+  @XmlElement(name = "node-type")
+  private String nodeType = null;
+
   /** Information of Device To Be Extended (only for Spine/Leaf/B-Leaf Device Extention). */
   private Equipment equipment = null;
 
@@ -37,7 +41,7 @@ public class Device {
   @XmlElement(name = "breakout-interface")
   private List<BreakoutIf> breakoutIfList = null;
 
-  /** Internal Link Configuration Information List (only for Spine/Leaf/B-Leaf Device Extention). */
+   /** Internal Link Configuration Information List (only for Spine/Leaf/B-Leaf Device Extention). */
   @XmlElement(name = "internal-interface")
   private List<InternalInterface> internalLagList = null;
 
@@ -45,20 +49,19 @@ public class Device {
   @XmlElement(name = "management-interface")
   private ManagementInterface managementInterface = null;
 
-  /** Loopback IF Configuration Information (only for Spine/Leaf/B-Leaf Device Extention). */
+ /** Loopback IF Configuration Information (only for Spine/Leaf/B-Leaf Device Extention). */
   @XmlElement(name = "loopback-interface")
   private LoopbackInterface loopbackInterface = null;
 
-  /** List of LAGIF Configuration Information for CE (only for LagIF Generation/Deletion). */
+/** List of LAGIF Configuration Information for CE (only for LagIF Generation/Deletion). */
   @XmlElement(name = "ce-lag-interface")
   private List<CeLagInterface> ceLagInterfaceList = null;
 
-  /** SNMP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
+ /** SNMP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
   private Snmp snmp = null;
 
-  /** NTP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
+ /** NTP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
   private Ntp ntp = null;
-
 
   /** L3VPN Configuration Information (only for Leaf/B-Leaf Device Extention). */
   @XmlElement(name = "l3-vpn")
@@ -71,6 +74,17 @@ public class Device {
   /** OSPF Configuration (only for Spine/Leaf/B-Leaf Device Extentioin). */
   @XmlElement(name = "ospf")
   private OspfAddNode ospfAddNode = null;
+
+ /** physicalIF Information Conversion List (only for Service Update Node/Service reconfiguration). */
+  @XmlElement(name = "physical-ifs")
+  private List<InterfaceNames> physiIfNames = null;
+
+  /** lagIF Information Conversion List (only for Service Update Node/Service reconfiguration). */
+  @XmlElement(name = "lag-ifs")
+  private List<InterfaceNames> lagIfNames = null;
+
+  /** QoS Update information(only for Service reconfiguration). */
+  private Qos qos = null;
 
   /**
    * Generating new instance.
@@ -129,8 +143,7 @@ public class Device {
   /**
    * Setting name of device to be extended.
    *
-   * @param name
-   *          name of device to be extended.
+   * @return name of device to be extended.
    */
   public void setName(String name) {
     this.name = name;
@@ -346,12 +359,95 @@ public class Device {
     this.ospfAddNode = ospfAddNode;
   }
 
+  /**
+   * Getting Node type.
+   *
+   * @return nodeType
+   */
+  public String getNodeType() {
+    return nodeType;
+  }
+
+  /**
+   * Setting Node type.
+   *
+   * @param nodeType
+   *          set nodeType
+   */
+  public void setNodeType(String nodeType) {
+    this.nodeType = nodeType;
+  }
+
+  /**
+   * Getting physicalIF Information Conversion List.
+   *
+   * @return physiIfNames
+   */
+  public List<InterfaceNames> getPhysiIfNames() {
+    return physiIfNames;
+  }
+
+  /**
+   * Setting physicalIF Information Conversion List.
+   *
+   * @param physiIfNames
+   *          set physiIfNames
+   */
+  public void setPhysiIfNames(List<InterfaceNames> physiIfNames) {
+    this.physiIfNames = physiIfNames;
+  }
+
+  /**
+   * Getting lagIF Information Conversion List.
+   *
+   * @return lagIfNames
+   */
+  public List<InterfaceNames> getLagIfNames() {
+    return lagIfNames;
+  }
+
+  /**
+   * Setting lagIF Information Conversion List.
+   *
+   * @param lagIfNames
+   *          lag lagIfNames
+   */
+  public void setLagIfNames(List<InterfaceNames> lagIfNames) {
+    this.lagIfNames = lagIfNames;
+  }
+
+  /**
+   * Getting QoS update information.
+   *
+   * @return qos
+   */
+  public Qos getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QoS update information.
+   *
+   * @param qos
+   *          set qos
+   */
+  public void setQos(Qos qos) {
+    this.qos = qos;
+  }
+
+  /*
+   * Stringizing Instance.
+   *
+   * @see java.lang.Object#toString()
+   */
   @Override
   public String toString() {
-    return "Device [operation=" + operation + ", vpnType=" + vpnType + ", name=" + name + ", equipment=" + equipment
-        + ", breakoutIfList=" + breakoutIfList + ", internalLagList=" + internalLagList + ", managementInterface="
-        + managementInterface + ", loopbackInterface=" + loopbackInterface + ", ceLagInterfaceList="
-        + ceLagInterfaceList + ", snmp=" + snmp + ", ntp=" + ntp + ", l3Vpn=" + l3Vpn + ", l2Vpn=" + l2Vpn
-        + ", ospfAddNode=" + ospfAddNode + "]";
+    return "Device [operation=" + operation + ", vpnType=" + vpnType + ", name=" + name + ", nodeType=" + nodeType
+        + ", equipment=" + equipment + ", breakoutIfList=" + breakoutIfList + ", internalLagList=" + internalLagList
+        + ", managementInterface=" + managementInterface + ", loopbackInterface=" + loopbackInterface
+        + ", ceLagInterfaceList=" + ceLagInterfaceList + ", snmp=" + snmp + ", ntp=" + ntp + ", l3Vpn=" + l3Vpn
+        + ", l2Vpn=" + l2Vpn + ", ospfAddNode=" + ospfAddNode + ", physiIfNames=" + physiIfNames + ", lagIfNames="
+        + lagIfNames + ", qos=" + qos + "]";
   }
+
 }

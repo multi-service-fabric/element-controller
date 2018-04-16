@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+# Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
 #
 
 #######################################
@@ -76,7 +76,7 @@ ec_start() {
 }
 
 ec_stop() {
-    bash $OCF_RESKEY_EC_CONTROL_SHELL stop
+    bash $OCF_RESKEY_EC_CONTROL_SHELL stop changeover
     result=$?
     if [ $result = $OCF_SUCCESS ]; then
         ocf_log info "EC STOP SUCCESSFULLY"

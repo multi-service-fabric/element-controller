@@ -14,17 +14,19 @@
         <property name="node_name" type="text" not-null="true"/>
         <property name="equipment_type_id" type="text" not-null="true"/>
         <property name="management_if_address" type="text" not-null="true"/>
+        <property name="mng_if_addr_prefix" type="int" not-null="true"/>
         <property name="snmp_community" type="text" not-null="true"/>
         <property name="node_state" type="int" not-null="true"/>
         <property name="provisioning" type="boolean" not-null="true"/>
         <property name="plane" type="int" />
         <property name="vpn_type" type="string" />
+        <property name="as_number" type="text" />
         <property name="loopback_if_address" type="text" not-null="true"/>
         <property name="username" type="text" not-null="true"/>
         <property name="password" type="text" not-null="true"/>
         <property name="ntp_server_address" type="text" not-null="true"/>
         <property name="host_name" type="text" not-null="true"/>
-        <property name="mac_addr" type="string" not-null="true"/>
+        <property name="mac_addr" unique="true" type="string" not-null="true"/>
         <many-to-one name="equipments" class="msf.ecmm.db.pojo.Equipments" insert="false" update="false">
             <column name="equipment_type_id" not-null="true"/>
         </many-to-one>
@@ -68,6 +70,11 @@
         ]]>
     </query>
     <query name="updateNodes">
+        <![CDATA[
+            update msf.ecmm.db.pojo.Nodes as nodes set equipment_type_id = :key2, node_state = :key3, username = :key4, password = :key5, mac_addr = :key6 where node_id = :key1
+        ]]>
+    </query>
+    <query name="updateNodeState">
         <![CDATA[
             update msf.ecmm.db.pojo.Nodes as nodes set node_state = :key2 where node_id = :key1
         ]]>

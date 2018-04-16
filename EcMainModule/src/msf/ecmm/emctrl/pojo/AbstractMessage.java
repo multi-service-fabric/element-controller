@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo;
@@ -147,6 +147,12 @@ public class AbstractMessage {
       JAXB.marshal(headerMessage, createXml);
     } else if (this instanceof InternalLinkAddDelete) {
       bodyMessage.setInternalLinkLagAddDelete((InternalLinkAddDelete) this);
+      JAXB.marshal(headerMessage, createXml);
+    } else if (this instanceof RecoverUpdateNode) {
+      bodyMessage.setRecoverUpdateNode((RecoverUpdateNode) this);
+      JAXB.marshal(headerMessage, createXml);
+    } else if (this instanceof RecoverUpdateService) {
+      bodyMessage.setRecoverUpdateService((RecoverUpdateService) this);
       JAXB.marshal(headerMessage, createXml);
     } else if (this instanceof CeLagAddDelete) {
       bodyMessage.setCeLagAddDelete((CeLagAddDelete) this);

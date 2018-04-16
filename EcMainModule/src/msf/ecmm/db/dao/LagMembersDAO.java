@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -8,11 +8,11 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.pojo.LagMembers;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * The class in which LAG Member Information related DB process is performed.
@@ -90,6 +90,10 @@ public class LagMembersDAO extends BaseDAO {
    *          device ID (primary key 1)
    * @param lag_if_id
    *          LAGIF ID (primary key 2)
+   * @param physical_if_id
+   *          physical IF ID (key 3)
+   * @param breakout_if_id
+   *          breakout IF ID (key 4)
    * @return lagMembers LAGMember information
    * @throws DBAccessException
    *           data base exception

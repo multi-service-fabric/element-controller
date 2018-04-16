@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -21,11 +21,15 @@ import msf.ecmm.db.pojo.BootErrorMessages;
 import msf.ecmm.db.pojo.EquipmentIfs;
 import msf.ecmm.db.pojo.Equipments;
 import msf.ecmm.db.pojo.Nodes;
+import msf.ecmm.devctrl.CreateInitialDeviceConfig;
 import msf.ecmm.devctrl.DevctrlCommon;
 import msf.ecmm.devctrl.DevctrlException;
 import msf.ecmm.devctrl.DhcpController;
+import msf.ecmm.devctrl.HttpdController;
 import msf.ecmm.devctrl.SyslogController;
+import msf.ecmm.devctrl.XinetdController;
 import msf.ecmm.devctrl.pojo.DhcpInfo;
+import msf.ecmm.devctrl.pojo.InitialDeviceConfig;
 import msf.ecmm.ope.control.OperationControlManager;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
@@ -59,6 +63,12 @@ public class NodeInfoRegistration extends Operation {
   private static final String ERROR_CODE_080412 = "080412";
   /** In case error has occurred in DB access. */
   private static final String ERROR_CODE_080413 = "080413";
+  /** Initial config file creation failed. */
+  private static final String ERROR_CODE_080414 = "080414";
+  /** Xinetd start-up failed. */
+  private static final String ERROR_CODE_080415 = "080415";
+  /** Httpd start-up failed. */
+  private static final String ERROR_CODE_080416 = "080416";
 
   /**
    * Constructor.
@@ -86,7 +96,11 @@ public class NodeInfoRegistration extends Operation {
     AddNode addNode = (AddNode) getInData();
 
     boolean dhcpOkFlag = false;
-    boolean needCleanUpFlag = true; 
+    boolean needCleanUpFlag = true;
+    boolean createInitialConfigOkFlag = false;
+    boolean xinetdOkFlag = false;
+    boolean startSyslogOkFlag = false;
+    boolean httpdOkFlag = false;
 
     try (DBAccessManager session = new DBAccessManager()) {
 
@@ -96,20 +110,30 @@ public class NodeInfoRegistration extends Operation {
         return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080102);
       }
 
-      if (checkPhysicalIfIdUnuse(equipments) == false) {
-        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Found unused physical IF ID"));
-        return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080104);
-      }
-
       if (addNode.getCreateNode().getProvisioning() == true) {
+
+        if (checkPhysicalIfIdUnuse(equipments) == false) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Found unused physical IF ID"));
+          return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080104);
+        }
+
+        InitialDeviceConfig initialDeviceConfg = createInitialDeviceConfig(equipments);
+        CreateInitialDeviceConfig.getInstance().create(initialDeviceConfg);
+        createInitialConfigOkFlag = true;
 
         DhcpInfo dhcpInfo = createDhcpInfo(equipments);
         DhcpController.getInstance().start(dhcpInfo);
         dhcpOkFlag = true;
 
         startSyslogWatch(equipments);
-      }
+        startSyslogOkFlag = true;
 
+        XinetdController.getInstance().check();
+        xinetdOkFlag = true;
+
+        HttpdController.getInstance().check();
+        httpdOkFlag = true;
+      }
       if (equipments.getRouter_type() == CommonDefinitions.ROUTER_TYPE_NORMAL) {
         if (session.searchNodes(null, addNode.getCreateNode().getManagementInterface().getAddress()) != null) {
           logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Double registration. [management if address]"));
@@ -138,14 +162,26 @@ public class NodeInfoRegistration extends Operation {
       needCleanUpFlag = false;
 
     } catch (DevctrlException de) {
-      if (dhcpOkFlag == false) {
+      if (createInitialConfigOkFlag == false) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "InitialConfig create failed."), de);
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080414);
+      } else if (dhcpOkFlag == false) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "DHCP startup was failed."), de);
         response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080411);
-      } else {
+      } else if (startSyslogOkFlag == false) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Watch syslog was failed."), de);
         response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080412);
+      } else if (xinetdOkFlag == false) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Xinetd startup was failed."), de);
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080415);
+      } else if (httpdOkFlag == false) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Httpd startup was failed."), de);
+        response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080416);
       }
-    } catch (DBAccessException dbae) {
+
+    } catch (
+
+    DBAccessException dbae) {
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
       if (dbae.getCode() == DBAccessException.DOUBLE_REGISTRATION) {
         response = makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_080304);
@@ -196,7 +232,7 @@ public class NodeInfoRegistration extends Operation {
     Set<String> eqIfIds = new HashSet<>();
 
     for (EquipmentIfs eqIfs : equipments.getEquipmentIfsList()) {
-      eqIfIds.add(eqIfs.getPhysical_if_id()); 
+      eqIfIds.add(eqIfs.getPhysical_if_id());
     }
 
     for (BreakoutBaseIf boIfs : addNode.getCreateNode().getIfInfo().getBreakoutBaseIfs()) {
@@ -258,7 +294,7 @@ public class NodeInfoRegistration extends Operation {
   private DhcpInfo createDhcpInfo(Equipments equipments) {
     logger.trace(CommonDefinitions.START);
 
-    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode();
     DhcpInfo dhcpInfo = new DhcpInfo(equipments.getDhcp_template(), equipments.getInitial_config(),
         nodeInfo.getHostname(), nodeInfo.getMacAddress(), "", nodeInfo.getNtpServerAddress(),
         nodeInfo.getManagementInterface().getAddress(), nodeInfo.getManagementInterface().getPrefix());
@@ -277,7 +313,7 @@ public class NodeInfoRegistration extends Operation {
    */
   private void startSyslogWatch(Equipments equipments) throws DevctrlException {
     logger.trace(CommonDefinitions.START);
-    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode();
 
     List<String> bootErrorMessages = new ArrayList<>();
     for (BootErrorMessages message : equipments.getBootErrorMessagesList()) {
@@ -303,4 +339,46 @@ public class NodeInfoRegistration extends Operation {
 
     logger.trace(CommonDefinitions.END);
   }
+
+  /**
+   * Initial config setting creation.
+   *
+   * @param equipments
+   *          model information
+   * @return Initial config setting
+   * @throws DevctrlException
+   *           Initial config setting creation failed
+   */
+  private InitialDeviceConfig createInitialDeviceConfig(Equipments equipments) throws DevctrlException {
+    logger.trace(CommonDefinitions.START);
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode();
+
+    if (nodeInfo.getVpn() == null) {
+      InitialDeviceConfig initialDeviceConfigInfo = new InitialDeviceConfig(equipments.getConfig_template(),
+          equipments.getInitial_config(), nodeInfo.getManagementInterface().getAddress(),
+          nodeInfo.getNtpServerAddress(), null, null, nodeInfo.getManagementInterface().getPrefix());
+      logger.trace(CommonDefinitions.END);
+      return initialDeviceConfigInfo;
+    }
+    if (nodeInfo.getVpn().getVpnType().equals("l2")) {
+      InitialDeviceConfig initialDeviceConfigInfo = new InitialDeviceConfig(equipments.getConfig_template(),
+          equipments.getInitial_config(), nodeInfo.getManagementInterface().getAddress(),
+          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL2vpn().getBgp().getCommunityWildcard(),
+          nodeInfo.getVpn().getL2vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
+      logger.trace(CommonDefinitions.END);
+      return initialDeviceConfigInfo;
+    }
+    if (nodeInfo.getVpn().getVpnType().equals("l3")) {
+      InitialDeviceConfig initialDeviceConfigInfo = new InitialDeviceConfig(equipments.getConfig_template(),
+          equipments.getInitial_config(), nodeInfo.getManagementInterface().getAddress(),
+          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL3vpn().getBgp().getCommunityWildcard(),
+          nodeInfo.getVpn().getL3vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
+      logger.trace(CommonDefinitions.END);
+      return initialDeviceConfigInfo;
+    } else {
+      return null;
+    }
+
+  }
+
 }

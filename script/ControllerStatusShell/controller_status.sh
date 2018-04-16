@@ -4,7 +4,7 @@
 ##
 ## Shell script which acquires the controller status information of whom calling and returns it
 ##
-## Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+## Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
 ##
 
 ## Character Code Configuration
@@ -35,30 +35,43 @@ function topCommand() {
     top_result=".top_result_$$"
     top -b -n 1 -p $1 | sed -e "s/,/, /g" | sed -e "s/:/: /g" > ${top_result}
 
+
     id=`cat ${top_result}|grep %Cpu|awk '{print $8}'`
     if [ "${id}" = "" ] ; then
         id=0
     fi
+
     free=`cat ${top_result}|grep buff/cache|awk '{print $6}'`
     if [ "${free}" = "" ] ; then
         free=0
     fi
+
     used=`cat ${top_result}|grep buff/cache|awk '{print $8}'`
     if [ "${used}" = "" ] ; then
         used=0
     fi
+
     buffers=`cat ${top_result}|grep buff/cache|awk '{print $10}'`
     if [ "${buffers}" = "" ] ; then
         buffers=0
     fi
+
     swapused=`cat ${top_result}|grep Swap|awk '{print $7}'`
     if [ "${swapused}" = "" ] ; then
         swapused=0
     fi
+
     res=`cat ${top_result}|tail -n 1 |awk '{print $6}'`
     if [ "${res}" = "" ] ; then
         res=0
+    elif [ "${res: -1}" = "g" ] ; then
+        res=${res/%?/}
+        res=`echo "scale=4; ${res} * 1024.0 * 1024.0 + 0.5" | bc | cut -d '.' -f 1`
+    elif [ "${res: -1}" = "m" ] ; then
+        res=${res/%?/}
+        res=`echo "scale=4; ${res} * 1024.0 + 0.5" | bc | cut -d '.' -f 1`
     fi
+
     cpu=`cat ${top_result}|tail -n 1 |awk '{print $9}'`
     if [ "${cpu}" = "" ] ; then
         cpu=0
@@ -76,6 +89,7 @@ function nprocCommand() {
 function dfCommand() {
 
     dfdata=(`df -k|grep -v 1K-blocks`)
+
 
     dfalllist=()
     dfcount=1
@@ -99,6 +113,7 @@ function dfCommand() {
 function sarCommand() {
     saralllist=()
     sarcount=0
+
     sardata=(`sar 1 1 -n DEV|grep -v -a Average|grep -v -a IFACE|awk '{$10 = ""; print}'`)
     sarret=""
     for sar in "${sardata[@]}"
@@ -161,4 +176,5 @@ responsejson=` echo '{"top":{"id":'"${id}"',"free":'"${free}"',"used":'"${used}"
 "hostname":"'${hostnamedata}'","df":['${dfret}'],"sar":['${sarret}'] }' `
 
 echo ${responsejson}
+
 

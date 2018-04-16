@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.control;
@@ -20,7 +20,7 @@ public class OperationQueueEntry {
 
   /**
    * Constructor
-   * 
+   *
    * @param entry
    *          operation ID
    */
@@ -31,7 +31,7 @@ public class OperationQueueEntry {
 
   /**
    * Getting operation ID.
-   * 
+   *
    * @return operation ID
    */
   protected EcSession getOperationId() {
@@ -40,7 +40,7 @@ public class OperationQueueEntry {
 
   /**
    * Getting the time it is stored in the queue.
-   * 
+   *
    * @return stored time
    */
   protected Date getTimestamp() {

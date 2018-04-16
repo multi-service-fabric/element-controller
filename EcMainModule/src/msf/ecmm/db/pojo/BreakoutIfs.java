@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.pojo;
@@ -17,10 +17,12 @@ public class BreakoutIfs implements Serializable {
   private String breakout_if_id = null;
   /** Physical IF ID. */
   private String physical_if_id = null;
-  /** IF Rate. */
+  /** IF Speed. */
   private String speed = null;
   /** IF Name. */
   private String if_name = null;
+  /** breakoutIF inidex. */
+  private Integer breakout_if_index = null;
   /** IF Status. */
   private int if_status = 0;
   /** Accommodated Device IF Address (IPv4). */
@@ -128,6 +130,25 @@ public class BreakoutIfs implements Serializable {
    */
   public void setIf_name(String if_name) {
     this.if_name = if_name;
+  }
+
+  /**
+   * Getting Breakout IF index.
+   *
+   * @return Breakout IF index
+   */
+  public Integer getBreakout_if_index() {
+    return breakout_if_index;
+  }
+
+  /**
+   * Setting Breakout IF index.
+   *
+   * @param breakout_if_index
+   *          Breakout IF index
+   */
+  public void setBreakout_if_index(Integer breakout_if_index) {
+    this.breakout_if_index = breakout_if_index;
   }
 
   /**
@@ -239,8 +260,8 @@ public class BreakoutIfs implements Serializable {
   @Override
   public String toString() {
     return "BreakoutIfs [node_id=" + node_id + ", breakout_if_id=" + breakout_if_id + ", physical_if_id="
-        + physical_if_id + ", speed=" + speed + ", if_name=" + if_name + ", if_status=" + if_status + ", ipv4_address="
-        + ipv4_address + ", ipv4_prefix=" + ipv4_prefix + "]";
+        + physical_if_id + ", speed=" + speed + ", if_name=" + if_name + ", breakout_if_index=" + breakout_if_index
+        + ", if_status=" + if_status + ", ipv4_address=" + ipv4_address + ", ipv4_prefix=" + ipv4_prefix + "]";
   }
 
 }

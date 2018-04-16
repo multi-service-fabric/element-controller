@@ -30,6 +30,10 @@
             <property name="evpn_capability" type="boolean" not-null="true"/>
             <property name="l2vpn_capability" type="boolean" not-null="true"/>
             <property name="l3vpn_capability" type="boolean" not-null="true"/>
+            <property name="qos_shaping_flg" type="boolean" not-null="true"/>
+            <property name="qos_remark_flg" type="boolean" not-null="true"/>
+            <property name="default_remark_menu" type="text"/>
+            <property name="default_egress_queue_menu" type="text"/>
 
             <set name="equipmentIfsList" table="equipment_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
                 <key>
@@ -48,6 +52,18 @@
                     <column name="equipment_type_id"/>
                 </key>
                 <one-to-many class="msf.ecmm.db.pojo.BootErrorMessages" />
+            </set>
+            <set name="remarkMenusList" table="remark_menu" lazy="true" inverse="true" cascade="all-delete-orphan">
+                <key>
+                    <column name="equipment_type_id"/>
+                </key>
+                <one-to-many class="msf.ecmm.db.pojo.RemarkMenus" />
+            </set>
+            <set name="egressQueueMenusList" table="egress_queue_menu" lazy="true" inverse="true" cascade="all-delete-orphan">
+                <key>
+                    <column name="equipment_type_id"/>
+                </key>
+                <one-to-many class="msf.ecmm.db.pojo.EgressQueueMenus" />
             </set>
         </class>
         <query name="selectEquipments">

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.pojo;
@@ -44,6 +44,14 @@ public class VlanIfs implements Serializable {
   private String bgp_id = null;
   /** VRRPID. */
   private String vrrp_id = null;
+  /** In flow ShapingRate. */
+  private Float inflow_shaping_rate;
+  /** Out flow ShapingRate. */
+  private Float outflow_shaping_rate;
+  /** Remark menu. */
+  private String remark_menu;
+  /** Egress queue menu. */
+  private String egress_queue_menu;
   /** BGP Option List. */
   private Set<BGPOptions> bgpOptionsList;
   /** Static Route Information List. */
@@ -363,6 +371,82 @@ public class VlanIfs implements Serializable {
   }
 
   /**
+   * Getting In flow ShapingRate.
+   *
+   * @return In flow ShapingRate
+   */
+  public Float getInflow_shaping_rate() {
+    return inflow_shaping_rate;
+  }
+
+  /**
+   * Setting In flow ShapingRate.
+   *
+   * @param inflow_shaping_rate
+   *          In flow ShapingRate
+   */
+  public void setInflow_shaping_rate(Float inflow_shaping_rate) {
+    this.inflow_shaping_rate = inflow_shaping_rate;
+  }
+
+  /**
+   * Getting Out flow ShapingRate.
+   *
+   * @return Out flow ShapingRate
+   */
+  public Float getOutflow_shaping_rate() {
+    return outflow_shaping_rate;
+  }
+
+  /**
+   * Setting Out flow ShapingRate.
+   *
+   * @param outflow_shaping_rate
+   *          Out flow ShapingRate
+   */
+  public void setOutflow_shaping_rate(Float outflow_shaping_rate) {
+    this.outflow_shaping_rate = outflow_shaping_rate;
+  }
+
+  /**
+   * Getting Remark menu.
+   *
+   * @return remark menu
+   */
+  public String getRemark_menu() {
+    return remark_menu;
+  }
+
+  /**
+   * Setting Remark menu.
+   *
+   * @param remark_menu
+   *          remark_menu
+   */
+  public void setRemark_menu(String remark_menu) {
+    this.remark_menu = remark_menu;
+  }
+
+  /**
+   * Getting Egress queue menu.
+   *
+   * @return Egress queue menu
+   */
+  public String getEgress_queue_menu() {
+    return egress_queue_menu;
+  }
+
+  /**
+   * Setting Egress queue menu.
+   *
+   * @param egress_queue_menu
+   *          Egress queue menu
+   */
+  public void setEgress_queue_menu(String egress_queue_menu) {
+    this.egress_queue_menu = egress_queue_menu;
+  }
+
+  /**
    * Getting BGP option list.
    *
    * @return BGP option list
@@ -474,8 +558,10 @@ public class VlanIfs implements Serializable {
         + ", lag_if_id=" + lag_if_id + ", breakout_if_id=" + breakout_if_id + ", vlan_id=" + vlan_id + ", if_name="
         + if_name + ", if_status=" + if_status + ", ipv4_address=" + ipv4_address + ", ipv4_prefix=" + ipv4_prefix
         + ", ipv6_address=" + ipv6_address + ", ipv6_prefix=" + ipv6_prefix + ", mtu=" + mtu + ", port_mode="
-        + port_mode + ", bgp_id=" + bgp_id + ", vrrp_id=" + vrrp_id + ", bgpOptionsList=" + bgpOptionsList
-        + ", staticRouteOptionsList=" + staticRouteOptionsList + ", vrrpOptionsList=" + vrrpOptionsList + "]";
+        + port_mode + ", bgp_id=" + bgp_id + ", vrrp_id=" + vrrp_id + ", inflow_shaping_rate=" + inflow_shaping_rate
+        + ", outflow_shaping_rate=" + outflow_shaping_rate + ", remark_menu=" + remark_menu + ", egress_queue_menu="
+        + egress_queue_menu + ", bgpOptionsList=" + bgpOptionsList + ", staticRouteOptionsList="
+        + staticRouteOptionsList + ", vrrpOptionsList=" + vrrpOptionsList + "]";
   }
 
 }

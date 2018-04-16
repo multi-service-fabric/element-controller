@@ -1,13 +1,13 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.control;
 
+import msf.ecmm.common.CommonDefinitions;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import msf.ecmm.common.CommonDefinitions;
 
 /**
  * Operation ID Retention Class Definition. Retaining operation ID.

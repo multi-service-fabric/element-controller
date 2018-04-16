@@ -1,0 +1,93 @@
+# Setting pacemaker
+  - include: getrpm.yml
+    when: download_flag
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/psmisc-22.20-9.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libqb-1.0-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libyaml-0.1.4-11.el7_0.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/perl*  
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libtool-ltdl-2.4.2-21.el7_2.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/cluster-glue-libs-1.0.12-2.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/net-snmp-libs-5.7.2-24.el7_2.1.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/corosync-2.3.5-1.el7.x86_64.rpm {{ rpm_path }}/{{ folder_name }}/corosynclib-2.3.5-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libxslt-1.1.28-5.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-libs-1.1.14-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-cluster-libs-1.1.14-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/resource-agents-3.9.7-1.2.6f56.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/OpenIPMI-modalias-2.0.19-11.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/lm_sensors-libs-3.3.4-11.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/OpenIPMI-libs-2.0.19-11.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/openhpi-libs-3.4.0-2.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/perl-TimeDate-2.30-2.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/cluster-glue-1.0.12-2.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/net-snmp-agent-libs-5.7.2-24.el7_2.1.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-cli-1.1.14-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-1.1.14-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/nano-2.3.1-10.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/python-lxml-3.2.1-4.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pm_extras-2.2-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/ipmitool-1.8.13-9.el7_2.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pm_diskd-2.2-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/python-dateutil-1.5-7.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pm_crmgen-2.1-1.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pssh-2.3.1-5.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/python-lxml-3.2.1-4.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/crmsh-2.1.5-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pm_logconv-cs-2.2-1.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-all-1.1.14-1.1.el7.noarch.rpm
+  - name: check before add setting 1
+    find: paths=/etc/hosts
+          patterns='{{ act_address }}  {{ act_node_name }}'
+    register: found_files1
+  - name: add host setting 1
+    lineinfile:
+      dest=/etc/hosts
+      line='{{ sby_address }}  {{ sby_node_name }}'
+    when: found_files1.matched == 0
+  - name: add host setting 2
+    lineinfile:
+      dest=/etc/hosts
+      line='{{ act_address }}  {{ act_node_name }}'
+    when: found_files1.matched == 0
+  - name: touch corosync.conf
+    shell: touch /etc/corosync/corosync.conf
+  - name: check before add setting 2
+    find: paths=/etc/corosync/corosync.conf
+          patterns='totem'
+    register: found_files2
+  - name: add host setting 1
+    blockinfile:
+      dest: /etc/corosync/corosync.conf
+      content: |
+        totem {
+            version: 2
+            secauth: off
+            cluster_name: {{ cluster_name }}
+            transport: udpu
+        }
+        
+        nodelist {
+            node {
+                ring0_addr: {{ act_node_name }}
+                nodeid: 1
+            }
+            node {
+                ring0_addr: {{ sby_node_name }}
+                nodeid: 2
+            }
+        }
+        
+        quorum {
+            provider: corosync_votequorum
+            two_node: 1
+        }
+        
+        logging {
+            to_logfile: yes
+            logfile: /var/log/cluster/corosync.log
+            to_syslog: yes
+        }
+    when: found_files2.matched == 0
+  - shell: systemctl start pacemaker
+  - shell: crm configure property stonith-enabled="false"
+  - shell: systemctl enable pacemaker
+  - shell: systemctl enable corosync

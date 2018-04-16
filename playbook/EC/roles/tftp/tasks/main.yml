@@ -1,0 +1,13 @@
+# Setting tftp
+  - include: getrpm.yml
+    when: download_flag
+  - name: tftp install 1
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/xinetd-2.3.15-12.el7.x86_64.rpm
+  - name: tftp install 2
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/tftp-5.2-12.el7.x86_64.rpm
+  - name: tftp install 3
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/tftp-server-5.2-12.el7.x86_64.rpm
+  - name: replace tftp setting 1
+    replace: dest=/etc/xinetd.d/tftp regexp='disable( |\t).*= yes' replace='disable\t\t\t= no'
+  - name: reboot tftp
+    shell: systemctl restart xinetd

@@ -1,0 +1,72 @@
+# Setting sar
+  - include: getrpm.yml
+    when: download_flag
+  - name: PostgreSQL install 1
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libxslt-1.1.28-5.el7.x86_64.rpm
+  - name: PostgreSQL install 2
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/uuid-1.6.2-26.el7.x86_64.rpm
+  - name: PostgreSQL install 3
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-libs-9.3.13-1PGDG.rhel7.x86_64.rpm
+  - name: PostgreSQL install 4
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-9.3.13-1PGDG.rhel7.x86_64.rpm
+  - name: PostgreSQL install 5
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-server-9.3.13-1PGDG.rhel7.x86_64.rpm
+  - name: PostgreSQL install 6
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-devel-9.3.13-1PGDG.rhel7.x86_64.rpm
+  - name: PostgreSQL install 7
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-contrib-9.3.13-1PGDG.rhel7.x86_64.rpm
+  - name: check before add setting
+    find: paths=/var/lib/pgsql/.bash_profile
+          patterns='PGDATA=/usr/local/pgsql/9.3/data'
+    register: found_files
+  - name: enviroment data set 1
+    replace: dest=/var/lib/pgsql/.bash_profile regexp="^PGDATA=/var/lib/pgsql/9.3/data" replace='PGDATA=/usr/local/pgsql/9.3/data'
+    when: found_files.matched == 0
+  - name: enviroment data set 2
+    lineinfile:
+      dest=/var/lib/pgsql/.bash_profile
+      insertafter='export PGDATA'
+      line={{ item }}
+    with_items:
+        - 'export PATH=$PATH:/usr/pgsql-9.3/bin'
+    when: found_files.matched == 0
+  - name: apply bashprofile
+    shell: source /var/lib/pgsql/.bash_profile
+    ignore_errors: yes
+  - name: make data directory
+    shell: mkdir -pm 777 /usr/local/pgsql/9.3
+  - name: modify data directory
+    shell: chown -R postgres:postgres /usr/local/pgsql
+  - include: user_setting.yml
+  - name: enable postgres
+    shell: systemctl enable postgresql-9.3
+  - name: deamon reload
+    shell: systemctl daemon-reload
+  - name: replace psql setting 1
+    replace: dest=/usr/local/pgsql/9.3/data/postgresql.conf regexp="#listen_addresses = 'localhost'" replace='listen_addresses = '*''
+  - name: replace psql setting 2
+    replace: dest=/usr/local/pgsql/9.3/data/postgresql.conf regexp="#port" replace='port'
+  - name: replace psql setting 3
+    replace: dest=/usr/local/pgsql/9.3/data/pg_hba.conf regexp="local" replace='#local'
+  - name: replace psql setting 4
+    replace: dest=/usr/local/pgsql/9.3/data/pg_hba.conf regexp="host" replace='#host'
+  - name:  add psql setting 1
+    lineinfile:
+      dest=/usr/local/pgsql/9.3/data/pg_hba.conf
+      line={{ item }}
+    with_items:
+        - 'local    all            postgres                               peer'
+        - 'local    all            all                                    trust'
+        - 'host    all            all             {{ controller_cidr }}         trust'
+        - 'host    all            all             127.0.0.1/32            trust'
+  - name: replace psql setting 5
+    replace: dest=/usr/lib/systemd/system/postgresql-9.3.service regexp="Environment=PGDATA" replace='#Environment=PGDATA'
+  - name:  add psql setting 2
+    lineinfile:
+      dest=/usr/lib/systemd/system/postgresql-9.3.service
+      insertafter='# Location of database directory'
+      line='Environment=PGDATA=/usr/local/pgsql/9.3/data/'
+  - name: reboot psql 1
+    shell: systemctl daemon-reload
+  - name: reboot psql 2
+    shell: systemctl start postgresql-9.3

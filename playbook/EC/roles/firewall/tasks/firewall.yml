@@ -1,0 +1,39 @@
+# Setting firewall
+  - name: rest port allow
+    shell: firewall-cmd --permanent --add-port={{ ec_rest_port }}/tcp
+    when: ec_rest_port is defined
+  - name: netconf port allow
+    shell: firewall-cmd --permanent --add-port={{ em_netconf_port }}/tcp
+    when: em_netconf_port is defined
+  - name: psql port allow
+    shell: firewall-cmd --permanent --add-port=5432/tcp
+  - name: snmp port allow
+    shell: firewall-cmd --permanent --add-port=162/udp
+  - name: syslog tcp port allow
+    shell: firewall-cmd --permanent --add-port=514/tcp
+  - name: syslog udp port allow
+    shell: firewall-cmd --permanent --add-port=514/udp
+  - name: pacemaker service allow
+    shell: firewall-cmd --permanent --add-service=high-availability
+  - name: pacemaker service register
+    shell: cp -p /usr/lib/firewalld/services/high-availability.xml /etc/firewalld/services/
+  - name: tftp service allow
+    shell: firewall-cmd --permanent --add-service=tftp
+  - name: tftp service register
+    shell: cp -p /usr/lib/firewalld/services/tftp.xml /etc/firewalld/services/
+  - name: httpd service allow
+    shell: firewall-cmd --permanent --add-service=http
+  - name: httpd service register
+    shell: cp -p /usr/lib/firewalld/services/http.xml /etc/firewalld/services/
+  - name: firewall-cmd reload
+    shell: firewall-cmd --reload
+  - name: firewall reload
+    shell: systemctl restart firewalld
+  - name: SELinux set enforce
+    shell: setenforce 0
+  - name: replace SELINUX setting 1
+    replace: dest=/etc/selinux/config regexp='SELINUX=permissive' replace='SELINUX=disabled'
+  - name: replace SELINUX setting 2
+    replace: dest=/etc/selinux/config regexp='SELINUX=enforcing' replace='SELINUX=disabled'
+
+    

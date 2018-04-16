@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.pojo;
@@ -16,6 +16,8 @@ public class LagIfs implements Serializable {
   private String node_id = null;
   /** LagIF ID. */
   private String lag_if_id = null;
+  /** FC LagIF ID. */
+  private String fc_lag_if_id = null;
   /** IF Name. */
   private String if_name = null;
   /** The Min. Number of Links. */
@@ -77,6 +79,25 @@ public class LagIfs implements Serializable {
   }
 
   /**
+   * Getting FC LagIF ID.
+   *
+   * @return FC LagIF ID
+   */
+  public String getFc_lag_if_id() {
+    return fc_lag_if_id;
+  }
+
+  /**
+   * Setting LagIF ID.
+   *
+   * @param fc_lag_if_id
+   *          FC LagIF ID
+   */
+  public void setFc_lag_if_id(String fc_lag_if_id) {
+    this.fc_lag_if_id = fc_lag_if_id;
+  }
+
+  /**
    * Getting IF name.
    *
    * @return IF name
@@ -107,8 +128,8 @@ public class LagIfs implements Serializable {
   /**
    * Setting the min. number of links.
    *
-   * @param minimum_link_num
-   * 
+   * @param minimum_link_num the min. number of link
+   *
    */
   public void setMinimum_link_num(int minimum_link_num) {
     this.minimum_link_num = minimum_link_num;
@@ -208,7 +229,6 @@ public class LagIfs implements Serializable {
   public void setLagMembersList(Set<LagMembers> lagMembersList) {
     this.lagMembersList = lagMembersList;
   }
-
   /*
    * (Non-Javadoc)
    *
@@ -260,8 +280,10 @@ public class LagIfs implements Serializable {
    */
   @Override
   public String toString() {
-    return "LagIfs [node_id=" + node_id + ", lag_if_id=" + lag_if_id + ", if_name=" + if_name + ", minimum_link_num="
-        + minimum_link_num + ", if_speed=" + if_speed + ", if_status=" + if_status + ", ipv4_address=" + ipv4_address
-        + ", ipv4_prefix=" + ipv4_prefix + ", lagMembersList=" + lagMembersList + "]";
+    return "LagIfs [node_id=" + node_id + ", lag_if_id=" + lag_if_id + ", fc_lag_if_id=" + fc_lag_if_id + ", if_name="
+        + if_name + ", minimum_link_num=" + minimum_link_num + ", if_speed=" + if_speed + ", if_status=" + if_status
+        + ", ipv4_address=" + ipv4_address + ", ipv4_prefix=" + ipv4_prefix + ", lagMembersList=" + lagMembersList
+        + "]";
   }
+
 }

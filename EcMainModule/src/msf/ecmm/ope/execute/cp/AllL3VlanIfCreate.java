@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.cp;
@@ -18,6 +18,7 @@ import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.DbMapper;
 import msf.ecmm.convert.EmMapper;
+import msf.ecmm.convert.LogicalPhysicalConverter;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.BGPOptions;
@@ -50,13 +51,19 @@ public class AllL3VlanIfCreate extends Operation {
   /** In case the number of pieces of information for process execution is zero (Data acquisition from DBs failed in the previous step of process). */
   private static final String ERROR_CODE_010102 = "010102";
 
+  /** In case QoS capability check result is NG. */
+  private static final String ERROR_CODE_010103 = "010103";
+
   /** In case the information of VLAN IF to be registered already exists. */
   private static final String ERROR_CODE_010301 = "010301";
+
+  /** In case Registration of the same VLAN ID already exists in the same device / same IF. */
+  private static final String ERROR_CODE_010306 = "010306";
 
   /** Disconnectionor connection timeout with EM has occurred while requesting to EM. */
   private static final String ERROR_CODE_010401 = "010401";
 
-	/** Error has occurred from EM while requesting to EM (error response received). */
+  /** Error has occurred from EM while requesting to EM (error response received). */
   private static final String ERROR_CODE_010402 = "010402";
 
   /** In case error has occurred in DB access. */
@@ -149,9 +156,32 @@ public class AllL3VlanIfCreate extends Operation {
           nodesSet.add(nodesDb);
         }
 
+        if (vlanIfs.getQos() != null) {
+          int ifSpeed = LogicalPhysicalConverter.getIfSpeed(vlanIfs.getBaseIf().getIfType(),
+              vlanIfs.getBaseIf().getIfId(), nodesDb);
+          if (!DbMapper.checkQosShapingRateValue(vlanIfs.getQos().getInflowShapingRate(), ifSpeed,
+              nodesDb.getEquipments().getQos_shaping_flg())) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "InflowShapingRate capability error."));
+            return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010103);
+          }
+          if (!DbMapper.checkQosShapingRateValue(vlanIfs.getQos().getOutflowShapingRate(), ifSpeed,
+              nodesDb.getEquipments().getQos_shaping_flg())) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "OutflowShapingRate capability error."));
+            return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010103);
+          }
+          if (!DbMapper.checkQosRemarkMenuValue(vlanIfs.getQos().getRemarkMenu(), nodesDb.getEquipments())) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "RemarkMenu capability error."));
+            return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010103);
+          }
+          if (!DbMapper.checkQosEgressQueueMenuValue(vlanIfs.getQos().getEgressQueue(), nodesDb.getEquipments())) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "EgressQueueMenu capability error."));
+            return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010103);
+          }
+        }
+
         if (!checkDuplicateRegisteration(vlanIfsTable, vlanIfs)) {
           logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Detect duplicate registration."));
-          return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_010301);
+          return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_010306);
         }
 
         checkStaticRoutes(vlanIfs.getStaticRoutes());
@@ -310,7 +340,7 @@ public class AllL3VlanIfCreate extends Operation {
   private void checkStaticRoutes(List<StaticRoute> staticListRest) throws IllegalArgumentException {
     logger.trace(CommonDefinitions.START);
     if (staticListRest == null) {
-      return; 
+      return;
     }
     for (int i = 0; i <  staticListRest.size(); i++) {
       StaticRoute static1 = staticListRest.get(i);

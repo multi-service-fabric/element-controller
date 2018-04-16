@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -122,15 +122,15 @@ public abstract class NodeAddition extends Operation {
       session.startTransaction();
 
       for (Nodes nodeDb : nodesListDbMapper) {
-        ArrayList<PhysicalIfs> physiIfList = new ArrayList<PhysicalIfs>(nodeDb.getPhysicalIfsList()); 
-        ArrayList<LagIfs> lagIfList = new ArrayList<LagIfs>(nodeDb.getLagIfsList()); 
+        ArrayList<PhysicalIfs> physiIfList = new ArrayList<PhysicalIfs>(nodeDb.getPhysicalIfsList());
+        ArrayList<LagIfs> lagIfList = new ArrayList<LagIfs>(nodeDb.getLagIfsList());
         session.addNodesRelation(physiIfList, lagIfList, null);
       }
 
       boolean doNotNotifyEm = false;
       if (session.checkClusterType() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
         if (session.getNodesNum() > 1) {
-          doNotNotifyEm = true; 
+          doNotNotifyEm = true;
         }
       }
 
@@ -149,7 +149,7 @@ public abstract class NodeAddition extends Operation {
           em1OkFlag = true;
         }
 
-        if (isOppositeNodesInfoFlag) { 
+        if (isOppositeNodesInfoFlag) {
           if (!executeAddInternalLink(nodesListDbMapper)) {
             logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed. [internalLink]"));
             return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080406);

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
@@ -146,7 +146,7 @@ public class BetweenClustersLinkCreate extends Operation {
           return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_360201);
         } else {
           for (LagIfs lagElem : lagIfsSetDb) {
-            if (lagElem.getLag_if_id().equals(ifId)) {
+            if (lagElem.getFc_lag_if_id().equals(ifId)) {
               lagIfsDb = lagElem;
               break;
             }

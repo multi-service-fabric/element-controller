@@ -1,8 +1,8 @@
 ## element controller building guide
 
 **Version 1.0**
-**December 26, 2017**
-**Copyright(c) 2017 Nippon Telegraph and Telephone Corporation**
+**March 28, 2018**
+**Copyright(c) 2018 Nippon Telegraph and Telephone Corporation**
 
 This text describes how to generate EcMainModule.jar from Java files.
 
@@ -56,6 +56,7 @@ sh jar_create.sh
   |  |  |  |--BaseDAO.java
   |  |  |  |--BootErrorMessagesDAO.java
   |  |  |  |--BreakoutIfsDAO.java
+  |  |  |  |--EgressQueueMenusDAO.java
   |  |  |  |--EquipmentIfsDAO.java
   |  |  |  |--EquipmentsDAO.java
   |  |  |  |--IfNameRulesDAO.java
@@ -64,11 +65,13 @@ sh jar_create.sh
   |  |  |  |--NodesDAO.java
   |  |  |  |--NodesStartupNotificationDAO.java
   |  |  |  |--PhysicalIfsDAO.java
+  |  |  |  |--RemarkMenusDAO.java
   |  |  |  |--StaticRouteOptionsDAO.java
   |  |  |  |--SystemStatusDAO.java
   |  |  |  |--VRRPOptionsDAO.java
   |  |  |  |--VlanIfsDAO.java
   |  |  |  |--package-info.java
+  |  |  |--egressQueueMenu.hbm.xml
   |  |  |--equipmentIfs.hbm.xml
   |  |  |--equipments.hbm.xml
   |  |  |--ifNameRules.hbm.xml
@@ -82,6 +85,7 @@ sh jar_create.sh
   |  |  |  |--BGPOptions.java
   |  |  |  |--BootErrorMessages.java
   |  |  |  |--BreakoutIfs.java
+  |  |  |  |--EgressQueueMenus.java
   |  |  |  |--EquipmentIfs.java
   |  |  |  |--Equipments.java
   |  |  |  |--IfNameRules.java
@@ -91,24 +95,30 @@ sh jar_create.sh
   |  |  |  |--Nodes.java
   |  |  |  |--NodesStartupNotification.java
   |  |  |  |--PhysicalIfs.java
+  |  |  |  |--RemarkMenus.java
   |  |  |  |--StaticRouteOptions.java
   |  |  |  |--SystemStatus.java
   |  |  |  |--VRRPOptions.java
   |  |  |  |--VlanIfs.java
   |  |  |  |--package-info.java
+  |  |  |--remarkMenu.hbm.xml
   |  |  |--staticRouteOptions.hbm.xml
   |  |  |--systemStatus.hbm.xml
   |  |  |--vlanIfs.hbm.xml
   |  |  |--vrrpOptions.hbm.xml
   |  |--devctrl/
+  |  |  |--CreateInitialDeviceConfig.java
   |  |  |--DevctrlCommon.java
   |  |  |--DevctrlException.java
   |  |  |--DhcpController.java
+  |  |  |--HttpdController.java
   |  |  |--SnmpController.java
   |  |  |--SyslogController.java
+  |  |  |--XinetdController.java
   |  |  |--package-info.java
-  |  |  |--pojo/
+  |  |  |--pojo
   |  |  |  |--DhcpInfo.java
+  |  |  |  |--InitialDeviceConfig.java
   |  |  |  |--SnmpIfOperStatus.java
   |  |  |  |--SnmpIfTraffic.java
   |  |  |  |--package-info.java
@@ -130,6 +140,8 @@ sh jar_create.sh
   |  |  |  |--L2SliceAddDelete.java
   |  |  |  |--L3SliceAddDelete.java
   |  |  |  |--LeafAddDelete.java
+  |  |  |  |--RecoverUpdateNode.java
+  |  |  |  |--RecoverUpdateService.java
   |  |  |  |--SpineAddDelete.java
   |  |  |  |--TargetMessage.java
   |  |  |  |--package-info.java
@@ -143,6 +155,7 @@ sh jar_create.sh
   |  |  |  |  |--Device.java
   |  |  |  |  |--DeviceLeaf.java
   |  |  |  |  |--Equipment.java
+  |  |  |  |  |--InterfaceNames.java
   |  |  |  |  |--InternalInterface.java
   |  |  |  |  |--InternalInterfaceMember.java
   |  |  |  |  |--InternalLag.java
@@ -166,6 +179,7 @@ sh jar_create.sh
   |  |  |  |  |--Ospf.java
   |  |  |  |  |--OspfAddNode.java
   |  |  |  |  |--OspfVirtualLink.java
+  |  |  |  |  |--Qos.java
   |  |  |  |  |--Range.java
   |  |  |  |  |--Route.java
   |  |  |  |  |--Snmp.java
@@ -173,6 +187,8 @@ sh jar_create.sh
   |  |  |  |  |--TrackInterface.java
   |  |  |  |  |--Vrf.java
   |  |  |  |  |--Vrrp.java
+  |  |  |  |  |--XmlFloatElement.java
+  |  |  |  |  |--XmlStringElement.java
   |  |  |  |  |--package-info.java
   |  |  |--restpojo/
   |  |  |  |--AbstractRequest.java
@@ -198,7 +214,7 @@ sh jar_create.sh
   |  |  |  |--Operations.java
   |  |  |  |--UpdateLogicalIfStatus.java
   |  |  |  |--package-info.java
-  |  |  |  |--parts/
+  |  |  |  |--parts
   |  |  |  |  |--Controller.java
   |  |  |  |  |--IfsLogical.java
   |  |  |  |  |--NodeLogical.java
@@ -229,6 +245,7 @@ sh jar_create.sh
   |  |  |  |  |  |--AllPhysicalIfInfoAcquisition.java
   |  |  |  |  |  |--package-info.java
   |  |  |  |  |--device/
+  |  |  |  |  |  |--AcceptNodeRecover.java
   |  |  |  |  |  |--AddNodeException.java
   |  |  |  |  |  |--BLeafAddition.java
   |  |  |  |  |  |--BLeafRemove.java
@@ -244,6 +261,7 @@ sh jar_create.sh
   |  |  |  |  |  |--NodeChange.java
   |  |  |  |  |  |--NodeInfoAcquisition.java
   |  |  |  |  |  |--NodeInfoRegistration.java
+  |  |  |  |  |  |--NodeRecover.java
   |  |  |  |  |  |--NodeRemove.java
   |  |  |  |  |  |--SpineAddition.java
   |  |  |  |  |  |--SpineRemove.java
@@ -261,14 +279,16 @@ sh jar_create.sh
   |  |  |  |  |  |--PhysicalIfInfoChange.java
   |  |  |  |  |  |--package-info.java
   |  |  |  |  |--package-info.java
-  |  |  |  |--controllerstatemanagement
+  |  |  |  |--controllerstatemanagement/
   |  |  |  |  |--ECMainLogAcquisition.java
   |  |  |  |  |--ECMainStateSendNotification.java
   |  |  |  |  |--ECStateManagement.java
   |  |  |  |  |--package-info.java
   |  |  |  |--cp/
+  |  |  |  |  |--AllL2VlanIfChange.java
   |  |  |  |  |--AllL2VlanIfCreate.java
   |  |  |  |  |--AllL2VlanIfRemove.java
+  |  |  |  |  |--AllL3VlanIfChange.java
   |  |  |  |  |--AllL3VlanIfCreate.java
   |  |  |  |  |--AllL3VlanIfRemove.java
   |  |  |  |  |--AllVlanIfInfoAcquisition.java
@@ -300,6 +320,8 @@ sh jar_create.sh
   |  |  |  |  |--BulkCreateL3VlanIf.java
   |  |  |  |  |--BulkDeleteL2VlanIf.java
   |  |  |  |  |--BulkDeleteL3VlanIf.java
+  |  |  |  |  |--BulkUpdateL2VlanIf.java
+  |  |  |  |  |--BulkUpdateL3VlanIf.java
   |  |  |  |  |--ChangeNode.java
   |  |  |  |  |--CheckDataException.java
   |  |  |  |  |--CheckEcMainModuleStatus.java
@@ -331,11 +353,12 @@ sh jar_create.sh
   |  |  |  |  |--NotifyNodeStartUp.java
   |  |  |  |  |--NotifyReceiveSnmpTrap.java
   |  |  |  |  |--Operations.java
+  |  |  |  |  |--RecoverNodeService.java
   |  |  |  |  |--RegisterEquipmentType.java
   |  |  |  |  |--UpdatePhysicalInterface.java
   |  |  |  |  |--UpdateVlanIf.java
   |  |  |  |  |--package-info.java
-  |  |  |  |  |--parts
+  |  |  |  |  |--parts/
   |  |  |  |  |  |--AddressInfo.java
   |  |  |  |  |  |--As.java
   |  |  |  |  |  |--BaseIf.java
@@ -357,6 +380,7 @@ sh jar_create.sh
   |  |  |  |  |  |--Disk.java
   |  |  |  |  |  |--EcEmLog.java
   |  |  |  |  |  |--EcStatus.java
+  |  |  |  |  |  |--Egress.java
   |  |  |  |  |  |--EmStatus.java
   |  |  |  |  |  |--Equipment.java
   |  |  |  |  |  |--EquipmentAddNode.java
@@ -371,6 +395,7 @@ sh jar_create.sh
   |  |  |  |  |  |--InternalLinkIfsDeleteNode.java
   |  |  |  |  |  |--InternalLinkInfo.java
   |  |  |  |  |  |--L2L3vpn.java
+  |  |  |  |  |  |--L2VlanOption.java
   |  |  |  |  |  |--L3VlanOption.java
   |  |  |  |  |  |--L3vpn.java
   |  |  |  |  |  |--LagIf.java
@@ -387,6 +412,7 @@ sh jar_create.sh
   |  |  |  |  |  |--NodeChangeNode.java
   |  |  |  |  |  |--NodeDeleteNode.java
   |  |  |  |  |  |--NodeInterface.java
+  |  |  |  |  |  |--NodeRecoverNode.java
   |  |  |  |  |  |--NodeRegisterNode.java
   |  |  |  |  |  |--OppositeNodesDeleteNode.java
   |  |  |  |  |  |--OppositeNodesInterface.java
@@ -394,6 +420,14 @@ sh jar_create.sh
   |  |  |  |  |  |--PairNode.java
   |  |  |  |  |  |--PhysicalIf.java
   |  |  |  |  |  |--PhysicalIfsCreateLagIf.java
+  |  |  |  |  |  |--QosCapabilities.java
+  |  |  |  |  |  |--QosConfigValues.java
+  |  |  |  |  |  |--QosGetVlanIfs.java
+  |  |  |  |  |  |--QosRegisterEquipment.java
+  |  |  |  |  |  |--QosUpdateVlanIf.java
+  |  |  |  |  |  |--QosValues.java
+  |  |  |  |  |  |--Remark.java
+  |  |  |  |  |  |--Shaping.java
   |  |  |  |  |  |--StaticRoute.java
   |  |  |  |  |  |--SwitchTraffic.java
   |  |  |  |  |  |--TargetIf.java
@@ -411,6 +445,7 @@ sh jar_create.sh
   |  |  |  |  |  |--VirtualLinkCluster.java
   |  |  |  |  |  |--VlanIf.java
   |  |  |  |  |  |--VlanIfUpdateOption.java
+  |  |  |  |  |  |--VlanIfsBulkUpdate.java
   |  |  |  |  |  |--VlanIfsCreateL3VlanIf.java
   |  |  |  |  |  |--VlanIfsDeleteVlanIf.java
   |  |  |  |  |  |--Vpn.java
@@ -418,12 +453,12 @@ sh jar_create.sh
   |  |  |  |  |  |--VrrpCreateVlanIf.java
   |  |  |  |  |  |--Ztp.java
   |  |  |  |  |  |--package-info.java
-  |  |  |  |--resources
+  |  |  |  |--resources/
   |  |  |  |  |--BaseResource.java
-  |  |  |  |  |--exceptionmapper
+  |  |  |  |  |--exceptionmapper/
   |  |  |  |  |  |--RestServerExceptionMapper.java
   |  |  |  |  |--package-info.java
-  |  |  |  |  |--v1
+  |  |  |  |  |--v1/
   |  |  |  |  |  |--ClusterLink.java
   |  |  |  |  |  |--Cps.java
   |  |  |  |  |  |--EcMainModule.java
@@ -433,7 +468,7 @@ sh jar_create.sh
   |  |  |  |  |  |--NodeTraffic.java
   |  |  |  |  |  |--VlanInterface.java
   |  |  |  |  |  |--package-info.java
-  |  |--traffic
+  |  |--traffic/
   |  |  |--DataGatheringExecutor.java
   |  |  |--GatheringExecuterWatchDog.java
   |  |  |--IntegrityExecuterWatchDog.java
@@ -443,7 +478,7 @@ sh jar_create.sh
   |  |  |--TrafficDataGatheringManager.java
   |  |  |--TrafficGatherJob.java
   |  |  |--package-info.java
-  |  |  |--pojo
+  |  |  |--pojo/
   |  |  |  |--DeviceInformationSet.java
   |  |  |  |--NodeKeySet.java
   |  |  |  |--TrafficData.java

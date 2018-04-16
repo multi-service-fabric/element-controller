@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -58,7 +58,7 @@ public class NodeAddedNotification extends Operation {
   private String bootNodeId = "";
 
   /** Device Start-up Result. */
-  private boolean bootStatus = false; 
+  private boolean bootStatus = false;
 
   /** Extended Device Information. */
   private NodeAdditionThread nodeAdditionThread;
@@ -86,6 +86,8 @@ public class NodeAddedNotification extends Operation {
     boolean judge = false;
     synchronized (OperationControlManager.getInstance()) {
 
+      boolean recoverFlag = OperationControlManager.getInstance().getRecoverExecution();
+
       judge = OperationControlManager.getInstance().judgeExecution(getOperationType());
       if (judge) {
         operationId = OperationControlManager.getInstance().startOperation(this);
@@ -94,9 +96,9 @@ public class NodeAddedNotification extends Operation {
         }
       }
 
-      boolean reqNotifyFlag = false; 
-      boolean reqDeleteFlag = true; 
-      boolean reqUpdateNodeStateFlag = false; 
+      boolean reqNotifyFlag = false;
+      boolean reqDeleteFlag = true;
+      boolean reqUpdateNodeStateFlag = false;
 
       do {
 
@@ -129,37 +131,39 @@ public class NodeAddedNotification extends Operation {
           Nodes bootNode = session.searchNodes(null, ((NotifyNodeStartUp) getInData()).getManagementIfAddress());
           if (bootNode == null) {
             logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Nodes]"));
-            reqNotifyFlag = false; 
-            reqDeleteFlag = false; 
-            reqUpdateNodeStateFlag = false; 
+            reqNotifyFlag = false;
+            reqDeleteFlag = false;
+            reqUpdateNodeStateFlag = false;
             break;
           }
 
           bootNodeId = bootNode.getNode_id();
           logger.debug(" boot nodeId=" + bootNodeId);
-          reqNotifyFlag = true; 
+          reqNotifyFlag = true;
 
           boolean clearFcData = true;
           nodeAdditionThread = OperationControlManager.getInstance().getNodeAdditionInfo();
           if (nodeAdditionThread == null) {
             logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [FC received data]"));
-            reqNotifyFlag = false; 
+            reqNotifyFlag = false;
             reqDeleteFlag = true;
             reqUpdateNodeStateFlag = true;
             clearFcData = false;
             break;
           }
 
-          String nodeNotifyAddr = ((NotifyNodeStartUp) getInData()).getManagementIfAddress();
-          String fcNotifyAddr = nodeAdditionThread.getAddNodeInfo().getCreateNode().getManagementInterface()
-              .getAddress();
-          if (!nodeNotifyAddr.equals(fcNotifyAddr)) {
-            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Unmatch data. [FC received data]"));
-            reqNotifyFlag = false; 
-            reqDeleteFlag = true;
-            reqUpdateNodeStateFlag = true;
-            clearFcData = false;
-            break;
+          if (!recoverFlag) {
+            String nodeNotifyAddr = ((NotifyNodeStartUp) getInData()).getManagementIfAddress();
+            String fcNotifyAddr = nodeAdditionThread.getAddNodeInfo().getCreateNode().getManagementInterface()
+                .getAddress();
+            if (!nodeNotifyAddr.equals(fcNotifyAddr)) {
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Unmatch data. [FC received data]"));
+              reqNotifyFlag = false;
+              reqDeleteFlag = true;
+              reqUpdateNodeStateFlag = true;
+              clearFcData = false;
+              break;
+            }
           }
           if (clearFcData == true) {
             OperationControlManager.getInstance().clearNodeAdditionInfo();
@@ -184,8 +188,8 @@ public class NodeAddedNotification extends Operation {
           if (dbae.getCode() == DBAccessException.NO_UPDATE_TARGET) {
             logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [NodesStartupNotification]"),
                 dbae);
-            reqNotifyFlag = false; 
-            reqDeleteFlag = false; 
+            reqNotifyFlag = false;
+            reqDeleteFlag = false;
             reqUpdateNodeStateFlag = true;
           } else {
             logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
@@ -195,8 +199,8 @@ public class NodeAddedNotification extends Operation {
               reqUpdateNodeStateFlag = false;
             } else {
               reqNotifyFlag = true;
-              reqDeleteFlag = true; 
-              reqUpdateNodeStateFlag = true; 
+              reqDeleteFlag = true;
+              reqUpdateNodeStateFlag = true;
             }
           }
         }
@@ -204,9 +208,9 @@ public class NodeAddedNotification extends Operation {
       while (false);
 
       if (result == false) {
-        cleanUp(true, reqNotifyFlag, reqDeleteFlag, reqUpdateNodeStateFlag);
+        cleanUp(true, reqNotifyFlag, reqDeleteFlag, reqUpdateNodeStateFlag, recoverFlag);
       }
-    } 
+    }
 
     logger.trace(CommonDefinitions.END);
     return result;
@@ -222,8 +226,10 @@ public class NodeAddedNotification extends Operation {
     boolean syslogOkFlag = false;
     boolean reqNotifyFlag = true;
     boolean reqDeleteFlag = true;
-    boolean reqUpdateNodeStateFlag = false; 
-    boolean needCleanUpFlag = true; 
+    boolean reqUpdateNodeStateFlag = false;
+    boolean needCleanUpFlag = true;
+
+    boolean recoverFlag = OperationControlManager.getInstance().getRecoverExecution();
 
     try {
 
@@ -232,7 +238,7 @@ public class NodeAddedNotification extends Operation {
       dhcpOkFlag = true;
 
       SyslogController syslogController = SyslogController.getInstance();
-      syslogController.monitorStop(true); 
+      syslogController.monitorStop(true);
       syslogOkFlag = true;
 
       deleteNodesStartupNotification();
@@ -259,7 +265,7 @@ public class NodeAddedNotification extends Operation {
       reqUpdateNodeStateFlag = true;
     } finally {
       if (needCleanUpFlag == true) {
-        cleanUp(!syslogOkFlag, reqNotifyFlag, reqDeleteFlag, reqUpdateNodeStateFlag);
+        cleanUp(!syslogOkFlag, reqNotifyFlag, reqDeleteFlag, reqUpdateNodeStateFlag, recoverFlag);
       }
     }
 
@@ -338,7 +344,7 @@ public class NodeAddedNotification extends Operation {
       status = BOOT_RET_FAILED;
     } else {
       if (executeResult == true) {
-        status = BOOT_RET_SUCCESS; 
+        status = BOOT_RET_SUCCESS;
       } else {
         status = BOOT_RET_CANCEL;
       }
@@ -376,9 +382,11 @@ public class NodeAddedNotification extends Operation {
    *          DB deletion is necessary
    * @param reqUpdateStatusFlag
    *          device status update is necessary
+   * @param recoverNodeFlag
+   *          Setting Additional service recovery executing flag is necessary
    */
   private void cleanUp(boolean reqDhcpSyslogFlag, boolean reqNotifyFlag, boolean reqDeleteFlag,
-      boolean reqUpdateStatusFlag) {
+      boolean reqUpdateStatusFlag, boolean recoverNodeFlag) {
     logger.trace(CommonDefinitions.START);
     logger.debug("reqDhcpSyslogFlag:" + reqDhcpSyslogFlag + " reqNotifyFlag:" + reqNotifyFlag + " reqDeleteFlag:"
         + reqDeleteFlag + " reqUpdateStatusFlag:" + reqUpdateStatusFlag);
@@ -402,8 +410,12 @@ public class NodeAddedNotification extends Operation {
         updateNodeStatus();
       }
 
-      if (!msgToFc.isEmpty() && !msgToFc.equals(BOOT_RET_SUCCESS)) {
+      if (!msgToFc.isEmpty() && !msgToFc.equals(BOOT_RET_SUCCESS) && !recoverNodeFlag) {
         OperationControlManager.getInstance().rollbackAddedNodeInfo(bootNodeId);
+      }
+
+      if (recoverNodeFlag) {
+        OperationControlManager.getInstance().setRecoverExecution(false);
       }
     } catch (RestClientException | DBAccessException | AddNodeException exp) {
       logger.debug("cleanUp error : ", exp);

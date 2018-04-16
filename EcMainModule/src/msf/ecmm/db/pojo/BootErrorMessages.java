@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.pojo;
@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 public class BootErrorMessages implements Serializable {
 
-  /** device ID. */
+  /** model ID. */
   private String equipment_type_id = null;
   /** start-up error message. */
   private String boot_error_msgs = null;
@@ -96,7 +96,8 @@ public class BootErrorMessages implements Serializable {
     }
 
     BootErrorMessages target = (BootErrorMessages) obj;
-    if (this.equipment_type_id.equals(target.getEquipment_type_id())) {
+    if (this.equipment_type_id.equals(target.getEquipment_type_id())
+        && this.boot_error_msgs.equals(target.getBoot_error_msgs())) {
       return true;
     }
     return false;

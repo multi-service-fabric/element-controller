@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,12 +9,12 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.PhysicalIfs;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
-
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.PhysicalIfs;
 
 /**
  * Physical IF Information DAO Class.
@@ -186,11 +186,11 @@ public class PhysicalIfsDAO extends BaseDAO {
    * @throws DBAccessException
    *           data base exception
    */
-  public void delete(String node_id, boolean check) throws DBAccessException {
+  public void deleteAll(String node_id, boolean check) throws DBAccessException {
     try {
       List<PhysicalIfs> physicalIfsList = this.getList(node_id);
       if (physicalIfsList.isEmpty()) {
-        if (check) { 
+        if (check) {
           return;
         }
         logger.debug("physical_ifs delete failed.");
@@ -198,6 +198,38 @@ public class PhysicalIfsDAO extends BaseDAO {
       } else {
         Query query = session.getNamedQuery("deletePhysicalIfsByNode");
         query.setString("key1", node_id);
+        query.executeUpdate();
+      }
+    } catch (DBAccessException e1) {
+      throw e1;
+    } catch (Throwable e2) {
+      logger.debug("physical_ifs delete failed.", e2);
+      this.errorMessage(DELETE_FAILURE, PHYSICAL_IFS, e2);
+    }
+  }
+
+  /**
+   * Physical IF Information Table DELETE.
+   *
+   * @param nodeId
+   *          device ID (primary key)
+   * @param physicalIfId
+   *          physical IF (primary key)
+   * @throws DBAccessException
+   *           data base exception
+   */
+  public void delete(String nodeId, String physicalIfId) throws DBAccessException {
+    try {
+      System.out.println(nodeId);
+      System.out.println(physicalIfId);
+      PhysicalIfs physicalIfs = this.search(nodeId, physicalIfId);
+      if (physicalIfs == null) {
+        logger.debug("physical_ifs delete failed.");
+        this.errorMessage(NO_DELETE_TARGET, PHYSICAL_IFS, null);
+      } else {
+        Query query = session.getNamedQuery("deletePhysicalIfs");
+        query.setString("key1", nodeId);
+        query.setString("key2", physicalIfId);
         query.executeUpdate();
       }
     } catch (DBAccessException e1) {

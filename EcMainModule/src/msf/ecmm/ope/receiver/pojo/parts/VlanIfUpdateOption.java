@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -17,6 +17,10 @@ public class VlanIfUpdateOption {
   /** Optional Information for L3VLAN IF. */
   @SerializedName("l3vlan_option")
   private L3VlanOption l3VlanOption;
+
+  /** Optional Information for L2VLAN IF. */
+  @SerializedName("l2vlan_option")
+  private L2VlanOption l2VlanOption;
 
   /**
    * Getting optional information for L3VLAN IF.
@@ -38,13 +42,32 @@ public class VlanIfUpdateOption {
   }
 
   /**
+   * Getting optional information for L2VLAN IF.
+   *
+   * @return l2VlanOption
+   */
+  public L2VlanOption getL2VlanOption() {
+    return l2VlanOption;
+  }
+
+  /**
+   * Setting optional information for L2VLAN IF.
+   *
+   * @param l2VlanOption
+   *          set l2VlanOption
+   */
+  public void setL2VlanOption(L2VlanOption l2VlanOption) {
+    this.l2VlanOption = l2VlanOption;
+  }
+
+  /**
    * Stringizing Instance.
    *
    * @return instance string
    */
   @Override
   public String toString() {
-    return "VlanIfUpdateOption [l3VlanOption=" + l3VlanOption + "]";
+    return "VlanIfUpdateOption [l3VlanOption=" + l3VlanOption + ", l2VlanOption=" + l2VlanOption + "]";
   }
 
   /**
@@ -56,8 +79,14 @@ public class VlanIfUpdateOption {
    *           input check error
    */
   public void check(OperationType ope) throws CheckDataException {
+    if (l3VlanOption == null && l2VlanOption == null) {
+      throw new CheckDataException();
+    }
     if (l3VlanOption != null) {
       l3VlanOption.check(ope);
+    }
+    if (l2VlanOption != null) {
+      l2VlanOption.check(ope);
     }
   }
 

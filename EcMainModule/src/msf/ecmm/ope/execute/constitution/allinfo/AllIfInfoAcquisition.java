@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.allinfo;
@@ -67,7 +67,7 @@ public class AllIfInfoAcquisition extends Operation {
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_170101);
       }
 
-      outputData = RestMapper.toIFList(nodes);
+      outputData = RestMapper.toIfList(nodes);
 
       response = makeSuccessResponse(RESP_OK_200, outputData);
 

@@ -28,7 +28,8 @@ EC has the physical-logical mapping table for each device. The table records the
 ## How to use
 - installation
   - [installation manual](doc/element_controller_installation_manual.md)
-  - [configuration specifications)](doc/element_controller_configuration_specifications.md)
+  - [Simplified installation procedure](doc/element_controller_automate_installation_manual.md)
+  - [configuration specifications](doc/element_controller_configuration_specifications.md)
 - build
   - [building manual](doc/element_controller_building_guide.md)
 - user guide (when using ZTP(Zero-Touch provisioning))

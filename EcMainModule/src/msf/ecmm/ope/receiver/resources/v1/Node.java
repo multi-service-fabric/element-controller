@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.resources.v1;
@@ -24,6 +24,7 @@ import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.ReceiverDefinitions;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.AddDeleteNode;
+import msf.ecmm.ope.receiver.pojo.RecoverNodeService;
 import msf.ecmm.ope.receiver.resources.BaseResource;
 
 /**
@@ -48,6 +49,13 @@ public class Node extends BaseResource {
 
   /** Device List Information Acquisition - operation execution preparation failure. */
   private static final String ERROR_CODE_060101 = "060101";
+
+  /**  Recover Node Service In case input data check result is NG(json error). */
+  private static final String ERROR_CODE_460101 = "460101";
+  /**  Recover Node Service operation execution preparation failure. */
+  private static final String ERROR_CODE_460301 = "460301";
+  /** Other exceptions. */
+  private static final String ERROR_CODE_460499 = "460499";
 
   /**
    * Device Extention/Removal.
@@ -172,4 +180,33 @@ public class Node extends BaseResource {
 
     return response;
   }
+
+  /**
+   * Recover Node Service.
+   *
+   * @param nodeId
+   *          Node ID
+   * @return REST responce
+   */
+  @POST
+  @Path("{node_id}/recover_node")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response recoverNode(@PathParam("node_id") String nodeId) {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.AcceptNodeRecover;
+
+    setErrorCode(ERROR_CODE_460101, ERROR_CODE_460301, ERROR_CODE_460499);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+
+    Response response = executeOperation(uriKeyMap, RecoverNodeService.class);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
 }

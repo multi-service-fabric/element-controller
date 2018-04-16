@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.fcctrl;
@@ -63,50 +63,90 @@ public class RestClient {
   /** GET Method. */
   protected static final int GET = 2;
 
-
   protected static final String NEED_RETRY = "000001";
-
-  /**
-   * Key String for Acquiring Config Port Number
-   * @return key
-   */
-  protected String getPortKey(){
-    return EcConfiguration.FC_PORT ;
-  }
-
-  /**
-   * Key String for Acquiring Config Address Number
-   * @return key
-   */
-  protected String getAddressKey(){
-    return EcConfiguration.FC_ADDRESS ;
-  }
-
-  protected Response doPost(ClientConfig clientConfig, String url ,String uri ,String jsonImage){
-    return ClientBuilder.newClient(clientConfig).target(url).path(uri)
-        .request(MediaType.APPLICATION_JSON)
-              .post(Entity.entity(jsonImage, MediaType.APPLICATION_JSON));
-  }
-
-  protected Response doPut(ClientConfig clientConfig, String url ,String uri ,String jsonImage){
-    return ClientBuilder.newClient(clientConfig).target(url).path(uri).
-        request(MediaType.APPLICATION_JSON)
-              .put(Entity.entity(jsonImage, MediaType.APPLICATION_JSON));
-  }
-
-  protected Response doGet(ClientConfig clientConfig, String url ,String uri ,String jsonImage,
-      HashMap<String, String> keyMap){
-    throw new ProcessingException("GET method not support.");
-  }
 
   /**
    * json Parser.
    */
-  protected static Gson jsonParser = new GsonBuilder()
+  protected static Gson jsonParser = new GsonBuilder().disableHtmlEscaping()
       .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
 
   /**
-   * REST Request
+   * Key String for Acquiring Config Port Number.
+   *
+   * @return key
+   */
+  protected String getPortKey() {
+    return EcConfiguration.FC_PORT;
+  }
+
+  /**
+   * Key String for Acquiring Config Address Number.
+   *
+   * @return key
+   */
+  protected String getAddressKey() {
+    return EcConfiguration.FC_ADDRESS;
+  }
+
+  /**
+   * POST method excution.
+   *
+   * @param clientConfig
+   *          Rest client setting
+   * @param url
+   *          URL string
+   * @param url
+   *          URI parameter string
+   * @param jsonImage
+   *         body value string
+   * @return Response HTTP_Response
+   */
+  protected Response doPost(ClientConfig clientConfig, String url, String uri, String jsonImage) {
+    return ClientBuilder.newClient(clientConfig).target(url).path(uri).request(MediaType.APPLICATION_JSON)
+        .post(Entity.entity(jsonImage, MediaType.APPLICATION_JSON));
+  }
+
+  /**
+   * PUT method excution.
+   *
+   * @param clientConfig
+   *          Rest client setting
+   * @param url
+   *          URL string
+   * @param url
+   *          URI parameter string
+   * @param jsonImage
+   *         body value string
+   * @return Response HTTP_Response
+   */
+  protected Response doPut(ClientConfig clientConfig, String url, String uri, String jsonImage) {
+    return ClientBuilder.newClient(clientConfig).target(url).path(uri).request(MediaType.APPLICATION_JSON)
+        .put(Entity.entity(jsonImage, MediaType.APPLICATION_JSON));
+  }
+
+  /**
+   * GET method excution.
+   *
+   * @param clientConfig
+   *          Rest client setting
+   * @param url
+   *          URL string
+   * @param url
+   *          URI parameter string
+   * @param jsonImage
+   *         body value string
+   * @param keyMap
+   *          key map
+   * @return Response HTTP_Response
+   */
+  protected Response doGet(ClientConfig clientConfig, String url, String uri, String jsonImage,
+      HashMap<String, String> keyMap) {
+    throw new ProcessingException("GET method not support.");
+  }
+
+  /**
+   * REST Request.
    *
    * @param requestType
    *          Request Type
@@ -120,32 +160,31 @@ public class RestClient {
    * @throws RestClientException
    *           REST Request Failure Exception - failing factor can be acquired with getCode()
    */
-  public AbstractResponse request(int requestType, HashMap<String, String> keyMap,
-      AbstractRequest requestData,
+  public AbstractResponse request(int requestType, HashMap<String, String> keyMap, AbstractRequest requestData,
       Class<? extends AbstractResponse> responseType) throws RestClientException {
 
     logger.trace(CommonDefinitions.START);
     logger.debug("requestType:" + requestType);
 
     EcConfiguration config = EcConfiguration.getInstance();
-    int retryNum = config.get(Integer.class, EcConfiguration.REST_RETRY_NUM); 
-    int timeout = config.get(Integer.class, EcConfiguration.REST_TIMEOUT); 
-    String fcIpaddr = config.get(String.class, getAddressKey()); 
-    String fcPort = config.get(String.class, getPortKey()); 
+    int retryNum = config.get(Integer.class, EcConfiguration.REST_RETRY_NUM);
+    int timeout = config.get(Integer.class, EcConfiguration.REST_TIMEOUT);
+    String fcIpaddr = config.get(String.class, getAddressKey());
+    String fcPort = config.get(String.class, getPortKey());
 
     ClientConfig clientConfig = new ClientConfig();
     clientConfig.property(ClientProperties.READ_TIMEOUT, timeout * 1000);
 
     checkKeyMap(requestType, keyMap);
 
-    String url = createUrl(fcIpaddr, fcPort); 
-    String uri = createUri(requestType, keyMap); 
+    String url = createUrl(fcIpaddr, fcPort);
+    String uri = createUri(requestType, keyMap);
     String jsonImage = "";
     if (requestData != null) {
-      jsonImage = jsonParser.toJson(requestData); 
+      jsonImage = jsonParser.toJson(requestData);
     }
     logger.debug("sendData:" + jsonImage);
-    int method = getMethod(requestType); 
+    int method = getMethod(requestType);
 
     int lastErrorReason = RestClientException.NOT_SET;
     Response response;
@@ -155,17 +194,17 @@ public class RestClient {
       lastErrorReason = RestClientException.NOT_SET;
       try {
         if (method == POST) {
-          response = doPost(clientConfig, url ,uri ,jsonImage);
+          response = doPost(clientConfig, url, uri, jsonImage);
         } else if (method == PUT) {
-          response = doPut(clientConfig, url ,uri ,jsonImage);
+          response = doPut(clientConfig, url, uri, jsonImage);
         } else {
-          response = doGet(clientConfig, url ,uri ,jsonImage,keyMap);
+          response = doGet(clientConfig, url, uri, jsonImage, keyMap);
         }
-        responseBody = response.readEntity(String.class); 
+        responseBody = response.readEntity(String.class);
 
         if (isSuccess(response)) {
           logger.debug("Recv OK");
-          break; 
+          break;
         } else {
           logger.debug("Recv NG");
           logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, getStatus(response)));
@@ -228,8 +267,7 @@ public class RestClient {
    * @throws RestClientException
    *           request type invalid, no required key
    */
-  protected void checkKeyMap(int requestType, HashMap<String, String> keyMap)
-      throws RestClientException {
+  protected void checkKeyMap(int requestType, HashMap<String, String> keyMap) throws RestClientException {
 
     logger.trace(CommonDefinitions.START);
 
@@ -276,8 +314,7 @@ public class RestClient {
    * @throws RestClientException
    *           request type invalid, no required key
    */
-  protected String createUri(int requestType, HashMap<String, String> keyMap)
-      throws RestClientException {
+  protected String createUri(int requestType, HashMap<String, String> keyMap) throws RestClientException {
 
     logger.trace(CommonDefinitions.START);
 
@@ -397,7 +434,7 @@ public class RestClient {
         retry = true;
       }
     } catch (Exception exp) {
-      retry = false; 
+      retry = false;
     }
     logger.trace(CommonDefinitions.END);
     return retry;

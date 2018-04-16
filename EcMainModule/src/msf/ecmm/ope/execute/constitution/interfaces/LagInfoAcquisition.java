@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
@@ -17,6 +17,7 @@ import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.BreakoutIfs;
 import msf.ecmm.db.pojo.LagIfs;
+import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
@@ -66,16 +67,27 @@ public class LagInfoAcquisition extends Operation {
 
     try (DBAccessManager session = new DBAccessManager()) {
 
-      LagIfs lagIfsDb = session.searchLagIfs(getUriKeyMap().get(KEY_NODE_ID), getUriKeyMap().get(KEY_LAG_IF_ID));
+      LagIfs lagIfsDb = null;
+      for (LagIfs elem : session.getLagIfsList(getUriKeyMap().get(KEY_NODE_ID))) {
+        if (elem.getFc_lag_if_id().equals(getUriKeyMap().get(KEY_LAG_IF_ID))) {
+          lagIfsDb = elem;
+          break;
+        }
+      }
+      Nodes nodes = session.searchNodes(getUriKeyMap().get(KEY_NODE_ID), null);
 
       if (lagIfsDb == null) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [LagIfs]"));
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_250201);
       }
+      if (nodes == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [nodes]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_250201);
+      }
 
       List<BreakoutIfs> breakoutIfsDbList = session.getBreakoutIfsList(getUriKeyMap().get(KEY_NODE_ID));
 
-      getLagInterfaceRest = RestMapper.toLagIfInfo(lagIfsDb, breakoutIfsDbList);
+      getLagInterfaceRest = RestMapper.toLagIfInfo(lagIfsDb, breakoutIfsDbList, nodes.getEquipments());
 
       response = makeSuccessResponse(RESP_OK_200, getLagInterfaceRest);
 

@@ -1,27 +1,27 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
- * EC Inter-Device IF Control Functional Part Class
+ * EC Inter-Device IF Control Functional Part Class.
  */
 public class DevctrlCommon {
 
   /**
-   * logger
+   * logger.
    */
   private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
   /**
-	* Cleanup (DHCP stop/Syslog monitoring stop)
+   * Clean up (DHCP stop/Syslog monitoring stop).
    */
   public static void cleanUp() {
     logger.trace(CommonDefinitions.START);
@@ -30,7 +30,7 @@ public class DevctrlCommon {
     DhcpController dhcpController = DhcpController.getInstance();
     SyslogController syslogController = SyslogController.getInstance();
     try {
-      dhcpController.stop(false); 
+      dhcpController.stop(false);
       dhcpOkFlag = true;
       syslogController.monitorStop(true);
     } catch (DevctrlException e) {

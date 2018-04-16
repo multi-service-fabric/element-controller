@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -104,7 +104,7 @@ public abstract class NodeRemove extends Operation {
     boolean dhcpOkFlag = false;
     boolean emLockOkFlag = false;
     boolean em1FinFlag = false;
-    boolean needCleanUpFlag = true; 
+    boolean needCleanUpFlag = true;
 
     try (DBAccessManager session = new DBAccessManager()) {
 
@@ -133,7 +133,7 @@ public abstract class NodeRemove extends Operation {
         }
         oppoNodeList.add(oppoNodesDb);
       }
-      oppoNodeList.toString(); 
+      oppoNodeList.toString();
 
       session.startTransaction();
 
@@ -145,7 +145,7 @@ public abstract class NodeRemove extends Operation {
       boolean doNotNotifyEm = false;
       if (session.checkClusterType() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
         if (session.getNodesNum() > 0) {
-          doNotNotifyEm = true; 
+          doNotNotifyEm = true;
         }
       }
 
@@ -235,7 +235,7 @@ public abstract class NodeRemove extends Operation {
     if (response == null) {
       response = super.makeFailedResponse(rescode, errcode);
     }
-    return (CommonResponse) response; 
+    return (CommonResponse) response;
   }
 
   /**

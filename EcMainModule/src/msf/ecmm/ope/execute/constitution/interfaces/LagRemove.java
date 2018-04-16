@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
@@ -85,8 +85,20 @@ public class LagRemove extends Operation {
       String nodeId = getUriKeyMap().get(KEY_NODE_ID);
       String lagIfId = getUriKeyMap().get(KEY_LAG_IF_ID);
 
-      LagIfs lagIfsDb = session.searchLagIfs(nodeId, lagIfId);
-
+      Nodes nodesDb = session.searchNodes(nodeId, null);
+      if (nodesDb == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [Nodes]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_260201);
+      }
+      LagIfs lagIfsDb = null;
+      if (nodesDb.getLagIfsList() != null) {
+        for (LagIfs listElem : nodesDb.getLagIfsList()) {
+          if (listElem.getFc_lag_if_id().equals(lagIfId)) {
+            lagIfsDb = listElem;
+            break;
+          }
+        }
+      }
       if (lagIfsDb == null) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [LagIfs]"));
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_260201);
@@ -99,13 +111,11 @@ public class LagRemove extends Operation {
         }
       }
 
-      Nodes nodesDb = session.searchNodes(nodeId, null);
-
       CeLagAddDelete ceLagAddDeleteEm = EmMapper.toLagIfDelete(nodesDb, lagIfsDb);
 
       session.startTransaction();
 
-      session.deleteLagIfs(nodeId, lagIfId);
+      session.deleteLagIfs(nodeId, lagIfsDb.getLag_if_id());
 
       AbstractMessage result = EmController.getInstance().request(ceLagAddDeleteEm);
 

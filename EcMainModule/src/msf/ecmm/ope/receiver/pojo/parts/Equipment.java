@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -66,7 +66,10 @@ public class Equipment {
   /** Configurable Device Type. */
   private Capabilities capabilities;
 
-  /**
+  /** QoS Capability. */
+  private QosRegisterEquipment qos;
+
+/**
    * Getting device ID.
    *
    * @return device ID
@@ -390,9 +393,28 @@ public class Equipment {
   }
 
   /**
+   * Getting QoS Capability.
+   *
+   * @return qos
+   */
+  public QosRegisterEquipment getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QoS Capability.
+   *
+   * @param qos
+   *          setting  qos
+   */
+  public void setQos(QosRegisterEquipment qos) {
+    this.qos = qos;
+  }
+
+  /*
    * Stringizing Instance.
    *
-   * @return instance string
+   * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
@@ -401,7 +423,8 @@ public class Equipment {
         + maxRepetitions + ", platform=" + platform + ", os=" + os + ", firmware=" + firmware + ", routerType="
         + routerType + ", physicalIfNameSyntax=" + physicalIfNameSyntax + ", breakoutIfNameSyntax="
         + breakoutIfNameSyntax + ", breakoutIfNameSuffixList=" + breakoutIfNameSuffixList + ", ifNameRules="
-        + ifNameRules + ", equipmentIfs=" + equipmentIfs + ", ztp=" + ztp + ", capabilities=" + capabilities + "]";
+        + ifNameRules + ", equipmentIfs=" + equipmentIfs + ", ztp=" + ztp + ", capabilities=" + capabilities + ", qos="
+        + qos + "]";
   }
 
   /**
@@ -450,6 +473,16 @@ public class Equipment {
       throw new CheckDataException();
     }
 
+    if (ztp != null) {
+      ztp.check(operationType);
+    }
+
+    if (qos == null) {
+      throw new CheckDataException();
+    } else {
+      qos.check(operationType);
+    }
+
     if ((ifNameRules == null) || ifNameRules.isEmpty()) {
       throw new CheckDataException();
     } else {
@@ -466,10 +499,5 @@ public class Equipment {
       }
     }
 
-    if (ztp == null) {
-      throw new CheckDataException();
-    } else {
-      ztp.check(operationType);
-    }
   }
 }

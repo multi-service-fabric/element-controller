@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.resources.v1;
@@ -89,6 +89,12 @@ public class Cps extends BaseResource {
         } else if (operations.getAction().equals(ReceiverDefinitions.DELETE_L3VLANIF)) {
           detailRequest = operations.getDeleteL3VlanIfOption();
           operationType = OperationType.AllL3VlanIfRemove;
+        } else if (operations.getAction().equals(ReceiverDefinitions.UPDATE_L2VLANIF)) {
+          detailRequest = operations.getUpdateL2VlanIfOption();
+          operationType = OperationType.AllL2VlanIfChange;
+        } else if (operations.getAction().equals(ReceiverDefinitions.UPDATE_L3VLANIF)) {
+          detailRequest = operations.getUpdateL3VlanIfOption();
+          operationType = OperationType.AllL3VlanIfChange;
         } else if (operations.getAction().equals(ReceiverDefinitions.REGISTER_BREAKOUTIF)) {
           detailRequest = operations.getRegisterBreakoutIfOption();
           operationType = OperationType.BreakoutIfCreate;

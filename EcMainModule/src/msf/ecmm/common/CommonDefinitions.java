@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.common;
@@ -42,7 +42,9 @@ public class CommonDefinitions {
   public static final int NODE_STATE_FAILER_SERVICE_SETTING = 6;
   /** out of order (other). */
   public static final int NODE_STATE_FAILER_OTHER = 7;
-  /** active (text string). */
+  /** out of order (recovering expansion failed). */
+  public static final int NODE_STATE_FAILER_RECOVER_NODE = 8;
+  /** active (string). */
   public static final String NODE_STATE_IN_SERVICE_STRING = "in-service";
   /** waiting for device start (string). */
   public static final String NODE_STATE_BEFORE_SETTING_STRING = "before-setting";
@@ -58,6 +60,8 @@ public class CommonDefinitions {
   public static final String NODE_STATE_FAILER_SERVICE_SETTING_STRING = "failer-service-setting";
   /** out of order (other) (string). */
   public static final String NODE_STATE_FAILER_OTHER_STRING = "failer-other";
+  /** out of order (recovering expansion failed) (string). */
+  public static final String NODE_STATE_FAILER_RECOVER_NODE_STRING = "failuer-recover-node";
 
   /** notification received (start success). */
   public static final int RECV_OK_NOTIFICATION = 1;
@@ -239,6 +243,8 @@ public class CommonDefinitions {
   public static final String OPERATION_TYPE_ADD = "add";
   /** Delete. */
   public static final String OPERATION_TYPE_DELETE = "delete";
+  /** Replace. */
+  public static final String OPERATION_TYPE_REPLACE = "replace";
 
   /** Controller to be acquired. */
   public static final String KEY_CONTROLLER = "controller";

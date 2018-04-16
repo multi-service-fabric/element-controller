@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl;
@@ -13,76 +13,83 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.snmp4j.smi.IpAddress;
-
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.devctrl.pojo.DhcpInfo;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.snmp4j.smi.IpAddress;
+
 /**
- * DHCP Related Operation
+ * DHCP Related Operation.
  */
 public class DhcpController {
+
   /**
-   * logger
+   * logger.
    */
   private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
   /** Self(singleton) */
   private static DhcpController me = new DhcpController();
 
-  /** Template Replacement Keyword Host Name */
+  /** Template Replacement Keyword Host Name. */
   private static final String TEMPLATE_KEYWORD_HOSTNAME = "$$HOSTNAME$$";
 
-  /** Template Replacement Keyword MAC Address */
+  /** Template Replacement Keyword MAC Address. */
   private static final String TEMPLATE_KEYWORD_MACADDRESS = "$$MACADDRESS$$";
 
-  /** Template Replacement Keyword TFTP Host Name */
+  /** Template Replacement Keyword TFTP Host Name. */
   private static final String TEMPLATE_KEYWORD_TFTPHOSTNAME = "$$TFTPHOSTNAME$$";
 
-  /** Template Replacement Keyword NTP Server Name */
+  /** Template Replacement Keyword NTP Server Name. */
   private static final String TEMPLATE_KEYWORD_NTPSERVER = "$$NTPSERVER$$";
 
-  /** Template Replacement Keyword Initialization File for Zero Touch Configuration */
+  /** Template Replacement Keyword Initialization File for Zero Touch Configuration. */
   private static final String TEMPLATE_KEYWORD_INITIALCONFIG = "$$INITIALCONFIG$$";
 
-  /** Template Replacement Keyword Device's Management IF */
+  /** Template Replacement Keyword Device's Management IF. */
   private static final String TEMPLATE_KEYWORD_MANAGEMENTADDRESS = "$$MANAGEMENTADDRESS$$";
 
-  /** Template Replacement Keyword EC's Management IF */
+  /** Template Replacement Keyword EC's Management IF. */
   private static final String TEMPLATE_KEYWORD_LOGSERVERADDRESS = "$$LOGSERVERADDRESS$$";
 
-  /** Template Replacement Keyword Subnet mask of the network where the device's management IF belongs to */
+  /** Template Replacement Keyword Subnet mask of the network where the device's management IF belongs to. */
   private static final String TEMPLATE_KEYWORD_MANAGEMENTSUBNETMASK = "$$MANAGEMENTSUBNETMASK$$";
 
-  /** Template Replacement Keyword Address of the network where the device's management IF belongs to */
+  /** Template Replacement Keyword Address of the network where the device's management IF belongs to. */
   private static final String TEMPLATE_KEYWORD_MANAGEMENTNETWORKADDRESS = "$$MANAGEMENTNETWORKADDRESS$$";
 
-  /** Template Replacement Keyword the eldest value of address range of the network where the device's management IF can belongs to */
+  /** Template Replacement Keyword the eldest value of address range of the network where the device's management IF can belongs to. */
   private static final String TEMPLATE_KEYWORD_MANAGEMENTRANGESTART = "$$MANAGEMENTRANGESTART$$";
 
-  /** Template Replacement Keyword the youngest value of address range of the network where the device's management IF can belongs to */
+  /** Template Replacement Keyword the youngest value of address range of the network where the device's management IF can belongs to. */
   private static final String TEMPLATE_KEYWORD_MANAGEMENTRANGEEND = "$$MANAGEMENTRANGEEND$$";
 
-  /** DHCP Start-up */
+  /** Initial config path prefix "TFTP". */
+  private static final String INITIALCONFIG_PREFIX_TFTP = "/var/lib/tftpboot";
+
+  /** Initial config path prefix "HTTP". */
+  private static final String INITIALCONFIG_PREFIX_HTTP = "/var/www/html";
+
+  /** DHCP Start-up. */
   private static final String[] DHCP_START = { "systemctl", "start", "dhcpd.service" };
 
-  /** DHCP Stop */
+  /** DHCP Stop. */
   private static final String[] DHCP_STOP = { "systemctl", "stop", "dhcpd.service" };
 
   /**
-   * Constructor
+   * Constructor.
    */
   private DhcpController() {
 
   }
 
   /**
-   * Getting instance
+   * Getting instance.
    *
    * @return self
    */
@@ -91,7 +98,7 @@ public class DhcpController {
   }
 
   /**
-   * Initialization
+   * Initialization.
    *
    * @return success/fail of initialization
    */
@@ -100,7 +107,7 @@ public class DhcpController {
 
     try {
       stop(false);
-    } catch (DevctrlException e) {
+    } catch (DevctrlException de) {
     }
 
     logger.trace(CommonDefinitions.END);
@@ -108,7 +115,7 @@ public class DhcpController {
   }
 
   /**
-   * DHCP Start-up
+   * DHCP Start-up.
    *
    * @param info
    *          DHCP start-up information
@@ -117,9 +124,6 @@ public class DhcpController {
    */
   public void start(DhcpInfo info) throws DevctrlException {
     logger.debug("DHCP start info=" + info);
-
-    String dhcpConfig = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_DHCP_CONFIG);
-    String ecMngAddr = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_EC_MANAGEMENT_IF);
 
     int mngPrefix = info.getPrefix();
     byte[] bip = addrTobyte(info.getEqManagementAddress());
@@ -130,12 +134,17 @@ public class DhcpController {
     byte[] bend = maxSegment(info.getEqManagementAddress(), mngPrefix);
     bend[3]--;
 
+    String devInitConfPath = info.getInitialConfig();
+    devInitConfPath = devInitConfPath.replace(INITIALCONFIG_PREFIX_TFTP, "");
+    devInitConfPath = devInitConfPath.replace(INITIALCONFIG_PREFIX_HTTP, "");
+
+    String ecMngAddr = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_EC_MANAGEMENT_IF);
     HashMap<String, String> replaceKeys = new HashMap<>();
     replaceKeys.put(TEMPLATE_KEYWORD_HOSTNAME, info.getHostname());
     replaceKeys.put(TEMPLATE_KEYWORD_MACADDRESS, info.getMacAddress());
     replaceKeys.put(TEMPLATE_KEYWORD_TFTPHOSTNAME, ecMngAddr);
     replaceKeys.put(TEMPLATE_KEYWORD_NTPSERVER, info.getNtpServerAddress());
-    replaceKeys.put(TEMPLATE_KEYWORD_INITIALCONFIG, info.getInitialConfig());
+    replaceKeys.put(TEMPLATE_KEYWORD_INITIALCONFIG, devInitConfPath);
     replaceKeys.put(TEMPLATE_KEYWORD_MANAGEMENTADDRESS, info.getEqManagementAddress());
     replaceKeys.put(TEMPLATE_KEYWORD_LOGSERVERADDRESS, ecMngAddr);
     replaceKeys.put(TEMPLATE_KEYWORD_MANAGEMENTSUBNETMASK, new IpAddress(bmask).toString());
@@ -143,6 +152,7 @@ public class DhcpController {
     replaceKeys.put(TEMPLATE_KEYWORD_MANAGEMENTRANGESTART, new IpAddress(bstart).toString());
     replaceKeys.put(TEMPLATE_KEYWORD_MANAGEMENTRANGEEND, new IpAddress(bend).toString());
 
+    String dhcpConfig = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_DHCP_CONFIG);
     try {
       List<String> temple = Files.readAllLines(new File(info.getConfigTemplete()).toPath());
 
@@ -152,9 +162,9 @@ public class DhcpController {
 
       Files.write(new File(dhcpConfig).toPath(), rep);
 
-    } catch (IOException e) {
+    } catch (IOException ioe) {
       stop(false);
-      logger.error(LogFormatter.out.format(LogFormatter.MSG_505028, e));
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_403041, ioe));
       throw new DevctrlException("dhcp start fail.");
     }
 
@@ -166,7 +176,7 @@ public class DhcpController {
 
     if (ret != 0) {
       stop(false);
-      logger.error(LogFormatter.out.format(LogFormatter.MSG_505028, stdList));
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_403041, stdList));
       throw new DevctrlException("dhcp start fail.");
     }
 
@@ -175,7 +185,7 @@ public class DhcpController {
   }
 
   /**
-   * DHCP Stop
+   * DHCP Stop.
    *
    * @param strict
    *          Whether the log should be strictly submitted or not? true:should be submitted
@@ -195,15 +205,15 @@ public class DhcpController {
 
     if (ret != 0) {
       if (strict) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_505029, stdList));
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_403041, stdList));
       }
     }
 
     try {
       Files.deleteIfExists(new File(dhcpConfig).toPath());
-    } catch (IOException e) {
+    } catch (IOException ioe) {
       if (strict) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_505029, e));
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_403041, ioe));
       }
     }
 
@@ -211,7 +221,7 @@ public class DhcpController {
   }
 
   /**
-   * Template Replacement
+   * Template Replacement.
    *
    * @param keys
    *          replacement character string
@@ -231,7 +241,7 @@ public class DhcpController {
   }
 
   /**
-   * Return the greatest address with being subnet masked
+   * Return the greatest address with being subnet masked.
    *
    * @param segaddr
    *          IP address with format "xxx.xxx.xxx.xxx"
@@ -259,8 +269,8 @@ public class DhcpController {
    *          IP address string
    * @return byte[]
    */
-  private byte[] addrTobyte(String s) {
-    String[] sp = s.split("\\.");
+  private byte[] addrTobyte(String str) {
+    String[] sp = str.split("\\.");
     byte[] b = new byte[4];
     for (int i = 0; i < 4; i++) {
       b[i] = (byte) (Integer.parseInt(sp[i]));
@@ -269,7 +279,7 @@ public class DhcpController {
   }
 
   /**
-   * mask length -> subnet maske byte[]
+   * mask length -> subnet maske byte[].
    *
    * @param n
    *          mask length
@@ -286,7 +296,7 @@ public class DhcpController {
   }
 
   /**
-   * AND Operation of Bytes
+   * AND Operation of Bytes.
    *
    * @param b1
    *          byte
@@ -303,7 +313,7 @@ public class DhcpController {
   }
 
   /**
-   * OR Operation of Bytes
+   * OR Operation of Bytes.
    *
    * @param b1
    *          byte
@@ -320,7 +330,7 @@ public class DhcpController {
   }
 
   /**
-   * XOR Operation of Bytes
+   * XOR Operation of Bytes.
    *
    * @param b1
    *          byte

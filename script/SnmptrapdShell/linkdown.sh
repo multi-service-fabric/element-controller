@@ -6,7 +6,7 @@
 ## and does REST interface notification to EC.
 ## (URI parameters are in JSON format)
 ##
-## Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+## Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
 ##
 
 ## Enfironment Definition

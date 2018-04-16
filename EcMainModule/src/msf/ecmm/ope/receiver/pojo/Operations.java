@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo;
@@ -29,6 +29,14 @@ public class Operations extends AbstractRestMessage {
   /** Optional Information for L3VLAN IF Deletion Process Request. */
   @SerializedName("delete_l3vlan_if_option")
   private BulkDeleteL3VlanIf deleteL3VlanIfOption;
+
+   /** Optional Information for L2VLAN IF Change Process Request. */
+  @SerializedName("update_l2vlan_if_option")
+  private BulkUpdateL2VlanIf updateL2VlanIfOption;
+
+  /** Optional Information for L3VLAN IF Change Process Request. */
+  @SerializedName("update_l3vlan_if_option")
+  private BulkUpdateL3VlanIf updateL3VlanIfOption;
 
   /** Optional Information for breakoutIF Registration Process Request. */
   private CreateBreakoutIf registerBreakoutIfOption;
@@ -132,6 +140,44 @@ public class Operations extends AbstractRestMessage {
   }
 
   /**
+   * Getting Optional Information for L2VLAN IF Change Process Request.
+   *
+   * @return updateL2VlanIfOption
+   */
+  public BulkUpdateL2VlanIf getUpdateL2VlanIfOption() {
+    return updateL2VlanIfOption;
+  }
+
+  /**
+   *  Setting Optional Information for L2VLAN IF Change Process Request.
+   *
+   * @param updateL2VlanIfOption
+   *          setting updateL2VlanIfOption
+   */
+  public void setUpdateL2VlanIfOption(BulkUpdateL2VlanIf updateL2VlanIfOption) {
+    this.updateL2VlanIfOption = updateL2VlanIfOption;
+  }
+
+  /**
+   * Getting Optional Information for L3VLAN IF Change Process Request.
+   *
+   * @return updateL3VlanIfOption
+   */
+  public BulkUpdateL3VlanIf getUpdateL3VlanIfOption() {
+    return updateL3VlanIfOption;
+  }
+
+  /**
+   * Setting Optional Information for L3VLAN IF Change Process Request.
+   *
+   * @param updateL3VlanIfOption
+   *          aetting updateL3VlanIfOption
+   */
+  public void setUpdateL3VlanIfOption(BulkUpdateL3VlanIf updateL3VlanIfOption) {
+    this.updateL3VlanIfOption = updateL3VlanIfOption;
+  }
+
+  /**
    * Getting Optional Information for breakoutIF Registration Process Request.
    *
    * @return registerBreakoutIfOption
@@ -169,16 +215,17 @@ public class Operations extends AbstractRestMessage {
     this.deleteBreakoutIfOption = option;
   }
 
-  /**
+  /*
    * Stringizing Instance.
    *
-   * @return instance string
+   * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
     return "Operations [action=" + action + ", createUpdateL2VlanIfOption=" + createUpdateL2VlanIfOption
         + ", deleteUpdateL2VlanIfOption=" + deleteUpdateL2VlanIfOption + ", createL3VlanIfOption="
-        + createL3VlanIfOption + ", deleteL3VlanIfOption=" + deleteL3VlanIfOption + ", registerBreakoutIfOption="
+        + createL3VlanIfOption + ", deleteL3VlanIfOption=" + deleteL3VlanIfOption + ", updateL2VlanIfOption="
+        + updateL2VlanIfOption + ", updateL3VlanIfOption=" + updateL3VlanIfOption + ", registerBreakoutIfOption="
         + registerBreakoutIfOption + ", deleteBreakoutIfOption=" + deleteBreakoutIfOption + "]";
   }
 

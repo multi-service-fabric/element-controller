@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.cp;
@@ -17,6 +17,7 @@ import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.DbMapper;
 import msf.ecmm.convert.EmMapper;
+import msf.ecmm.convert.LogicalPhysicalConverter;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.Nodes;
@@ -46,8 +47,14 @@ public class AllL2VlanIfCreate extends Operation {
   /** In case the number of pieces of information for process execution is zero (data acquisition from DBs has failed in the previous step of process). */
   private static final String ERROR_CODE_010102 = "010102";
 
+  /** In case QoS capability check result is NG. */
+  private static final String ERROR_CODE_010103 = "010103";
+
   /** In case the VLAN IF information to be registered already exists. */
   private static final String ERROR_CODE_010301 = "010301";
+
+  /** In case Rregistration of the same VLAN ID already exists in the same device / same IF. */
+  private static final String ERROR_CODE_010306 = "010306";
 
   /** Disconnection or connection timeout with EM has occurred while requesting to EM. */
   private static final String ERROR_CODE_010401 = "010401";
@@ -90,8 +97,6 @@ public class AllL2VlanIfCreate extends Operation {
 
       BulkCreateL2VlanIf inputData = (BulkCreateL2VlanIf) getInData();
 
-      session.startTransaction();
-
       List<Nodes> nodesDbList = session.getNodesList();
       Set<Nodes> nodesSet = new HashSet<Nodes>();
 
@@ -109,6 +114,8 @@ public class AllL2VlanIfCreate extends Operation {
           allVlanIfsMap.put(updVlanIfs.getNodeId(), session.getVlanIfsList(updVlanIfs.getNodeId()));
         }
       }
+
+      session.startTransaction();
 
       if (inputData.getCreateVlanIfs() != null) {
         for (CreateVlanIfs creVlanIfs : inputData.getCreateVlanIfs()) {
@@ -135,9 +142,32 @@ public class AllL2VlanIfCreate extends Operation {
             nodesSet.add(nodesDb);
           }
 
+          if (creVlanIfs.getQos() != null) {
+            int ifSpeed = LogicalPhysicalConverter.getIfSpeed(creVlanIfs.getBaseIf().getIfType(),
+                creVlanIfs.getBaseIf().getIfId(), nodesDb);
+            if (!DbMapper.checkQosShapingRateValue(creVlanIfs.getQos().getInflowShapingRate(), ifSpeed,
+                nodesDb.getEquipments().getQos_shaping_flg())) {
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "InflowShapingRate capability error."));
+              return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010103);
+            }
+            if (!DbMapper.checkQosShapingRateValue(creVlanIfs.getQos().getOutflowShapingRate(), ifSpeed,
+                nodesDb.getEquipments().getQos_shaping_flg())) {
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "OutflowShapingRate capability error."));
+              return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010103);
+            }
+            if (!DbMapper.checkQosRemarkMenuValue(creVlanIfs.getQos().getRemarkMenu(), nodesDb.getEquipments())) {
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "RemarkMenu capability error."));
+              return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010103);
+            }
+            if (!DbMapper.checkQosEgressQueueMenuValue(creVlanIfs.getQos().getEgressQueue(), nodesDb.getEquipments())) {
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "EgressQueueMenu capability error."));
+              return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010103);
+            }
+          }
+
           if (!checkDuplicateRegisteration(session.getVlanIfsList(creVlanIfs.getBaseIf().getNodeId()), creVlanIfs)) {
             logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Detect duplicate registration."));
-            return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_010301);
+            return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_010306);
           }
 
           VlanIfs vlanIfsDb = DbMapper.toL2VlanIfCreate(creVlanIfs, nodesDb);
@@ -215,12 +245,12 @@ public class AllL2VlanIfCreate extends Operation {
    * @param dbVlanList
    *          information of VLAN which been already registered (same device)
    * @param creVlanIfs
-	*          VLAN information to be registered (FC input data)
+   *          VLAN information to be registered (FC input data)
    * @return true: without duplication, false: with duplication
    */
   private boolean checkDuplicateRegisteration(List<VlanIfs> dbVlanList, CreateVlanIfs creVlanIfs) {
     logger.trace(CommonDefinitions.START);
-    logger.debug(creVlanIfs);
+    logger.debug(dbVlanList);
 
     String ifType = creVlanIfs.getBaseIf().getIfType();
     String ifId = creVlanIfs.getBaseIf().getIfId();

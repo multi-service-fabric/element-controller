@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -8,11 +8,11 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.pojo.BootErrorMessages;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * The class in which start-up failure determination message information related DB process is performed.
@@ -67,7 +67,7 @@ public class BootErrorMessagesDAO extends BaseDAO {
       List<BootErrorMessages> bootErrMsgs = this.search(equipment_type_id);
       if (bootErrMsgs == null) {
         this.errorMessage(NO_DELETE_TARGET, BOOT_ERROR_MESSAGES, null);
-      } else if(bootErrMsgs.isEmpty()) {
+      } else if (bootErrMsgs.isEmpty()) {
         logger.debug("BootErrorMessages is not found. equipment_type_id=" + equipment_type_id);
       } else {
         Query query = session.getNamedQuery("deleteBootErrorMessages");

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -22,7 +22,7 @@ public class VlanIfsCreateL3VlanIf {
 
   /** CP VLAN ID. */
   private Integer vlanId = null;
-
+	
   /** MTU Value for each CP IF. */
   private Integer mtu = null;
 
@@ -31,7 +31,7 @@ public class VlanIfsCreateL3VlanIf {
 
   /** Accommodated Device IF Address (IPv6). */
   private String ipv6Address = null;
-
+	
   /** Accommodate Device IF Prefix (IPv4). */
   private Integer ipv4Prefix = null;
 
@@ -47,7 +47,10 @@ public class VlanIfsCreateL3VlanIf {
   /** Information for VRRP. */
   private VrrpCreateVlanIf vrrp = null;
 
-  /** Route Distinguisher. */
+  /** QoS configuration. */
+  private QosValues qos = null;
+
+  /** Route Distingusher. */
   private String routeDistinguisher = null;
 
   /**
@@ -260,6 +263,25 @@ public class VlanIfsCreateL3VlanIf {
   }
 
   /**
+   * Getting QoS configuration.
+   *
+   * @return qos
+   */
+  public QosValues getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QoS configuration.
+   *
+   * @param qos
+   *          setting qos
+   */
+  public void setQos(QosValues qos) {
+    this.qos = qos;
+  }
+
+  /**
    * Getting Route Distingusher.
    *
    * @return routeDistingusher
@@ -287,8 +309,8 @@ public class VlanIfsCreateL3VlanIf {
   public String toString() {
     return "VlanIfsCreateL3VlanIf [vlanIfId=" + vlanIfId + ", baseIf=" + baseIf + ", vlanId=" + vlanId + ", mtu=" + mtu
         + ", ipv4Address=" + ipv4Address + ", ipv6Address=" + ipv6Address + ", ipv4Prefix=" + ipv4Prefix
-        + ", ipv6Prefix=" + ipv6Prefix + ", bgp=" + bgp + ", staticRoutes=" + staticRoutes + ", vrrp=" + vrrp
-        + ", routeDistinguisher=" + routeDistinguisher + "]";
+        + ", ipv6Prefix=" + ipv6Prefix + ", bgp=" + bgp + ", staticRoutes=" + staticRoutes + ", vrrp=" + vrrp + ", qos="
+        + qos + ", routeDistinguisher=" + routeDistinguisher + "]";
   }
 
   /**

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver;
@@ -59,6 +59,10 @@ public class ReceiverDefinitions {
   public static final String CREATE_L3VLANIF = "create_l3vlan_if";
   /** L3VLAN IF Batch Deletion. */
   public static final String DELETE_L3VLANIF = "delete_l3vlan_if";
+  /** L2VLAN IF Batch Change. */
+  public static final String UPDATE_L2VLANIF = "update_l2vlan_if";
+  /** L3VLAN IF Batch Change. */
+  public static final String UPDATE_L3VLANIF = "update_l3vlan_if";
   /** breakoutIF Addition. */
   public static final String REGISTER_BREAKOUTIF = "register_breakout_if";
   /** breakoutIF Deletion. */

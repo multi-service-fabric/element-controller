@@ -1,0 +1,40 @@
+# Setting ntp
+  - include: getrpm.yml
+    when: download_flag
+  - name: ntp install 1
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/autogen-libopts-5.18-5.el7.x86_64.rpm
+  - name: ntp install 2
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/ntpdate-4.2.6p5-22.el7.centos.x86_64.rpm
+  - name: ntp install 3
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/ntp-4.2.6p5-22.el7.centos.x86_64.rpm
+  - name: add ntp setting file
+    shell: touch /var/lib/ntp/drift
+  - name: check before add setting
+    find: paths=/etc/rsyslog.conf
+          patterns='restrict default ignore'
+    register: found_files
+  - name: add rsyslog setting 1
+    lineinfile:
+      dest=/etc/ntp.conf
+      insertafter='#restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap'
+      line='server {{ ntp_server_address }} iburst}'
+    when: found_files.matched == 0
+  - name: add rsyslog setting 2
+    lineinfile:
+      dest=/etc/ntp.conf
+      insertafter='#restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap'
+      line='restrict {{ ntp_server_address }} noquery nomodify'
+    when: found_files.matched == 0
+  - name: add rsyslog setting 3
+    lineinfile:
+      dest=/etc/ntp.conf
+      insertafter='restrict default nomodify notrap nopeer noquery'
+      line='restrict default ignore'
+    when: found_files.matched == 0
+  - name: set ntpdate
+    shell: ntpdate {{ ntp_server_address }}
+    ignore_errors: yes
+  - name: restart ntp
+    shell: systemctl restart ntpd.service
+  - name: register ntp
+    shell: systemctl enable ntpd.service

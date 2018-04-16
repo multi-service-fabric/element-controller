@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.control;
@@ -72,6 +72,9 @@ public class OperationControlManager {
   /** Thread for Device Extention. */
   private NodeAdditionThread nodeAdditionThread;
 
+  /** Additional service recovery executing flag. */
+  private boolean recoverExecutionFlag = false;
+
   /** Operation ID Max. Value. */
   private static final int MAX_OPERATION_ID = Integer.MAX_VALUE;
 
@@ -131,7 +134,7 @@ public class OperationControlManager {
       }
 
       ecMain = configState;
-    } else { 
+    } else {
       logger.debug("Not first boot.");
       obst = getEcMainObstraction(true);
       obstint = LogicalPhysicalConverter.toIntegerECObstructionState(obst);
@@ -202,7 +205,7 @@ public class OperationControlManager {
 
     logger.trace(CommonDefinitions.START);
 
-    if (!executeOperationHolder.containsKey(opeId)) { 
+    if (!executeOperationHolder.containsKey(opeId)) {
       executeOperationHolder.put(opeId, ope);
     } else {
       logger.debug("This operation id was already registered. :" + ope);
@@ -224,7 +227,7 @@ public class OperationControlManager {
 
     logger.trace(CommonDefinitions.START);
 
-    if (executeOperationHolder.containsKey(opeId)) { 
+    if (executeOperationHolder.containsKey(opeId)) {
       executeOperationHolder.remove(opeId);
 
       synchronized (queueMap) {
@@ -332,7 +335,7 @@ public class OperationControlManager {
 
         return true;
       }
-    } else { 
+    } else {
       ecMainState = state;
 
       logger.trace(CommonDefinitions.END + ", return=true");
@@ -371,7 +374,7 @@ public class OperationControlManager {
 
         return true;
       }
-    } else { 
+    } else {
       ecMainObstruction = obstruction;
 
       logger.trace(CommonDefinitions.END + ", return=true");
@@ -393,10 +396,10 @@ public class OperationControlManager {
     logger.debug("operationType=" + operationType);
 
     try {
-      if (operationType == OperationType.IFStateIntegrity) { 
+      if (operationType == OperationType.IFStateIntegrity) {
         logger.debug("IF state integrity check.");
         return !(OperationControlManager.getInstance().isIfIntegrityExecution());
-      } else if (OperationControlManager.getInstance().getEcMainState(false) == ECMainState.Stop) { 
+      } else if (OperationControlManager.getInstance().getEcMainState(false) == ECMainState.Stop) {
 
         logger.debug("EC main state is stop.");
 
@@ -405,7 +408,7 @@ public class OperationControlManager {
         switch (operationType) {
           case ECMainStopper:
           case ECMainStateConfirm:
-          case ObstructionStateController: 
+          case ObstructionStateController:
             logger.debug("Priority operation");
             return true;
 
@@ -414,6 +417,8 @@ public class OperationControlManager {
           case AllL2VlanIfCreate:
           case AllL3VlanIfRemove:
           case AllL2VlanIfRemove:
+          case AllL2VlanIfChange:
+          case AllL3VlanIfChange:
           case SNMPTrapSignalRecieveNotification:
           case TrafficDataAcquisition:
           case DeviceInfoRegistration:
@@ -423,6 +428,7 @@ public class OperationControlManager {
           case SpineAddition:
           case LeafRemove:
           case SpineRemove:
+          case NodeRecover:
           case NodeAddedNotification:
           case PhysicalIfInfoAcquisition:
           case PhysicalIfInfoChange:
@@ -439,6 +445,7 @@ public class OperationControlManager {
           case BLeafRemove:
           case NodeInfoAcquisition:
           case NodeInfoRegistration:
+          case AcceptNodeRecover:
           case LeafChange:
           case BreakoutIfCreate:
           case BreakoutIfDelete:
@@ -454,15 +461,14 @@ public class OperationControlManager {
           case TrafficDataAllAcquisition:
 
             logger.debug("Normal operation");
-            if ((OperationControlManager.getInstance().getEcMainState(false)
-                == ECMainState.InService)
+            if ((OperationControlManager.getInstance().getEcMainState(false) == ECMainState.InService)
                 && !(OperationControlManager.getInstance().getEcMainObstraction(false))) {
               return true;
             } else {
               logger.debug("Normal operation rejected.");
               return false;
             }
-          default: 
+          default:
             logger.debug("Not defined operation");
             return false;
         }
@@ -564,11 +570,11 @@ public class OperationControlManager {
               }
               terminateOperation(oid);
               logger.debug("timeout.");
-              return null; 
+              return null;
             }
 
             synchronized (queueMap) {
-              if (queue.getFirst() == entry) { 
+              if (queue.getFirst() == entry) {
                 break;
               }
             }
@@ -621,6 +627,8 @@ public class OperationControlManager {
       case LeafRemove:
       case SpineRemove:
       case NodeAddedNotification:
+      case AcceptNodeRecover:
+      case NodeRecover:
       case PhysicalIfInfoChange:
       case LagCreate:
       case LagRemove:
@@ -741,7 +749,7 @@ public class OperationControlManager {
       logger.trace(CommonDefinitions.END);
 
       return instance;
-    } else { 
+    } else {
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_402056));
       return null;
     }
@@ -978,5 +986,24 @@ public class OperationControlManager {
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_402086, nodeId));
     }
     logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Additional service recovery executing flag Acquisition.
+   *
+   * @return recoverExecutionFlag
+   */
+  public boolean getRecoverExecution() {
+    return recoverExecutionFlag;
+  }
+
+  /**
+   * Setting Additional service recovery executing flag.
+   *
+   * @param recoverExecutionFlag
+   *          set recoverExecutionFlag
+   */
+  public void setRecoverExecution(boolean recoverExecutionFlag) {
+    this.recoverExecutionFlag = recoverExecutionFlag;
   }
 }

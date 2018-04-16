@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -23,8 +23,9 @@ import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationFactory;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
-import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.AddNode;
+import msf.ecmm.ope.receiver.pojo.CommonResponse;
+import msf.ecmm.ope.receiver.pojo.RecoverNodeService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,6 +37,15 @@ public class NodeAdditionThread {
 
   protected static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
+  /** EM request "recover node" disconnection or connection timeout has occurred. */
+  private static final String ERROR_CODE_080403 = "080403";
+  /** EM request "recover node" error response has been received. */
+  private static final String ERROR_CODE_080404 = "080404";
+  /** EM request "recover service" disconnection or connection timeout has occurred. */
+  private static final String ERROR_CODE_080405 = "080405";
+  /** EM request "recover service" error response has been received. */
+  private static final String ERROR_CODE_080406 = "080406";
+
   /** Device Star-up Succeeded. */
   private static final String BOOT_RET_SUCCESS = RECV_OK_NOTIFICATION_STRING;
   /** Device Start-up Failed. */
@@ -45,6 +55,12 @@ public class NodeAdditionThread {
 
   /** Device Extention Information Received from FC. */
   private AddNode addNodeInfo;
+
+  /** Additional service recovery Information Received from FC. */
+  private RecoverNodeService recoverNodeInfo;
+
+  /** Additional service recovery URI Parameters Information Received from FC. */
+  private HashMap<String, String> recoverNodeUriKeyMap;
 
   /**
    * Getting device extention information received from FC.
@@ -66,6 +82,44 @@ public class NodeAdditionThread {
   }
 
   /**
+   * Getting Additional service recovery information received from FC.
+   *
+   * @return Additional service recovery information received from FC
+   */
+  public RecoverNodeService getRecoverNodeInfo() {
+    return recoverNodeInfo;
+  }
+
+  /**
+   * Setting Additional service recovery information received from FC.
+   *
+   * @param recoverNodeInfo
+   *          Additional service recovery information received from FC
+   */
+  public void setRecoverNodeInfo(RecoverNodeService recoverNodeInfo) {
+    this.recoverNodeInfo = recoverNodeInfo;
+  }
+
+  /**
+   * Getting Additional service recovery URI Parameters information received from FC.
+   *
+   * @return Additional service recovery URI Parameters information received from FC
+   */
+  public HashMap<String, String> getRecoverNodeUriKeyMap() {
+    return recoverNodeUriKeyMap;
+  }
+
+  /**
+   * Setting Additional service recovery URI Parameters information received from FC.
+   *
+   * @param recoverNodeUriKeyMap
+   *          Additional service recovery URI Parameters information received from FC
+   */
+  public void setRecoverNodeUriKeyMap(HashMap<String, String> recoverNodeUriKeyMap) {
+    this.recoverNodeUriKeyMap = recoverNodeUriKeyMap;
+  }
+
+  /**
    * Device Start-up Completion Notification.
    *
    * @param bootStatus
@@ -76,30 +130,71 @@ public class NodeAdditionThread {
 
     String msgToFc = "";
 
-    try {
-      boolean operationResult = false;
+    boolean recoverFlag = OperationControlManager.getInstance().getRecoverExecution();
 
-      updateNodeStatus(bootStatus, NodeAdditionState.InfraSettingComplete, NodeAdditionState.FailedInfraSetting);
+    try {
+
+      String nodeId = null;
+      if (recoverFlag) {
+        nodeId = recoverNodeUriKeyMap.get(KEY_NODE_ID);
+      } else {
+        nodeId = addNodeInfo.getCreateNode().getNodeId();
+      }
+      updateNodeStatus(nodeId, bootStatus, NodeAdditionState.InfraSettingComplete,
+          NodeAdditionState.FailedInfraSetting);
+
+      boolean operationResultFlag = false;
 
       if (bootStatus == true) {
 
-        operationResult = executeOperation();
+        AbstractResponseMessage operationResult = executeOperation();
 
-        updateNodeStatus(operationResult, NodeAdditionState.Complete, NodeAdditionState.Failed);
+        NodeAdditionState failState = null;
+        switch (operationResult.getResponseCode()) {
+          case RESP_OK_200:
+          case RESP_CREATED_201:
+          case RESP_ACCEPTED_202:
+          case RESP_NOCONTENTS_204:
+            operationResultFlag = true;
+            break;
+          default:
+            if (recoverFlag) {
+              switch (((CommonResponse) operationResult).getErrorCode()) {
+                case ERROR_CODE_080403:
+                case ERROR_CODE_080404:
+                  failState = NodeAdditionState.NodeRecoverFailed;
+                  break;
+                case ERROR_CODE_080405:
+                case ERROR_CODE_080406:
+                  failState = NodeAdditionState.ServiceRecoverFailed;
+                  break;
+                default:
+                  failState = NodeAdditionState.FailedOther;
+              }
+            } else {
+              failState = NodeAdditionState.Failed;
+            }
+        }
+        updateNodeStatus(nodeId, operationResultFlag, NodeAdditionState.Complete, failState);
+
       }
 
-      msgToFc = notifyAddNodeResult(bootStatus, operationResult);
+      msgToFc = notifyAddNodeResult(bootStatus, operationResultFlag, nodeId);
 
-      if (addNodeInfo.getCreateNode().getProvisioning() == false) {
-        deleteNodesStartupNotification(addNodeInfo.getCreateNode().getNodeId());
+      if (!recoverFlag && !addNodeInfo.getCreateNode().getProvisioning()) {
+        deleteNodesStartupNotification(nodeId);
       }
 
     } catch (AddNodeException ane) {
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "notifyNodeBoot was failed."), ane);
     }
 
-    if (!msgToFc.isEmpty() && !msgToFc.equals(BOOT_RET_SUCCESS)) {
+    if (!msgToFc.isEmpty() && !msgToFc.equals(BOOT_RET_SUCCESS) && !recoverFlag) {
       OperationControlManager.getInstance().rollbackAddedNodeInfo(addNodeInfo.getCreateNode().getNodeId());
+    }
+
+    if (recoverFlag) {
+      OperationControlManager.getInstance().setRecoverExecution(false);
     }
 
     logger.trace(CommonDefinitions.END);
@@ -108,6 +203,8 @@ public class NodeAdditionThread {
   /**
    * Device Status Update.
    *
+   * @param nodeId
+   *          node ID
    * @param condition
    *          condition
    * @param trueStatus
@@ -117,8 +214,8 @@ public class NodeAdditionThread {
    * @throws AddNodeException
    *           status update failed
    */
-  private void updateNodeStatus(boolean condition, NodeAdditionState trueStatus, NodeAdditionState falseStatus)
-      throws AddNodeException {
+  private void updateNodeStatus(String nodeId, boolean condition, NodeAdditionState trueStatus,
+      NodeAdditionState falseStatus) throws AddNodeException {
     logger.trace(CommonDefinitions.START);
     logger.debug("condition=" + condition + "," + trueStatus + "," + falseStatus);
 
@@ -129,8 +226,7 @@ public class NodeAdditionThread {
     } else {
       nodeStatus = falseStatus;
     }
-    boolean ret = OperationControlManager.getInstance().updateNodeAdditionState(nodeStatus,
-        addNodeInfo.getCreateNode().getNodeId());
+    boolean ret = OperationControlManager.getInstance().updateNodeAdditionState(nodeStatus, nodeId);
     if (ret == false) {
       logger.debug("updateNodeStatus error");
       throw new AddNodeException();
@@ -144,57 +240,38 @@ public class NodeAdditionThread {
    *
    * @return operation execution result
    */
-  private boolean executeOperation() {
+  private AbstractResponseMessage executeOperation() {
     logger.trace(CommonDefinitions.START);
 
 
-    OperationType operationType = OperationType.None;
-    HashMap<String, String> uriKeyMap = new HashMap<>(); 
-    AbstractRestMessage requestPojo = addNodeInfo;
+    AbstractResponseMessage executeResponse = null;
+    Operation operation = null;
+    if (!OperationControlManager.getInstance().getRecoverExecution()) {
+      OperationType operationType = OperationType.None;
+      if (addNodeInfo.getCreateNode().getNodeType().equals(CommonDefinitions.NODETYPE_SPINE)) {
+        operationType = OperationType.SpineAddition;
+      } else if (addNodeInfo.getCreateNode().getNodeType().equals(CommonDefinitions.NODETYPE_LEAF)) {
+        operationType = OperationType.LeafAddition;
+      } else {
+        operationType = OperationType.BLeafAddition;
+      }
 
-    if (addNodeInfo.getCreateNode().getNodeType().equals(CommonDefinitions.NODETYPE_SPINE)) {
-      operationType = OperationType.SpineAddition;
-    } else if (addNodeInfo.getCreateNode().getNodeType().equals(CommonDefinitions.NODETYPE_LEAF)) {
-      operationType = OperationType.LeafAddition;
-    } else { 
-      operationType = OperationType.BLeafAddition;
+      operation = OperationFactory.create(operationType, new HashMap<>(), addNodeInfo);
+      executeResponse = operation.execute();
+    } else {
+      operation = OperationFactory.create(OperationType.NodeRecover, recoverNodeUriKeyMap, recoverNodeInfo);
+      executeResponse = operation.execute();
     }
-    Operation operation = OperationFactory.create(operationType, uriKeyMap, requestPojo);
-
-    AbstractResponseMessage executeResponse = operation.execute();
 
     logger.trace(CommonDefinitions.END);
-    return checkResponse(executeResponse);
-  }
-
-  /**
-   * Operation Execution Result Determination.
-   *
-   * @param response
-   *          response (operation execution result)
-   * @return true: success, false: fail
-   */
-  private boolean checkResponse(AbstractResponseMessage response) {
-    logger.trace(CommonDefinitions.START);
-
-    boolean result = false;
-    switch (response.getResponseCode()) {
-      case RESP_OK_200:
-      case RESP_CREATED_201:
-      case RESP_ACCEPTED_202:
-      case RESP_NOCONTENTS_204:
-        result = true;
-        break;
-      default:
-        result = false;
-    }
-    logger.trace(CommonDefinitions.END);
-    return result;
+    return executeResponse;
   }
 
   /**
    * Device Start-up Notifiction Information Deletion.
    *
+   * @param bootNodeId
+   *          booted node ID
    * @throws AddNodeException
    *           DB exception occurrence
    */
@@ -208,8 +285,8 @@ public class NodeAdditionThread {
       session.deleteNodesStartupNotification(bootNodeId);
       session.commit();
     } catch (DBAccessException dbae) {
-        logger.debug("deleteNodesStartupNotification error");
-        throw new AddNodeException(dbae);
+      logger.debug("deleteNodesStartupNotification error");
+      throw new AddNodeException(dbae);
     }
     logger.trace(CommonDefinitions.END);
   }
@@ -221,11 +298,13 @@ public class NodeAdditionThread {
    *          device start-up result - true: success, false: fail
    * @param executeResult
    *          process result FC notification status
+   * @param nodeId
+   *          node ID
    * @return FC notification
    * @throws AddNodeException
    *           REST request failure
    */
-  private String notifyAddNodeResult(boolean bootStatus, boolean executeResult) throws AddNodeException {
+  private String notifyAddNodeResult(boolean bootStatus, boolean executeResult, String nodeId) throws AddNodeException {
 
     logger.trace(CommonDefinitions.START);
     logger.debug("bootStatus = " + bootStatus);
@@ -237,7 +316,7 @@ public class NodeAdditionThread {
       status = BOOT_RET_FAILED;
     } else {
       if (executeResult == true) {
-        status = BOOT_RET_SUCCESS; 
+        status = BOOT_RET_SUCCESS;
       } else {
         status = BOOT_RET_CANCEL;
       }
@@ -246,7 +325,7 @@ public class NodeAdditionThread {
     sendMessage.setNodeInfo(addNodeInfo);
 
     HashMap<String, String> keyMap = new HashMap<String, String>();
-    keyMap.put(KEY_NODE_ID, String.valueOf(addNodeInfo.getCreateNode().getNodeId()));
+    keyMap.put(KEY_NODE_ID, nodeId);
 
     try {
       new RestClient().request(RestClient.NOTIFY_NODE_ADDITION, keyMap, sendMessage, CommonResponseFromFc.class);

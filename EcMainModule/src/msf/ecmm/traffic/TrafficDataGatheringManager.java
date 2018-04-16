@@ -1,5 +1,5 @@
-﻿/*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+/*
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.traffic;
@@ -39,7 +39,7 @@ import msf.ecmm.traffic.pojo.NodeKeySet;
 import msf.ecmm.traffic.pojo.TrafficData;
 
 /**
- * Traffic Information Collection Management Class Definition. Manages traffic information collection. Also, retains traffic information.
+ * Traffic Information Collection Management Class Definition .Managing the Traffic Information Collection。and retaining Traffic Information.
  */
 public class TrafficDataGatheringManager {
 
@@ -48,13 +48,13 @@ public class TrafficDataGatheringManager {
    */
   private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-  /** Running Thread List */
+  /** Running Thread  List */
   private ConcurrentHashMap<NodeKeySet, DataGatheringExecutor> executeThreadHolder;
 
   /** Traffic Information */
   private HashMap<NodeKeySet, ArrayList<TrafficData>> trafficData;
 
-  /** Traffic Information (Before Conversion) */
+  /** Traffic Information(Before conversion) */
   private ConcurrentHashMap<NodeKeySet, ArrayList<SnmpIfTraffic>> TrafficRawData;
 
   /** Traffic Information Collection Monitoring Thread Instance */
@@ -63,17 +63,17 @@ public class TrafficDataGatheringManager {
   /** Traffic Information Last Update Date and Time */
   private Timestamp lastGathering;
 
-  /** Traffic Information Collection Periodic Execution Termination Flag */
+  /** Traffic Information Collection Periodic Execution Stop Flag */
   private boolean stopFlug;
 
-  /** Traffic Information Collection Management Instance */
+  /** Traffic Information Collection Management Instance*/
   private static TrafficDataGatheringManager instance = null;
 
   /** Job Scheduler */
   private Scheduler scheduler = null;
 
   /**
-   * Constructor (Initialization Process)
+   * Constructor(initialization)
    */
   private TrafficDataGatheringManager() {
     this.executeThreadHolder = new ConcurrentHashMap<NodeKeySet, DataGatheringExecutor>();
@@ -86,7 +86,7 @@ public class TrafficDataGatheringManager {
 
   /**
    * Traffic Information Collection Start<br>
-   * Starting traffic information periodic collection.
+   * Traffic information collection  periodic execution is starting.
    */
   protected void startGathering() {
 
@@ -164,11 +164,11 @@ public class TrafficDataGatheringManager {
   }
 
   /**
-   * Device Information Collection Periodic Execution Start<br>
-   * Controlling traffic information periodic collection.
+   * Node Information Collection Periodic Execution Start<br>
+   * Trafic information collection periodic execution.
    *
    * @throws SchedulerException
-   *           scheduler start-up failed
+   *           Scheduler start failed
    */
   public void controlGatheringCycle() throws SchedulerException {
 
@@ -201,17 +201,17 @@ public class TrafficDataGatheringManager {
   }
 
   /**
-   * Getting traffic information collection monitoring thread instance.
+   *  Traffic Information Collection Monitoring Thread Instance acquisition
    *
-   * @return traffic information collection monitoring thread instance
+   * @return  traffic information collection monitoring thread instance
    */
   protected GatheringExecuterWatchDog getWatchDogThreadHolder() {
     return watchDogThreadHolder;
   }
 
   /**
-   * Traffic Informatoin Acquisition<br>
-   * Getting traffic information.
+   *  Traffic Information Acquisition<br>
+   *  Getting traffic information.
    *
    * @return traffic information
    */
@@ -220,8 +220,8 @@ public class TrafficDataGatheringManager {
   }
 
   /**
-   * Traffic Information Last Update Date and Time Acquisition<br>
-   * Gettin traffic information last update date and time.
+   *  Traffic Information Last Update Date and Time acquisition<br>
+   *  Getting traffic information last update date and time
    *
    * @return traffic information last update date and time
    */
@@ -230,34 +230,34 @@ public class TrafficDataGatheringManager {
   }
 
   /**
-   * Getting running thread list.
+   * Getting Running Thread  List.
    *
-   * @return running thread list
+   * @return running thread  list
    */
   protected ConcurrentHashMap<NodeKeySet, DataGatheringExecutor> getExecuteThreadHolder() {
     return executeThreadHolder;
   }
 
   /**
-   * Getting traffic information (before conversion).
+   * Getting Traffic Information(Before conversion).
    *
-   * @return traffic information (before conversion)
+   * @return Traffic Information(Before conversion)
    */
   protected ConcurrentHashMap<NodeKeySet, ArrayList<SnmpIfTraffic>> getTrafficRawData() {
     return TrafficRawData;
   }
 
   /**
-   * Getting traffic information collection management instance.
+   *  Getting Traffic Information Collection Monitoring Thread Instance
    *
-   * @return traffic information collection management instance
+   * @return Traffic Information Collection Monitoring Thread Instance
    */
   public static TrafficDataGatheringManager getInstance() {
     return instance;
   }
 
   /**
-   * Setting traffic information.
+   * Setting Traffic Information
    *
    * @param trafficData
    *          traffic information
@@ -267,28 +267,28 @@ public class TrafficDataGatheringManager {
   }
 
   /**
-   * Setting traffic information (before conversion).
+   * Setting Traffic Information(Before conversion)
    *
    * @param trafficRawData
-   *          traffic information (before conversion)
+   *          traffic information(before conversion)
    */
   protected void setTrafficRawData(ConcurrentHashMap<NodeKeySet, ArrayList<SnmpIfTraffic>> trafficRawData) {
     TrafficRawData = trafficRawData;
   }
 
   /**
-   * Setting traffic information last update date and time.
+   *  Setting Traffic Information Last Update Date and Time 
    *
    * @param lastGathering
-   *          traffic information last update date and time acquisition
+   *          traffic information last update date and time 
    */
   protected void setLastGathering(Timestamp lastGathering) {
     this.lastGathering = lastGathering;
   }
 
   /**
-   * Device Information Collection Periodic Execution Termination<br>
-   * Terminating device information collection periodic execution.
+   * Node Information Collection Periodic Execution Stop<br>
+   * Stopping Node Information Collection Periodic Execution.
    */
   public void stopGetheringCycle() {
 
@@ -322,10 +322,10 @@ public class TrafficDataGatheringManager {
   }
 
   /**
-   * Traffic Information Collection Function Start-up<br>
-   * Starting up traffic information collection function.
+   * Traffic Information Collection Function Start <br>
+   *  Starting traffic information collection function 
    *
-   * @return start-up success/fail
+   * @return Success/fail of start 
    */
   public static synchronized boolean boot() {
     logger.trace(CommonDefinitions.START);

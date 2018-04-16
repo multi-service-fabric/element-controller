@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo.parts;
@@ -32,6 +32,10 @@ public class InternalInterface {
   /** Opposing Device Name. */
   @XmlElement(name = "opposite-node-name")
   String oppositeNodeName = null;
+
+  /** LagIfId. */
+  @XmlElement(name = "lag-id")
+  String ifId = null;
 
   /** The Number of LAG Members. */
   @XmlElement(name = "minimum-links")
@@ -94,6 +98,25 @@ public class InternalInterface {
    */
   public void setName(String name) {
     this.name = name;
+  }
+
+  /**
+   * Getting Lag IF ID.
+   *
+   * @return LagIfId
+   */
+  public String getIfId() {
+    return ifId;
+  }
+
+  /**
+   * Settin Lag IF ID.
+   *
+   * @param ifId
+   *          LagIfId
+   */
+  public void setIfId(String ifId) {
+    this.ifId = ifId;
   }
 
   /**
@@ -232,7 +255,7 @@ public class InternalInterface {
   @Override
   public String toString() {
     return "InternalInterface [operation=" + operation + ", name=" + name + ", type=" + type + ", oppositeNodeName="
-        + oppositeNodeName + ", minimumLinks=" + minimumLinks + ", linkSpeed=" + linkSpeed + ", address=" + address
-        + ", prefix=" + prefix + ", internalInterfaceMember=" + internalInterfaceMember + "]";
+        + oppositeNodeName + ", ifId=" + ifId + ", minimumLinks=" + minimumLinks + ", linkSpeed=" + linkSpeed
+        + ", address=" + address + ", prefix=" + prefix + ", internalInterfaceMember=" + internalInterfaceMember + "]";
   }
 }

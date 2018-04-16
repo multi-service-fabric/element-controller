@@ -15,8 +15,8 @@
             <property name="bgp_neighbor_as" type="int"/>
             <property name="bgp_neighbor_ipv4_address" type="string"/>
             <property name="bgp_neighbor_ipv6_address" type="string"/>
-            <property name="node_id" type="text"/>
-            <property name="vlan_if_id" type="text"/>
+            <property name="node_id" type="text" not-null="true" />
+            <property name="vlan_if_id" type="text" not-null="true" />
         </class>
         <query name="selectBGPOptions">
             <![CDATA[
@@ -26,11 +26,6 @@
         <query name="selectBGPOptionsByVlanIfId">
             <![CDATA[
                 from msf.ecmm.db.pojo.BGPOptions as bgp_option where node_id = :key1 and vlan_if_id = :key2
-             ]]>
-        </query>
-        <query name="deleteBGPOptions">
-            <![CDATA[
-                delete from msf.ecmm.db.pojo.BGPOptions as bgp_option where bgp_id = :key1
              ]]>
         </query>
         <query name="deleteBGPOptionsByVlanIfId">

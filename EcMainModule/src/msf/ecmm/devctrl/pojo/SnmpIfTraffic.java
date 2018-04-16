@@ -1,24 +1,26 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl.pojo;
 
 /**
- * SNMP Traffic Informtion
+ * SNMP Traffic Informtion.
  */
 public class SnmpIfTraffic {
 
-  /** IF Name */
+  /** IF Name. */
   private String ifName;
 
-  /** Inbound Traffic */
+  /** Inbound Traffic. */
   private long inOctets;
 
-  /** Outbound Traffic */
+  /** Outbound Traffic. */
   private long outOctets;
 
   /**
+   * Constructor.
+   *
    * @param ifName
    *          IF name
    * @param inOctets
@@ -34,7 +36,7 @@ public class SnmpIfTraffic {
   }
 
   /**
-   * Getting IF name
+   * Getting IF name.
    *
    * @return IF name
    */
@@ -43,7 +45,7 @@ public class SnmpIfTraffic {
   }
 
   /**
-   * Setting IF name
+   * Setting IF name.
    *
    * @param ifName
    *          IF name
@@ -53,7 +55,7 @@ public class SnmpIfTraffic {
   }
 
   /**
-   * Getting inbound traffic
+   * Getting inbound traffic.
    *
    * @return inbound traffic
    */
@@ -62,7 +64,7 @@ public class SnmpIfTraffic {
   }
 
   /**
-   * Setting inbound traffic
+   * Setting inbound traffic.
    *
    * @param inOctets
    *          inbound traffic
@@ -72,7 +74,7 @@ public class SnmpIfTraffic {
   }
 
   /**
-   * Getting outbound traffic
+   * Getting outbound traffic.
    *
    * @return outbound traffic
    */
@@ -81,7 +83,7 @@ public class SnmpIfTraffic {
   }
 
   /**
-   * Setting outbound traffic
+   * Setting outbound traffic.
    *
    * @param outOctets
    *          outbound traffic

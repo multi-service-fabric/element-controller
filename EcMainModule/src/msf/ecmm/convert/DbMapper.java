@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.convert;
@@ -10,16 +10,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.db.pojo.BGPOptions;
 import msf.ecmm.db.pojo.BootErrorMessages;
 import msf.ecmm.db.pojo.BreakoutIfs;
+import msf.ecmm.db.pojo.EgressQueueMenus;
 import msf.ecmm.db.pojo.EquipmentIfs;
 import msf.ecmm.db.pojo.Equipments;
 import msf.ecmm.db.pojo.IfNameRules;
@@ -28,6 +27,7 @@ import msf.ecmm.db.pojo.LagMembers;
 import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.NodesStartupNotification;
 import msf.ecmm.db.pojo.PhysicalIfs;
+import msf.ecmm.db.pojo.RemarkMenus;
 import msf.ecmm.db.pojo.StaticRouteOptions;
 import msf.ecmm.db.pojo.VRRPOptions;
 import msf.ecmm.db.pojo.VlanIfs;
@@ -36,6 +36,7 @@ import msf.ecmm.ope.receiver.pojo.AddNode;
 import msf.ecmm.ope.receiver.pojo.CreateBreakoutIf;
 import msf.ecmm.ope.receiver.pojo.CreateLagInterface;
 import msf.ecmm.ope.receiver.pojo.DeleteNode;
+import msf.ecmm.ope.receiver.pojo.RecoverNodeService;
 import msf.ecmm.ope.receiver.pojo.RegisterEquipmentType;
 import msf.ecmm.ope.receiver.pojo.UpdatePhysicalInterface;
 import msf.ecmm.ope.receiver.pojo.parts.BreakoutBaseIf;
@@ -49,9 +50,14 @@ import msf.ecmm.ope.receiver.pojo.parts.NodeInterface;
 import msf.ecmm.ope.receiver.pojo.parts.OppositeNodesDeleteNode;
 import msf.ecmm.ope.receiver.pojo.parts.OppositeNodesInterface;
 import msf.ecmm.ope.receiver.pojo.parts.PhysicalIfsCreateLagIf;
+import msf.ecmm.ope.receiver.pojo.parts.QosRegisterEquipment;
+import msf.ecmm.ope.receiver.pojo.parts.QosUpdateVlanIf;
 import msf.ecmm.ope.receiver.pojo.parts.StaticRoute;
 import msf.ecmm.ope.receiver.pojo.parts.UpdateStaticRoute;
 import msf.ecmm.ope.receiver.pojo.parts.VlanIfsCreateL3VlanIf;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * DB Data Mapping.
@@ -70,19 +76,22 @@ public class DbMapper {
    *          LagIf generation information
    * @param nodes
    *          device information
+   * @param lagIfId
+   *          LagIf id
    * @return information for generating LagIF (for DB storage)
    */
-  public static LagIfs toLagIfCreate(CreateLagInterface input, Nodes nodes) {
+  public static LagIfs toLagIfCreate(CreateLagInterface input, Nodes nodes, String lagIfId) {
 
     logger.trace(CommonDefinitions.START);
     logger.debug(input + ", " + nodes);
 
     LagIfs ret = new LagIfs();
 
-    String lagIfName = toLagIfName(nodes.getEquipments().getLag_prefix(), input.getLagIf().getLagIfId());
+    String lagIfName = toLagIfName(nodes.getEquipments().getLag_prefix(), lagIfId);
 
     ret.setNode_id(nodes.getNode_id());
-    ret.setLag_if_id(input.getLagIf().getLagIfId());
+    ret.setLag_if_id(lagIfId);
+    ret.setFc_lag_if_id(input.getLagIf().getLagIfId());
     ret.setIf_name(lagIfName);
     ret.setMinimum_link_num(input.getLagIf().getPhysicalIfs().size());
     ret.setIf_status(CommonDefinitions.IF_STATE_UNKNOWN);
@@ -92,7 +101,7 @@ public class DbMapper {
     for (PhysicalIfsCreateLagIf phys : input.getLagIf().getPhysicalIfs()) {
       LagMembers members = new LagMembers();
       members.setNode_id(nodes.getNode_id());
-      members.setLag_if_id(input.getLagIf().getLagIfId());
+      members.setLag_if_id(lagIfId);
       if (phys.getIfType().equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
         members.setPhysical_if_id(phys.getIfId());
         for (PhysicalIfs ifs : nodes.getPhysicalIfsList()) {
@@ -197,6 +206,44 @@ public class DbMapper {
       ret.setL2vpn_capability(false);
       ret.setL3vpn_capability(false);
     }
+    QosRegisterEquipment qos = registerEquipmentTypeRest.getEquipment().getQos();
+    if (qos != null) {
+      if (qos.getShaping().getEnable() == null) {
+        ret.setQos_shaping_flg(false);
+      } else {
+        ret.setQos_shaping_flg(qos.getShaping().getEnable());
+      }
+      if (ret.getQos_shaping_flg() && qos.getEgress() != null) {
+        ret.setDefault_egress_queue_menu(qos.getEgress().getDefaultValue());
+        ret.setEgressQueueMenusList(new HashSet<EgressQueueMenus>());
+        for (String menu : qos.getEgress().getMenu()) {
+          EgressQueueMenus egressQueueMenus = new EgressQueueMenus();
+          egressQueueMenus.setEquipment_type_id(registerEquipmentTypeRest.getEquipment().getEquipmentTypeId());
+          egressQueueMenus.setEgress_queue_menu(menu);
+          ret.getEgressQueueMenusList().add(egressQueueMenus);
+        }
+      }
+      if (qos.getRemark().getEnable() == null) {
+        ret.setQos_remark_flg(false);
+      } else {
+        ret.setQos_remark_flg(qos.getRemark().getEnable());
+      }
+      if (ret.getQos_remark_flg()) {
+        ret.setDefault_remark_menu(qos.getRemark().getDefaultValue());
+        if (qos.getRemark().getMenu() != null) {
+          ret.setRemarkMenusList(new HashSet<RemarkMenus>());
+          for (String menu : qos.getRemark().getMenu()) {
+            RemarkMenus remarkMenus = new RemarkMenus();
+            remarkMenus.setEquipment_type_id(registerEquipmentTypeRest.getEquipment().getEquipmentTypeId());
+            remarkMenus.setRemark_menu(menu);
+            ret.getRemarkMenusList().add(remarkMenus);
+          }
+        }
+      }
+    } else {
+      ret.setQos_shaping_flg(false);
+      ret.setQos_remark_flg(false);
+    }
 
     Set<EquipmentIfs> equipmentIfsList = new HashSet<EquipmentIfs>();
     for (EquipmentIf eif : registerEquipmentTypeRest.getEquipment().getEquipmentIfs()) {
@@ -255,10 +302,11 @@ public class DbMapper {
     ret.setNode_id(addNodeRest.getCreateNode().getNodeId());
     ret.setEquipment_type_id(addNodeRest.getEquipment().getEquipmentTypeId());
     ret.setNode_name(addNodeRest.getCreateNode().getHostname());
-    ret.setHost_name(addNodeRest.getCreateNode().getHostname()); 
+    ret.setHost_name(addNodeRest.getCreateNode().getHostname());
     ret.setManagement_if_address(addNodeRest.getCreateNode().getManagementInterface().getAddress());
+    ret.setMng_if_addr_prefix(addNodeRest.getCreateNode().getManagementInterface().getPrefix());
     ret.setSnmp_community(addNodeRest.getCreateNode().getSnmpCommunity());
-    ret.setNode_state(NodeAdditionState.UnInitilized.getValue()); 
+    ret.setNode_state(NodeAdditionState.UnInitilized.getValue());
     ret.setProvisioning(addNodeRest.getCreateNode().getProvisioning());
     if (addNodeRest.getCreateNode().getPlane() == null) {
       ret.setPlane(null);
@@ -267,6 +315,11 @@ public class DbMapper {
     }
     if (addNodeRest.getCreateNode().getVpn() != null) {
       ret.setVpn_type(addNodeRest.getCreateNode().getVpn().getVpnType());
+      if (addNodeRest.getCreateNode().getVpn().getL2vpn() != null) {
+        ret.setAs_number(addNodeRest.getCreateNode().getVpn().getL2vpn().getAs().getAsNumber());
+      } else if (addNodeRest.getCreateNode().getVpn().getL3vpn() != null) {
+        ret.setAs_number(addNodeRest.getCreateNode().getVpn().getL3vpn().getAs().getAsNumber());
+      }
     }
     ret.setLoopback_if_address(addNodeRest.getCreateNode().getLoopbackInterface().getAddress());
     ret.setUsername(addNodeRest.getCreateNode().getUsername());
@@ -437,14 +490,18 @@ public class DbMapper {
 
     Nodes ret = nodes;
 
+    List<Set<BreakoutIfs>> breakoutIfsSetList = createBreakoutIfSetList(
+        inData.getCreateNode().getIfInfo().getBreakoutBaseIfs(), ret);
+
+    relateBreakoutIftoPhysicalIf(breakoutIfsSetList, ret.getPhysicalIfsList());
+
     for (InternalLinkInfo internalLinkIfs : nodeInterface.getInternalLinkIfs()) {
 
       InternalLinkIf internalLinkIf = internalLinkIfs.getInternalLinkIf();
 
-      ret = setRelatedNodesCommon(inData.getCreateNode().getNodeId(),
-          inData.getCreateNode().getIfInfo().getBreakoutBaseIfs(), internalLinkIf, equipments, ret);
+      ret = setRelatedNodesCommon(inData.getCreateNode().getNodeId(), internalLinkIf, equipments, ret);
 
-    } 
+    }
 
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
@@ -452,12 +509,10 @@ public class DbMapper {
   }
 
   /**
-   * Device Related Information Configuration (Physical IF[IF Name Configuration]/LagIF/breakoutIF).
+   * Device Related Information Configuration (Physical IF[IF Name Configuration]/LagIF).
    *
    * @param nodeId
    *          device ID
-   * @param breakoutBaseIfList
-   *          REST specified  breakoutIF information
    * @param internalLinkIf
    *          REST specified internal link IF information
    * @param equipments
@@ -468,18 +523,14 @@ public class DbMapper {
    * @throws IllegalArgumentException
    *           physical IF name generation failure, etc.
    */
-  private static Nodes setRelatedNodesCommon(String nodeId, List<BreakoutBaseIf> breakoutBaseIfList,
+  private static Nodes setRelatedNodesCommon(String nodeId,
       InternalLinkIf internalLinkIf, Equipments equipments, Nodes nodes) throws IllegalArgumentException {
     logger.trace(CommonDefinitions.START);
-    logger.debug(nodeId + " , " + breakoutBaseIfList + " , " + internalLinkIf + " , " + equipments + " , " + nodes);
+    logger.debug(nodeId + " , " + internalLinkIf + " , " + equipments + " , " + nodes);
 
     Nodes ret = nodes;
 
     String targetNodeId = nodes.getNode_id();
-
-    List<Set<BreakoutIfs>> breakoutIfsSetList = createBreakoutIfSetList(breakoutBaseIfList, nodes);
-
-    relateBreakoutIftoPhysicalIf(breakoutIfsSetList, nodes.getPhysicalIfsList());
 
     if (internalLinkIf.getIfType().equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
 
@@ -498,8 +549,13 @@ public class DbMapper {
 
       LagIfs lagIfs = new LagIfs();
       lagIfs.setNode_id(targetNodeId);
-      lagIfs.setLag_if_id(internalLinkIf.getIfId());
-      lagIfs.setIf_name(toLagIfName(equipments.getLag_prefix(), internalLinkIf.getIfId()));
+      if (equipments.getRouter_type() == 0) {
+        lagIfs.setLag_if_id(getLagIfId(nodes));
+      } else {
+        lagIfs.setLag_if_id(internalLinkIf.getIfId());
+      }
+      lagIfs.setFc_lag_if_id(internalLinkIf.getIfId());
+      lagIfs.setIf_name(toLagIfName(equipments.getLag_prefix(), lagIfs.getLag_if_id()));
       lagIfs.setMinimum_link_num(internalLinkIf.getLagMember().size());
       if (internalLinkIf.getLinkSpeed() != null) {
         lagIfs.setIf_speed(internalLinkIf.getLinkSpeed());
@@ -527,17 +583,17 @@ public class DbMapper {
       for (InterfaceInfo memberIf : internalLinkIf.getLagMember()) {
         LagMembers lagMemberDb = new LagMembers();
         lagMemberDb.setNode_id(targetNodeId);
-        lagMemberDb.setLag_if_id(internalLinkIf.getIfId());
+        lagMemberDb.setLag_if_id(lagIfs.getLag_if_id());
         if (memberIf.getIfType().equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
           lagMemberDb.setPhysical_if_id(memberIf.getIfId());
           for (PhysicalIfs physi : ret.getPhysicalIfsList()) {
             if (physi.getPhysical_if_id().equals(memberIf.getIfId())) {
               physi.setIf_name(createPhysicalIfName(memberIf.getIfId(), internalLinkIf.getLinkSpeed(), equipments));
               physi.setIf_speed(internalLinkIf.getLinkSpeed());
-              break; 
+              break;
             }
           }
-        } else { 
+        } else {
           lagMemberDb.setBreakout_if_id(memberIf.getIfId());
         }
         lagMembersList.add(lagMemberDb);
@@ -593,8 +649,8 @@ public class DbMapper {
         breakoutIfs.setPhysical_if_id(basePhysicalIfId);
         breakoutIfs.setBreakout_if_id(breakoutIfId);
         breakoutIfs.setSpeed(speed);
-        breakoutIfs.setIf_name(
-            LogicalPhysicalConverter.toBreakoutIfName(nodes, basePhysicalIfId, breakoutIfId, speed, breakoutIfIdx));
+        breakoutIfs.setBreakout_if_index(breakoutIfIdx);
+        breakoutIfs.setIf_name(toBreakoutIfName(nodes, basePhysicalIfId, breakoutIfId, speed, breakoutIfIdx));
         breakoutIfs.setIf_status(CommonDefinitions.IF_STATE_UNKNOWN);
         breakoutIfsSet.add(breakoutIfs);
         breakoutIfIdx++;
@@ -689,7 +745,7 @@ public class DbMapper {
       }
     }
     if (prefix != null && slot != null) {
-      physicalIfName = toPhysicalIfName(prefix, slot); 
+      physicalIfName = toPhysicalIfName(prefix, slot);
     } else {
       logger.warn("Create physical IF name error");
       throw new IllegalArgumentException();
@@ -734,8 +790,12 @@ public class DbMapper {
         throw new IllegalArgumentException();
       }
 
-      Nodes ret = setRelatedNodesCommon(oppoNode.getNode_id(), oppoIf.getBreakoutBaseIfs(), internalLinkIf,
-          oppoNode.getEquipments(), oppoNode);
+      List<Set<BreakoutIfs>> breakoutIfsSetList = createBreakoutIfSetList(oppoIf.getBreakoutBaseIfs(), oppoNode);
+
+      relateBreakoutIftoPhysicalIf(breakoutIfsSetList, oppoNode.getPhysicalIfsList());
+
+      Nodes ret = setRelatedNodesCommon(oppoNode.getNode_id(), internalLinkIf, oppoNode.getEquipments(), oppoNode);
+
       retList.add(ret);
     }
 
@@ -809,24 +869,24 @@ public class DbMapper {
 
       LagIfs lagIfs = new LagIfs();
 
-      lagIfs.setNode_id(nodes.getNode_id());
-      lagIfs.setLag_if_id(interfaceInfoRest.getIfId());
-
       LagIfs lagIfsDb = null;
       for (LagIfs lagIfsDbTmp : oppoNodesDb.getLagIfsList()) {
-        if (interfaceInfoRest.getIfId().equals(lagIfsDbTmp.getLag_if_id())) {
+        if (interfaceInfoRest.getIfId().equals(lagIfsDbTmp.getFc_lag_if_id())) {
           lagIfsDb = lagIfsDbTmp;
           break;
         }
       }
+
       if (lagIfsDb == null) {
         logger.debug("Not found LAG IF ID " + interfaceInfoRest.getIfId());
         throw new IllegalArgumentException();
       }
+      lagIfs.setNode_id(nodes.getNode_id());
+      lagIfs.setLag_if_id(lagIfsDb.getLag_if_id());
       lagIfs.setLagMembersList(lagIfsDb.getLagMembersList());
 
       Set<LagIfs> lagIfsSet = new HashSet<>();
-      lagIfsSet.add(lagIfs); 
+      lagIfsSet.add(lagIfs);
 
       Set<PhysicalIfs> physicalIfsSet = new HashSet<>();
 
@@ -893,7 +953,7 @@ public class DbMapper {
       ret.setPhysicalIfsList(physicalIfsSet);
       ret.setLagIfsList(new HashSet<>());
 
-    } else { 
+    } else {
 
       PhysicalIfs physicalIfsDb = null;
       FOUND_BASE_PHYSICAL_IF: for (PhysicalIfs physicalIfsDbTmp : oppoNodesDb.getPhysicalIfsList()) {
@@ -943,23 +1003,38 @@ public class DbMapper {
     logger.trace(CommonDefinitions.START);
     logger.debug(input + ", " + nodesDb);
 
+    String baseIfType = input.getBaseIf().getIfType();
+    String baseIfId = input.getBaseIf().getIfId();
     VlanIfs vlanIfs = new VlanIfs();
     vlanIfs.setNode_id(input.getBaseIf().getNodeId());
     vlanIfs.setVlan_if_id(input.getVlanIfId());
-    if (input.getBaseIf().getIfType().equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
-      vlanIfs.setPhysical_if_id(input.getBaseIf().getIfId());
-    } else if (input.getBaseIf().getIfType().equals(CommonDefinitions.IF_TYPE_LAG_IF)) {
-      vlanIfs.setLag_if_id(input.getBaseIf().getIfId());
-    } else if (input.getBaseIf().getIfType().equals(CommonDefinitions.IF_TYPE_BREAKOUT_IF)) {
-      vlanIfs.setBreakout_if_id(input.getBaseIf().getIfId());
+    if (baseIfType.equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
+      vlanIfs.setPhysical_if_id(baseIfId);
+    } else if (baseIfType.equals(CommonDefinitions.IF_TYPE_LAG_IF)) {
+      if (nodesDb.getLagIfsList() != null) {
+        for (LagIfs elem : nodesDb.getLagIfsList()) {
+          if (elem.getFc_lag_if_id().equals(baseIfId)) {
+            vlanIfs.setLag_if_id(elem.getLag_if_id());
+            break;
+          }
+        }
+      }
+    } else if (baseIfType.equals(CommonDefinitions.IF_TYPE_BREAKOUT_IF)) {
+      vlanIfs.setBreakout_if_id(baseIfId);
     }
-    vlanIfs.setIf_name(getIfName(input.getBaseIf().getIfType(), input.getBaseIf().getIfId(), nodesDb));
+    vlanIfs.setIf_name(getIfName(baseIfType, baseIfId, nodesDb));
     vlanIfs.setVlan_id(input.getVlanId().toString());
     vlanIfs.setIf_status(CommonDefinitions.IF_STATE_UNKNOWN);
     if (input.getPortMode().equals(CommonDefinitions.VLAN_PORTMODE_ACCESS_STRING)) {
       vlanIfs.setPort_mode(CommonDefinitions.VLAN_PORTMODE_ACCESS);
     } else if (input.getPortMode().equals(CommonDefinitions.VLAN_PORTMODE_TRUNK_STRING)) {
       vlanIfs.setPort_mode(CommonDefinitions.VLAN_PORTMODE_TRUNK);
+    }
+    if (input.getQos() != null) {
+      vlanIfs.setInflow_shaping_rate(input.getQos().getInflowShapingRate());
+      vlanIfs.setOutflow_shaping_rate(input.getQos().getOutflowShapingRate());
+      vlanIfs.setRemark_menu(input.getQos().getRemarkMenu());
+      vlanIfs.setEgress_queue_menu(input.getQos().getEgressQueue());
     }
 
     logger.debug(vlanIfs);
@@ -986,17 +1061,26 @@ public class DbMapper {
     logger.trace(CommonDefinitions.START);
     logger.debug(input + ", " + nodesDb);
 
+    String baseIfType = input.getBaseIf().getIfType();
+    String baseIfId = input.getBaseIf().getIfId();
     VlanIfs vlanIfs = new VlanIfs();
     vlanIfs.setNode_id(input.getBaseIf().getNodeId());
     vlanIfs.setVlan_if_id(input.getVlanIfId());
-    if (input.getBaseIf().getIfType().equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
-      vlanIfs.setPhysical_if_id(input.getBaseIf().getIfId());
-    } else if (input.getBaseIf().getIfType().equals(CommonDefinitions.IF_TYPE_LAG_IF)) {
-      vlanIfs.setLag_if_id(input.getBaseIf().getIfId());
-    } else if (input.getBaseIf().getIfType().equals(CommonDefinitions.IF_TYPE_BREAKOUT_IF)) {
-      vlanIfs.setBreakout_if_id(input.getBaseIf().getIfId());
+    if (baseIfType.equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
+      vlanIfs.setPhysical_if_id(baseIfId);
+    } else if (baseIfType.equals(CommonDefinitions.IF_TYPE_LAG_IF)) {
+      if (nodesDb.getLagIfsList() != null) {
+        for (LagIfs elem : nodesDb.getLagIfsList()) {
+          if (elem.getFc_lag_if_id().equals(baseIfId)) {
+            vlanIfs.setLag_if_id(elem.getLag_if_id());
+            break;
+          }
+        }
+      }
+    } else if (baseIfType.equals(CommonDefinitions.IF_TYPE_BREAKOUT_IF)) {
+      vlanIfs.setBreakout_if_id(baseIfId);
     }
-    vlanIfs.setIf_name(getIfName(input.getBaseIf().getIfType(), input.getBaseIf().getIfId(), nodesDb));
+    vlanIfs.setIf_name(getIfName(baseIfType, baseIfId, nodesDb));
     vlanIfs.setVlan_id(input.getVlanId().toString());
     vlanIfs.setIf_status(CommonDefinitions.IF_STATE_UNKNOWN);
     vlanIfs.setIpv4_address(input.getIpv4Address());
@@ -1006,6 +1090,12 @@ public class DbMapper {
     vlanIfs.setMtu(input.getMtu());
     vlanIfs.setBgp_id(bgpId);
     vlanIfs.setVrrp_id(vrrpId);
+    if (input.getQos() != null) {
+      vlanIfs.setInflow_shaping_rate(input.getQos().getInflowShapingRate());
+      vlanIfs.setOutflow_shaping_rate(input.getQos().getOutflowShapingRate());
+      vlanIfs.setRemark_menu(input.getQos().getRemarkMenu());
+      vlanIfs.setEgress_queue_menu(input.getQos().getEgressQueue());
+    }
 
     if (input.getBgp() != null) {
       vlanIfs.setBgpOptionsList(new HashSet<BGPOptions>());
@@ -1076,7 +1166,7 @@ public class DbMapper {
    * @return IF name
    */
   private static String getIfName(String ifType, String ifId, Nodes nodes) {
-    String ret = "";
+    String ret = null;
 
     if (ifType.equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
       for (PhysicalIfs physicalIfs : nodes.getPhysicalIfsList()) {
@@ -1087,21 +1177,18 @@ public class DbMapper {
       }
     } else if (ifType.equals(CommonDefinitions.IF_TYPE_LAG_IF)) {
       for (LagIfs lagIfs : nodes.getLagIfsList()) {
-        if (lagIfs.getLag_if_id().equals(ifId)) {
+        if (lagIfs.getFc_lag_if_id().equals(ifId)) {
           ret = lagIfs.getIf_name();
           break;
         }
       }
     } else if (ifType.equals(CommonDefinitions.IF_TYPE_BREAKOUT_IF)) {
-      for (PhysicalIfs physicalIfs : nodes.getPhysicalIfsList()) {
+      phyLoop: for (PhysicalIfs physicalIfs : nodes.getPhysicalIfsList()) {
         for (BreakoutIfs breakoutIfs : physicalIfs.getBreakoutIfsList()) {
           if (breakoutIfs.getBreakout_if_id().equals(ifId)) {
             ret = breakoutIfs.getIf_name();
-            break;
+            break phyLoop;
           }
-        }
-        if (!ret.isEmpty()) {
-          break;
         }
       }
     }
@@ -1121,7 +1208,7 @@ public class DbMapper {
    *          VLAN IF ID
    * @return VLAN IF change information (for DB storage)
    */
-  public static StaticRouteOptions toVlanIfChange(UpdateStaticRoute input, String nodeId, String vlanIfId) {
+  public static StaticRouteOptions toVlanIfStaticRouteChange(UpdateStaticRoute input, String nodeId, String vlanIfId) {
 
     logger.trace(CommonDefinitions.START);
     logger.debug(input);
@@ -1145,15 +1232,168 @@ public class DbMapper {
   }
 
   /**
-   * DB Data Mapping_breakoutIF generation<br>
-   * Convert the information for generating breakoutIF into DB storable format.
+   * DB Data Mapping_VLAN IF Change（QoS setting）<br>
+   * Convert VLAN IF change into DB storable format.
    *
    * @param input
-   *          information for generating breakoutIF
-   * @param nodes
-   *          device information
-   * @return information for generating breakoutIF (for DB storage)
+   *          VLAN IF change information
+   * @param inputVlanIfs
+   *          VLAN IF information for update
+   * @return VLAN IF change information (for DB storage)
    */
+  public static VlanIfs toVlanIfQosChange(QosUpdateVlanIf input, VlanIfs inputVlanIfs) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug(input);
+
+    VlanIfs ret = inputVlanIfs;
+
+    if (input == null) {
+      ret.setInflow_shaping_rate(null);
+      ret.setOutflow_shaping_rate(null);
+      ret.setEgress_queue_menu(null);
+    } else {
+      ret.setInflow_shaping_rate(input.getInflowShapingRate());
+      ret.setOutflow_shaping_rate(input.getOutflowShapingRate());
+      ret.setEgress_queue_menu(input.getEgressQueue());
+    }
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * DB Data Mapping_VLAN IF Batch Change（QoS setting）<br>
+   * Convert VLAN IF change into DB storable format.
+   *
+   * @param input
+   *          Remark menu information
+   * @param inputVlanIfs
+   *          VLAN IF information for update
+   * @return VLAN IF change information (for DB storage)
+   */
+  public static VlanIfs toVlanIfQosBulkChange(String input, VlanIfs inputVlanIfs) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("remark_menu=" + input);
+
+    VlanIfs ret = inputVlanIfs;
+
+    ret.setRemark_menu(input);
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * Check inflow shaping rate value.
+   *
+   * @param input
+   *          inflow shaping rate value
+   * @param ifSpeed
+   *          interface speed
+   * @param capability
+   *          capability
+   * @return true:check OK  false:check NG
+   */
+  public static boolean checkQosShapingRateValue(Float input, int ifSpeed, boolean capability) {
+
+    boolean ret = true;
+
+    if (input != null) {
+      if (capability) {
+        if (input >= 0 && input <= ifSpeed) {
+          ret = true;
+        } else {
+          ret = false;
+        }
+      } else {
+        ret = false;
+      }
+    }
+
+    return ret;
+
+  }
+
+  /**
+   * Check remark menu value.
+   *
+   * @param input
+   *          remark menu value
+   * @param equipmentDb
+   *          device information(DB)
+   * @return true:check OK  false:check NG
+   */
+  public static boolean checkQosRemarkMenuValue(String input, Equipments equipmentDb) {
+
+    boolean ret = true;
+
+    if (equipmentDb.getQos_remark_flg()) {
+      if (input != null) {
+        RemarkMenus inputMenus = new RemarkMenus();
+        inputMenus.setEquipment_type_id(equipmentDb.getEquipment_type_id());
+        inputMenus.setRemark_menu(input);
+        if (equipmentDb.getRemarkMenusList().contains(inputMenus)) {
+          ret = true;
+        } else {
+          ret = false;
+        }
+      }
+    } else {
+      if (input != null) {
+        ret = false;
+      }
+    }
+
+    return ret;
+
+  }
+
+  /**
+   * Check egress queue menu value.
+   *
+   * @param input
+   *          egress queue menu value
+   * @param equipmentDb
+   *          device information(DB)
+   * @return true:check OK  false:check NG
+   */
+  public static boolean checkQosEgressQueueMenuValue(String input, Equipments equipmentDb) {
+
+    boolean ret = true;
+
+    if (equipmentDb.getQos_shaping_flg()) {
+      if (input != null) {
+        EgressQueueMenus inputMenus = new EgressQueueMenus();
+        inputMenus.setEquipment_type_id(equipmentDb.getEquipment_type_id());
+        inputMenus.setEgress_queue_menu(input);
+        if (equipmentDb.getEgressQueueMenusList().contains(inputMenus)) {
+          ret = true;
+        } else {
+          ret = false;
+        }
+      }
+    } else {
+      if (input != null) {
+        ret = false;
+      }
+    }
+
+    return ret;
+
+  }
+
+/**
+ * DB Data Mapping_breakoutIF generation<br>
+ * Convert the information for generating breakoutIF into DB storable format.
+ *
+ * @param input
+ *          information for generating breakoutIF
+ * @param nodes
+ *          device information
+ * @return information for generating breakoutIF (for DB storage)
+ */
   public static List<BreakoutIfs> tobreakoutIfCreate(CreateBreakoutIf input, Nodes nodes) {
 
     logger.trace(CommonDefinitions.START);
@@ -1169,8 +1409,8 @@ public class DbMapper {
       breakoutIfsDb.setBreakout_if_id(input.getBreakoutIfId().get(i));
       breakoutIfsDb.setPhysical_if_id(ifId);
       breakoutIfsDb.setSpeed(input.getSpeed());
-      breakoutIfsDb.setIf_name(
-          LogicalPhysicalConverter.toBreakoutIfName(nodes, ifId, input.getBreakoutIfId().get(i), ifSpeed, i));
+      breakoutIfsDb.setIf_name(toBreakoutIfName(nodes, ifId, input.getBreakoutIfId().get(i), ifSpeed, i));
+      breakoutIfsDb.setBreakout_if_index(i);
       breakoutIfsDb.setIf_status(CommonDefinitions.IF_STATE_UNKNOWN);
 
       ret.add(breakoutIfsDb);
@@ -1267,6 +1507,219 @@ public class DbMapper {
     }
 
     logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * DB Data Mapping_Additional service recovery<br>
+   * Generate DB-POJO to be used for change processing of device information and IF information (including addition and deletion of physical interface)<br>
+   * Create conversion table from IF name before restoration to IF name after restoration.
+   *
+   * @param input
+   *          input rest information(Additional service recovery)
+   * @param inputNodes
+   *          Device information to be recovered（including physical IF、LAGIF、breakoutIF）
+   * @param inputVlanIfsList
+   *          Vlan list registered in the recovery target device
+   * @param inputEquipments
+   *          Device information after recovery（including IF information）
+   * @param retAddPhysicalIfsList
+   *          Generate DB-POJO <Physical IF to be added> (out parameters)
+   * @param retDelPhysicalIfsList
+   *          Generate DB-POJO <Physical IF to be deleted> (out parameters)
+   * @param retPhysicalIfNamesMap
+   *          Conversion table from recovered physical IF name to recovered physical IF name (out parameters)
+   * @param retLagIfNamesMap
+   *          Conversion table from recovered LAG IF name to recovered LAG IF name (out parameters)
+   * @param retVlanIfsList
+   *          VlanIF Information table updating POJO (out parameters)
+   * @return Nodes generated DB-POJO＜node information including update IF information＞
+   */
+  public static Nodes toRecoverUpdate(RecoverNodeService input, Nodes inputNodes, List<VlanIfs> inputVlanIfsList,
+      Equipments inputEquipments, List<PhysicalIfs> retAddPhysicalIfsList, List<PhysicalIfs> retDelPhysicalIfsList,
+      Map<String, String> retPhysicalIfNamesMap, Map<String, String> retLagIfNamesMap, List<VlanIfs> retVlanIfsList) {
+
+    logger.trace(CommonDefinitions.START);
+    logger.debug(input);
+    logger.debug(inputNodes);
+    logger.debug(inputVlanIfsList);
+    logger.debug(inputEquipments);
+    Nodes ret = new Nodes();
+
+    ret.setNode_id(inputNodes.getNode_id());
+    ret.setNode_name(inputNodes.getNode_name());
+    ret.setEquipment_type_id(input.getEquipment().getEquipmentTypeId());
+    ret.setManagement_if_address(inputNodes.getManagement_if_address());
+    ret.setSnmp_community(inputNodes.getSnmp_community());
+    ret.setNode_state(inputNodes.getNode_state());
+    ret.setProvisioning(inputNodes.getProvisioning());
+    ret.setPlane(inputNodes.getPlane());
+    ret.setVpn_type(inputNodes.getVpn_type());
+    ret.setAs_number(inputNodes.getAs_number());
+    ret.setLoopback_if_address(inputNodes.getLoopback_if_address());
+    ret.setUsername(input.getNode().getUsername());
+    ret.setPassword(input.getNode().getPassword());
+    ret.setNtp_server_address(inputNodes.getNtp_server_address());
+    ret.setHost_name(inputNodes.getHost_name());
+    ret.setMac_addr(input.getNode().getMacAddr());
+
+    ret.setEquipments(inputEquipments);
+    List<String> equipIfIdList = new ArrayList<String>();
+    for (EquipmentIfs eqIfs : inputEquipments.getEquipmentIfsList()) {
+      if (!equipIfIdList.contains(eqIfs.getPhysical_if_id())) {
+        equipIfIdList.add(eqIfs.getPhysical_if_id());
+      }
+    }
+
+    ret.setPhysicalIfsList(new HashSet<PhysicalIfs>());
+    String ifName = null;
+    for (PhysicalIfs physiIfs : inputNodes.getPhysicalIfsList()) {
+      PhysicalIfs recoverPhysiIfs = null;
+      for (EquipmentIfs equipIfs : inputEquipments.getEquipmentIfsList()) {
+        if (equipIfs.getPhysical_if_id().equals(physiIfs.getPhysical_if_id())) {
+          recoverPhysiIfs = new PhysicalIfs();
+          recoverPhysiIfs.setNode_id(physiIfs.getNode_id());
+          recoverPhysiIfs.setPhysical_if_id(physiIfs.getPhysical_if_id());
+          equipIfIdList.remove(physiIfs.getPhysical_if_id());
+          break;
+        }
+      }
+      if (recoverPhysiIfs == null) {
+        PhysicalIfs delPhysiIfs = new PhysicalIfs();
+        delPhysiIfs.setNode_id(physiIfs.getNode_id());
+        delPhysiIfs.setPhysical_if_id(physiIfs.getPhysical_if_id());
+        retDelPhysicalIfsList.add(delPhysiIfs);
+        continue;
+      }
+      if (physiIfs.getIf_name() != null && physiIfs.getIf_speed() != null) {
+        ifName = toPhysicalIfName(physiIfs.getPhysical_if_id(), physiIfs.getIf_speed(), ret);
+        recoverPhysiIfs.setIf_name(ifName);
+        retPhysicalIfNamesMap.put(ifName, physiIfs.getIf_name());
+        recoverPhysiIfs.setIf_speed(physiIfs.getIf_speed());
+        recoverPhysiIfs.setIf_status(physiIfs.getIf_status());
+        recoverPhysiIfs.setIpv4_address(physiIfs.getIpv4_address());
+        recoverPhysiIfs.setIpv4_prefix(physiIfs.getIpv4_prefix());
+      }
+
+      recoverPhysiIfs.setBreakoutIfsList(new HashSet<BreakoutIfs>());
+      if (physiIfs.getBreakoutIfsList() != null && !physiIfs.getBreakoutIfsList().isEmpty()) {
+        String baseIfId = physiIfs.getBreakoutIfsList().iterator().next().getPhysical_if_id();
+        String ifSpeedStr = physiIfs.getBreakoutIfsList().iterator().next().getSpeed();
+        Integer baseIfSpeed = Integer.parseInt(ifSpeedStr.replace(CommonDefinitions.SPEED_UNIT_GIGA, ""))
+            * physiIfs.getBreakoutIfsList().size();
+        String baseIfSpeedStr = baseIfSpeed.toString() + CommonDefinitions.SPEED_UNIT_GIGA;
+        String baseIfName = toPhysicalIfName(baseIfId, baseIfSpeedStr, ret);
+        String baseIfOldName = toPhysicalIfName(baseIfId, baseIfSpeedStr, inputNodes);
+        retPhysicalIfNamesMap.put(baseIfName, baseIfOldName);
+        for (BreakoutIfs boIfs : physiIfs.getBreakoutIfsList()) {
+          BreakoutIfs recoverBoIfs = new BreakoutIfs();
+          recoverBoIfs.setNode_id(boIfs.getNode_id());
+          recoverBoIfs.setBreakout_if_id(boIfs.getBreakout_if_id());
+          recoverBoIfs.setPhysical_if_id(boIfs.getPhysical_if_id());
+          recoverBoIfs.setSpeed(boIfs.getSpeed());
+          ifName = toBreakoutIfName(ret, boIfs.getPhysical_if_id(), boIfs.getBreakout_if_id(), boIfs.getSpeed(),
+              boIfs.getBreakout_if_index());
+          recoverBoIfs.setIf_name(ifName);
+          retPhysicalIfNamesMap.put(ifName, boIfs.getIf_name());
+          recoverBoIfs.setBreakout_if_index(boIfs.getBreakout_if_index());
+          recoverBoIfs.setIf_status(boIfs.getIf_status());
+          recoverBoIfs.setIpv4_address(boIfs.getIpv4_address());
+          recoverBoIfs.setIpv4_prefix(boIfs.getIpv4_prefix());
+          recoverPhysiIfs.getBreakoutIfsList().add(recoverBoIfs);
+        }
+      }
+
+      ret.getPhysicalIfsList().add(recoverPhysiIfs);
+    }
+    for (String equipIfId : equipIfIdList) {
+      PhysicalIfs addPhysiIfs = new PhysicalIfs();
+      addPhysiIfs.setNode_id(inputNodes.getNode_id());
+      addPhysiIfs.setPhysical_if_id(equipIfId);
+      retAddPhysicalIfsList.add(addPhysiIfs);
+    }
+
+    ret.setLagIfsList(new HashSet<LagIfs>());
+    if (inputNodes.getLagIfsList() != null) {
+      for (LagIfs lagIfs : inputNodes.getLagIfsList()) {
+        LagIfs recoverLagIfs = new LagIfs();
+        recoverLagIfs.setNode_id(lagIfs.getNode_id());
+        recoverLagIfs.setLag_if_id(lagIfs.getLag_if_id());
+        recoverLagIfs.setFc_lag_if_id(lagIfs.getFc_lag_if_id());
+        ifName = toLagIfName(inputEquipments.getLag_prefix(), lagIfs.getLag_if_id());
+        recoverLagIfs.setIf_name(ifName);
+        retLagIfNamesMap.put(ifName, lagIfs.getIf_name());
+        recoverLagIfs.setMinimum_link_num(lagIfs.getMinimum_link_num());
+        recoverLagIfs.setIf_speed(lagIfs.getIf_speed());
+        recoverLagIfs.setIf_status(lagIfs.getIf_status());
+        recoverLagIfs.setIpv4_address(lagIfs.getIpv4_address());
+        recoverLagIfs.setIpv4_prefix(lagIfs.getIpv4_prefix());
+        ret.getLagIfsList().add(recoverLagIfs);
+      }
+    }
+
+    String ifType = null;
+    String ifId = null;
+    for (VlanIfs vlanIfs : inputVlanIfsList) {
+      VlanIfs recoverVlanIfs = new VlanIfs();
+      recoverVlanIfs.setNode_id(vlanIfs.getNode_id());
+      recoverVlanIfs.setVlan_if_id(vlanIfs.getVlan_if_id());
+      if (vlanIfs.getPhysical_if_id() != null) {
+        ifType = CommonDefinitions.IF_TYPE_PHYSICAL_IF;
+        ifId = vlanIfs.getPhysical_if_id();
+        recoverVlanIfs.setPhysical_if_id(ifId);
+      } else if (vlanIfs.getLag_if_id() != null) {
+        ifType = CommonDefinitions.IF_TYPE_LAG_IF;
+        for (LagIfs elem : ret.getLagIfsList()) {
+          if (elem.getLag_if_id().equals(vlanIfs.getLag_if_id())) {
+            ifId = elem.getFc_lag_if_id();
+            break;
+          }
+        }
+        recoverVlanIfs.setLag_if_id(vlanIfs.getLag_if_id());
+      } else if (vlanIfs.getBreakout_if_id() != null) {
+        ifType = CommonDefinitions.IF_TYPE_BREAKOUT_IF;
+        ifId = vlanIfs.getBreakout_if_id();
+        recoverVlanIfs.setBreakout_if_id(ifId);
+      }
+      recoverVlanIfs.setIf_name(getIfName(ifType, ifId, ret));
+      recoverVlanIfs.setIf_status(vlanIfs.getIf_status());
+      recoverVlanIfs.setIpv4_address(vlanIfs.getIpv4_address());
+      recoverVlanIfs.setIpv4_prefix(vlanIfs.getIpv4_prefix());
+      recoverVlanIfs.setIpv6_address(vlanIfs.getIpv6_address());
+      recoverVlanIfs.setIpv6_prefix(vlanIfs.getIpv6_prefix());
+      recoverVlanIfs.setMtu(vlanIfs.getMtu());
+      recoverVlanIfs.setPort_mode(vlanIfs.getPort_mode());
+      recoverVlanIfs.setBgp_id(vlanIfs.getBgp_id());
+      recoverVlanIfs.setVrrp_id(vlanIfs.getVrrp_id());
+
+      recoverVlanIfs.setInflow_shaping_rate(vlanIfs.getInflow_shaping_rate());
+      recoverVlanIfs.setOutflow_shaping_rate(vlanIfs.getOutflow_shaping_rate());
+      recoverVlanIfs.setRemark_menu(vlanIfs.getRemark_menu());
+      recoverVlanIfs.setEgress_queue_menu(vlanIfs.getEgress_queue_menu());
+      Boolean shapingFlag = inputEquipments.getQos_shaping_flg();
+      Boolean remarkFlag = inputEquipments.getQos_remark_flg();
+      Boolean oldShapingFlag = inputNodes.getEquipments().getQos_shaping_flg();
+      Boolean oldRemarkFlag = inputNodes.getEquipments().getQos_remark_flg();
+      if (!shapingFlag.equals(oldShapingFlag) || !remarkFlag.equals(oldRemarkFlag)) {
+        if (!shapingFlag.equals(oldShapingFlag)) {
+          recoverVlanIfs.setInflow_shaping_rate(null);
+          recoverVlanIfs.setOutflow_shaping_rate(null);
+          recoverVlanIfs.setEgress_queue_menu(null);
+        }
+        if (!remarkFlag.equals(oldRemarkFlag)) {
+          recoverVlanIfs.setRemark_menu(null);
+        }
+      }
+      retVlanIfsList.add(recoverVlanIfs);
+    }
+
+    logger.debug(ret);
+    logger.debug(retAddPhysicalIfsList);
+    logger.debug(retDelPhysicalIfsList);
+    logger.debug("retPhysicalIfNamesMap = " + retPhysicalIfNamesMap);
+    logger.debug("retLagIfNamesMap = " + retLagIfNamesMap);
+    logger.debug(retVlanIfsList);
     logger.trace(CommonDefinitions.END);
     return ret;
   }

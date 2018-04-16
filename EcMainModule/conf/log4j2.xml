@@ -14,7 +14,7 @@
                      fileName="${log-path}/application.log"
                      filePattern="${log-path}/application-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
-                <pattern>%d{yyy/MM/dd HH:mm:ss.SSS} %-5p [%t] %C#%M (%F:%L) %msg%n</pattern>
+                <pattern>[%d{yyy/MM/dd HH:mm:ss.SSS}] [%-5p] [tid=%t] (%C{1}::%M():%L):%msg%n</pattern>
             </PatternLayout>
             <Policies>
                 <OnStartupTriggeringPolicy />

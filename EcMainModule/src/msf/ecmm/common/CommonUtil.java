@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.common;
@@ -15,7 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Common Utility
+ * Common Utility.
  */
 public class CommonUtil {
 
@@ -26,14 +26,14 @@ public class CommonUtil {
    * load mitigation of loop or SpinLocks.
    */
   public static void sleep() {
-    sleep(50); 
+    sleep(50);
   }
 
   /**
    * wait for specified time.
    *
    * @param mills
-  *          waiting time (msec)
+   *          waiting time (msec)
    */
   public static void sleep(long mills) {
     try {

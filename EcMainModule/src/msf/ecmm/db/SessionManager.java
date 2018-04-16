@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db;
@@ -29,7 +29,7 @@ public class SessionManager {
    *           exception at Hibernate
    */
   private SessionManager() {
-    final StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure() 
+    final StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure()
         .build();
 
     MetadataSources ms = new MetadataSources(registry);

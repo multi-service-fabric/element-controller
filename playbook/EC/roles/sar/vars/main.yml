@@ -1,0 +1,5 @@
+folder_name: 'sysstat-11.6.0-1'
+
+file_list:
+  - file_name: 'sysstat-11.6.0-1.x86_64.rpm'
+    url: 'http://pagesperso-orange.fr/sebastien.godard/sysstat-11.6.0-1.x86_64.rpm'

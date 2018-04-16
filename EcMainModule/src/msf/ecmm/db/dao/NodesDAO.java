@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,11 +9,11 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.pojo.Nodes;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * Device Information DAO Class.
@@ -70,9 +70,40 @@ public class NodesDAO extends BaseDAO {
       if (regNodes == null) {
         this.errorMessage(NO_UPDATE_TARGET, NODES, null);
       } else {
-        Query query = session.getNamedQuery("updateNodes");
+        Query query = session.getNamedQuery("updateNodeState");
         query.setString("key1", node_id);
         query.setInteger("key2", node_state);
+        query.executeUpdate();
+      }
+    } catch (DBAccessException e1) {
+      throw e1;
+    } catch (Throwable e2) {
+      logger.debug("nodes update failed.", e2);
+      this.errorMessage(UPDATE_FAILURE, NODES, e2);
+    }
+  }
+
+  /**
+   * Device Information Table UPDATE.
+   *
+   * @param nodes
+   *          device information to be updated
+   * @throws DBAccessException
+   *           data base exception
+   */
+  public void updateNodes(Nodes nodes) throws DBAccessException {
+    try {
+      Nodes regNodes = this.search(nodes.getNode_id(), null);
+      if (regNodes == null) {
+        this.errorMessage(NO_UPDATE_TARGET, NODES, null);
+      } else {
+        Query query = session.getNamedQuery("updateNodes");
+        query.setString("key1", nodes.getNode_id());
+        query.setString("key2", nodes.getEquipment_type_id());
+        query.setInteger("key3", nodes.getNode_state());
+        query.setString("key4", nodes.getUsername());
+        query.setString("key5", nodes.getPassword());
+        query.setString("key6", nodes.getMac_addr());
         query.executeUpdate();
       }
     } catch (DBAccessException e1) {
@@ -127,7 +158,7 @@ public class NodesDAO extends BaseDAO {
       nodesList = query.list();
       for (Nodes nodes : nodesList) {
         nodes.setNode_id(nodes.getNode_id());
-        nodes.toString(); 
+        nodes.toString();
         session.flush();
         session.evict(nodes);
       }
@@ -142,7 +173,7 @@ public class NodesDAO extends BaseDAO {
    * Device Information Table SELECT (condition: Device ID).
    *
    * @param equipment_type_id
-   *          device ID
+   *          model ID
    * @return nodesList device information list
    * @throws DBAccessException
    *           data base exception

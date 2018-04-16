@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,11 +9,11 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.pojo.EquipmentIfs;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * Model IF Information DAO Class.

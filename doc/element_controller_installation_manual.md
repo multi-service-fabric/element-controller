@@ -1,8 +1,8 @@
 # Element Controller Installation Manual
 
 **Version 1.0**
-**December 26, 2017**
-**Copyright(c) 2017 Nippon Telegraph and Telephone Corporation**
+**March 28, 2018**
+**Copyright(c) 2018 Nippon Telegraph and Telephone Corporation**
 
 ## 1.  Introduction
 
@@ -48,12 +48,12 @@ This means the command to be entered in Linux.
 All company names and product names mentioned in this document are
 registered trademarks or trademarks of their respective companies.
 
-**LinuxR:**
+**Linux(R):**
 
 The registered trademark or the trademark of Linus Torvalds in the U.S.
 and other countries
 
-**PostgreSQL@:**
+**PostgreSQL(R):**
 
 The trademark of PostgreSQL in the U.S. and other countries
 
@@ -257,10 +257,9 @@ Accessories
 | 184.    |       | database |         | \-      | \-      | \-      |
 | 185.    |       |         |         | create_table.sql | Table Creation Script   |         |
 | 186.    |       | RA      |         | \-      | \-      | \-      |
-| 187.    |       |         |         | ra_config.csv | Resource Agent Configuration File |         |
-| 188.    |       |         |         | ra_config.xlsx | Resource Agent Configuration File |         |
-| 189.    |       |         |         | ec      | Resource Agent |         |
-| 190.    |       |         |         | snmptrapd | Resource Agent |         |
+| 187.    |       |         |         | ra_config.xlsx | Resource Agent Configuration File |         |
+| 188.    |       |         |         | ec      | Resource Agent |         |
+| 189.    |       |         |         | snmptrapd | Resource Agent |         |
 
 ## 2. Operational Environment
 
@@ -339,13 +338,13 @@ used in REST Request.
 
 In case installing two or more ECs in a same server, set a different
 port for every entity in the configuration file and execute the
-following command for every port. (Replace the highlighted section with
+following command for every port. (Replace `the highlighted section` with
 the appropriate port number.)
 
 (The specified port numbers in this document are default values. You can
 change the numbers in accordance with your configuration.)
 
-**\[firewall-cmd \--permanent \--add-port=18080/tcp\] \[Enter\]**
+**\[firewall-cmd \--permanent \--add-port=`18080`/tcp\] \[Enter\]**
 
 #### 3.1.1.3. Permit the Connection of PostgreSQL
 
@@ -423,7 +422,7 @@ used in httpd.
 **\[systemctl restart firewalld\] \[Enter\]**
 
 Confirm the current configuration by executing the following command
-(especially for the highlighted section).
+(especially for `the highlighted section`).
 
 **\[firewall-cmd \--list-all\] \[Enter\]**
 
@@ -435,9 +434,9 @@ interfaces:
 
 sources:
 
-services: dhcpv6-client high-availability http ssh tftp
+services: dhcpv6-client `high-availability` `http` ssh `tftp`
 
-ports: 514/tcp 162/udp 514/udp 18080/tcp
+ports: `514/tcp` `162/udp` `514/udp` `18080/tcp`
 
 masquerade: no
 
@@ -457,7 +456,7 @@ sources:
 
 services: dhcpv6-client ssh
 
-ports: 5432/tcp
+ports: `5432/tcp`
 
 masquerade: no
 
@@ -480,7 +479,7 @@ following command to change the SELinux configuration.
 
 **\[setenforce 0\] \[Enter\]**
 
-**\[vi /etc/selinux/config\] \[Enter\]** (set the highlighted value as
+**\[vi /etc/selinux/config\] \[Enter\]** (set `the highlighted value` as
 shown below）
 
 ...
@@ -495,7 +494,7 @@ shown below）
 
 \# disabled - No SELinux policy is loaded.
 
-SELINUX=disabled
+SELINUX=`disabled`
 
 ...
 
@@ -532,16 +531,16 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.92-b14, mixed mode)
 
 **&lt;Execution Host: ACT/SBY&gt;**
 
-Add JRE\_HOME environment variable to the following file (append the
-highlighted section).
+Add JRE\_HOME environment variable to the following file (append `the
+highlighted section`).
 
 **\[vi /etc/profile\] \[Enter\]**
 
-...
-
+```
 JRE\_HOME=/usr/java/jdk1.8.0\_92/
 
 export JRE\_HOME
+```
 
 ### 3.1.3. Installation and Configuration of Net-SNMP
 
@@ -578,31 +577,71 @@ taken as no problem
 
 **&lt;Execution Host: ACT/SBY&gt;**
 
-> Add the following lines to the SNMPTrap configuration file
-> (/etc/snmp/snmptrapd.conf) (append the highlighted section).
+Add the following lines to the SNMPTrap configuration file
+(/etc/snmp/snmptrapd.conf) (append `the highlighted section`).
+
+If there are multiple community names, list them in multiple lines.
 
 **(The "\$EC\_HOME/" below must be replaced with the same path as
 "3.2.3Locating the Script".)**
 
 **\[vi /etc/snmp/snmptrapd.conf\] \[Enter\]**
 
-...
+```
 
-authCommunity log,execute "Community Name"
+authCommunity log,execute "Community Name A"
 
-\#trap reception of Linkdown
+authCommunity log,execute "Community Name B"
 
-traphandle .1.3.6.1.6.3.1.1.5.3 *\$EC\_HOME*/ec\_main/bin/linkdown.sh
+#trap reception of Linkdown
 
-\#trap reception of Linkup
+traphandle .1.3.6.1.6.3.1.1.5.3 $EC_HOME/bin/linkdown.sh
 
-traphandle .1.3.6.1.6.3.1.1.5.4 *\$EC\_HOME*/ec\_main/bin/linkup.sh
+#trap reception of Linkup
+
+traphandle .1.3.6.1.6.3.1.1.5.4 $EC_HOME/bin/linkup.sh
+
+```
+
+In the case of installing some EC controller in one server,
+write traphandle of the number of EC contollers.
+
+ex.) in the case of installing two EC controllers in one server 
+(Path of EC instolled\: /usr/ec_main1, /usr/ec_main2)
+
+```
+
+authCommunity log,execute "Community Name A"
+
+authCommunity log,execute "Community Name B"
+
+#first EC
+
+#trap reception of Linkdown
+
+traphandle .1.3.6.1.6.3.1.1.5.3 /usr/ec_main1/bin/linkdown.sh
+
+#trap reception of Linkup
+
+traphandle .1.3.6.1.6.3.1.1.5.4 /usr/ec_main1/bin/linkup.sh
+
+#second EC
+
+#trap reception of Linkdown
+
+traphandle .1.3.6.1.6.3.1.1.5.3 /usr/ec_main2/bin/linkdown.sh
+
+#trap reception of Linkup
+
+traphandle .1.3.6.1.6.3.1.1.5.4 /usr/ec_main2/bin/linkup.sh
+
+```
 
 Add the following lines to SNMPTrap service file
 (/usr/lib/systemd/system/snmptrapd.service).
 
-**\[vi /usr/lib/systemd/system/snmptrapd.service\] \[Enter\]** (Add the
-highlighted section.)
+**\[vi /usr/lib/systemd/system/snmptrapd.service\] \[Enter\]** (Add `the
+highlighted section`.)
 
 ...
 
@@ -614,7 +653,7 @@ Environment=OPTIONS=\"-Lsd\"
 
 EnvironmentFile=-/etc/sysconfig/snmptrapd
 
-ExecStart=/usr/sbin/snmptrapd -On \$OPTIONS -f
+ExecStart=/usr/sbin/snmptrapd `-On` \$OPTIONS -f
 
 ExecReload=/bin/kill -HUP \$MAINPID
 
@@ -627,14 +666,14 @@ ExecReload=/bin/kill -HUP \$MAINPID
 **&lt;Execution Host: ACT/SBY&gt;**
 
 Change the contents of rsyslog configuration file (/etc/rsyslog.conf) as
-below (change the highlighted section as specified below).
+below (change `the highlighted section` as specified below).
 
 The "Device CIDR" below will be replaced with the CIDR expression of the
 device's segment.
 
 **\[vi /etc/rsyslog.conf\] \[Enter\]**
 
-Before Change
+&lt;Before Change&gt;
 
 ...
 
@@ -650,31 +689,33 @@ Before Change
 
 \#\$InputTCPServerRun 514
 
-After Change
+...
+
+&lt;After Change&gt;
 
 ...
 
 \# Provides UDP syslog reception
 
-\$ModLoad imudp
+`$ModLoad imudp`
 
-\$UDPServerRun 514
+`$UDPServerRun 514`
 
-\$AllowedSender UDP, 127.0.0.1, *Device CIDR*
+`$AllowedSender UDP, 127.0.0.1, "Device CIDR"`
 
 \# Provides TCP syslog reception
 
-\$ModLoad imtcp
+`$ModLoad imtcp`
 
-\$InputTCPServerRun 514
+`$InputTCPServerRun 514`
 
-\$AllowedSender TCP, 127.0.0.1, *Device CIDR*
+`$AllowedSender TCP, 127.0.0.1, "Device CIDR"`
 
 ...
 
 Append the following line to the end of the file.
 
-\$template hostip, \"%fromhost-ip%\"
+`$template hostip, "%fromhost-ip%"`
 
 ### 3.1.5. Installation and Configuration of NTP
 
@@ -704,7 +745,7 @@ Execute the following command to make a blank drift file.
 
 **&lt;Execution Host: ACT/SBY&gt;**
 
-Add the following lines (the highlighted section) to the NTP
+Add the following lines (`the highlighted section`) to the NTP
 configuration file (/etc/ntp.conf).
 
 **\[vi /etc/ntp.conf\] \[Enter\]**
@@ -713,15 +754,15 @@ configuration file (/etc/ntp.conf).
 
 restrict default nomodify notrap nopeer noquery
 
-restrict default ignore
+`restrict default ignore`
 
 ...
 
 \#restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap
 
-restrict xxx.xxx.xxx.xxx noquery nomodify
+`restrict xxx.xxx.xxx.xxx noquery nomodify`
 
-server xxx.xxx.xxx.xxx iburst
+`server xxx.xxx.xxx.xxx iburst`
 
 ...
 
@@ -812,14 +853,14 @@ Execute the following command to install postgresql.
 
 Change the configuration as follows.
 
-**\[vi /var/lib/pgsql/.bash\_profile\] \[Enter\]** (Change or add the
-highlighted section.)
+**\[vi /var/lib/pgsql/.bash\_profile\] \[Enter\]** (Change or add `the
+highlighted section`.)
 
-PGDATA=/usr/local/pgsql/9.3/data
+PGDATA=`/usr/local/`pgsql/9.3/data
 
 export PGDATA
 
-export PATH=\$PATH:/usr/pgsql-9.3/bin
+`export PATH=\$PATH:/usr/pgsql-9.3/bin`
 
 **\[source /var/lib/pgsql/.bash\_profile\] \[Enter\]**
 
@@ -895,7 +936,7 @@ port = 5432
 
 ...
 
-Change the configuration as follows (the highlighted section should be
+Change the configuration as follows (`the highlighted section` should be
 replaced with the segment of the server).
 
 **\[vi /usr/local/pgsql/9.3/data/pg\_hba.conf\] \[Enter\]**
@@ -936,15 +977,15 @@ After Change
 
 \# \"local\" is for Unix domain socket connections only
 
-\#local all all peer
+`#` local all all peer
 
 \# IPv4 local connections:
 
-\#host all all 127.0.0.1/32 ident
+`#` host all all 127.0.0.1/32 ident
 
 \# IPv6 local connections:
 
-\#host all all ::1/128 ident
+`#` host all all ::1/128 ident
 
 \# Allow replication connections from localhost, by a user with the
 
@@ -960,11 +1001,11 @@ local all postgres peer
 
 local all all trust
 
-host all all 192.168.53.0/24 trust
+host all all `192.168.53.0/24` trust
 
 host all all 127.0.0.1/32 trust
 
-Change the configuration as follows (modify the highlighted section).
+Change the configuration as follows (modify `the highlighted section`).
 
 **\[vi /usr/lib/systemd/system/postgresql-9.3.service\] \[Enter\]**
 
@@ -972,7 +1013,7 @@ Change the configuration as follows (modify the highlighted section).
 
 \# Location of database directory
 
-Environment=PGDATA=/usr/local/pgsql/9.3/data/
+Environment=PGDATA=`/usr/local/`pgsql/9.3/data/
 
 ...
 
@@ -1007,37 +1048,38 @@ Execute the following command to make the systemctl unit file.
 **\[cp -p /usr/lib/systemd/system/dhcpd.service /etc/systemd/system/\]
 \[Enter\]**
 
-**\[vi /etc/systemd/system/dhcpd.service\] \[Enter\]** (Add the
-highlighted section.)
+**\[vi /etc/systemd/system/dhcpd.service\] \[Enter\]** (Add `the
+highlighted section`.)
 
 ...
 
-Type=notify
-
+>Type=notify
+>
 > ExecStart=/usr/sbin/dhcpd -f -cf /etc/dhcp/dhcpd.conf -user dhcpd
-> -group dhcpd \--no-pid "Interface Name"
+> -group dhcpd \--no-pid `"Interface Name"`
 
 ...
 
 Add the following lines to the DHCP configuration file.
 
-**\[vi /etc/sysconfig/dhcpd\] \[Enter\]** (Add the highlighted section.)
+**\[vi /etc/sysconfig/dhcpd\] \[Enter\]** (Add `the highlighted section`.)
 
 ...
 
-DHCPDARGS="Interface Name"
+`DHCPDARGS="Interface Name"`
 
-**\[vi /etc/dhcp/dhcpd.conf.template.NCS5001\] \[Enter\]** (Add the
-highlighted section.)
+**\[vi /etc/dhcp/dhcpd.conf.template.NCS5001\] \[Enter\]** (Add `the
+highlighted section`.)
 
-\# DHCP server general settings
+```
+# DHCP server general settings
 
-subnet \$\$MANAGEMENTNETWORKADDRESS\$\$ netmask
-\$\$MANAGEMENTSUBNETMASK\$\$ {
+subnet $$MANAGEMENTNETWORKADDRESS$$ netmask
+$$MANAGEMENTSUBNETMASK$$ {
 
-range \$\$MANAGEMENTRANGESTART\$\$ \$\$MANAGEMENTRANGEEND\$\$;
+range $$MANAGEMENTRANGESTART$$ $$MANAGEMENTRANGEEND$$;
 
-option subnet-mask \$\$MANAGEMENTSUBNETMASK\$\$;
+option subnet-mask $$MANAGEMENTSUBNETMASK$$;
 
 default-lease-time 600;
 
@@ -1047,32 +1089,34 @@ max-lease-time 7200;
 
 }
 
-\#\#\#\#\#\#\#\#\#\#
+##########
 
-\# host
+# host
 
-\#\#\#\#\#\#\#\#\#\#
+##########
 
-\# NCS5001
+# NCS5001
 
 group {
 
-filename \"\$\$INITIALCONFIG\$\$\";
+filename "$$INITIALCONFIG$$";
 
 host ncs5k {
 
-hardware ethernet \$\$MACADDRESS\$\$;
+hardware ethernet $$MACADDRESS$$;
 
-fixed-address \$\$MANAGEMENTADDRESS\$\$;
-
-}
+fixed-address $$MANAGEMENTADDRESS$$;
 
 }
 
-**\[vi /etc/dhcp/dhcpd.conf.template.QFX5100\] \[Enter\]** (Add the
-highlighted section.)
+}
+```
 
-\# For QFX zero touch provisioning
+**\[vi /etc/dhcp/dhcpd.conf.template.QFX5100\] \[Enter\]** (Add `the
+highlighted section`.)
+
+```
+# For QFX zero touch provisioning
 
 option space QFX;
 
@@ -1082,18 +1126,18 @@ option QFX.image-file-type code 2 = text;
 
 option QFX.transfer-mode code 3 = text;
 
-option QFX.alt-image-file-name code 4= text;
+option QFX.alt-image-file-name code 4 = text;
 
 option QFX-encapsulation code 43 = encapsulate QFX;
 
-\# DHCP server general settings
+# DHCP server general settings
 
-subnet \$\$MANAGEMENTNETWORKADDRESS\$\$ netmask
-\$\$MANAGEMENTSUBNETMASK\$\$ {
+subnet $$MANAGEMENTNETWORKADDRESS$$ netmask
+$$MANAGEMENTSUBNETMASK$$ {
 
-range \$\$MANAGEMENTRANGESTART\$\$ \$\$MANAGEMENTRANGEEND\$\$;
+range $$MANAGEMENTRANGESTART$$ $$MANAGEMENTRANGEEND$$;
 
-option subnet-mask \$\$MANAGEMENTSUBNETMASK\$\$;
+option subnet-mask $$MANAGEMENTSUBNETMASK$$;
 
 default-lease-time 600;
 
@@ -1103,36 +1147,39 @@ max-lease-time 7200;
 
 }
 
-\#\#\#\#\#\#\#\#\#\#
+##########
 
-\# host
+# host
 
-\#\#\#\#\#\#\#\#\#\#
+##########
 
-\# QFX5100
+# QFX5100
 
 host QFX5100 {
 
-hardware ethernet \$\$MACADDRESS\$\$;
+hardware ethernet $$MACADDRESS$$;
 
-fixed-address \$\$MANAGEMENTADDRESS\$\$;
+fixed-address $$MANAGEMENTADDRESS$$;
 
-option tftp-server-name \"\$\$TFTPHOSTNAME\$\$\";
+option tftp-server-name "$$TFTPHOSTNAME$$";
 
-option host-name \"\$\$HOSTNAME\$\$\";
+option host-name "$$HOSTNAME$$";
 
-option log-servers \$\$LOGSERVERADDRESS\$\$;
+option log-servers $$LOGSERVERADDRESS$$;
 
-option QFX.transfer-mode \"tftp\";
+option QFX.transfer-mode "tftp";
 
-option QFX.config-file-name \"\$\$INITIALCONFIG\$\$\";
+option QFX.config-file-name "$$INITIALCONFIG$$";
 
 }
 
-**\[vi /etc/dhcp/dhcpd.conf.template.QFX5200\] \[Enter\]** (Add the
-highlighted section.)
+```
 
-\# For QFX zero touch provisioning
+**\[vi /etc/dhcp/dhcpd.conf.template.QFX5200\] \[Enter\]** (Add `the
+highlighted section`.)
+
+```
+# For QFX zero touch provisioning
 
 option space QFX;
 
@@ -1142,18 +1189,18 @@ option QFX.image-file-type code 2 = text;
 
 option QFX.transfer-mode code 3 = text;
 
-option QFX.alt-image-file-name code 4= text;
+option QFX.alt-image-file-name code 4 = text;
 
 option QFX-encapsulation code 43 = encapsulate QFX;
 
-\# DHCP server general settings
+# DHCP server general settings
 
-subnet \$\$MANAGEMENTNETWORKADDRESS\$\$ netmask
-\$\$MANAGEMENTSUBNETMASK\$\$ {
+subnet $$MANAGEMENTNETWORKADDRESS$$ netmask
+$$MANAGEMENTSUBNETMASK$$ {
 
-range \$\$MANAGEMENTRANGESTART\$\$ \$\$MANAGEMENTRANGEEND\$\$;
+range $$MANAGEMENTRANGESTART$$ $$MANAGEMENTRANGEEND$$;
 
-option subnet-mask \$\$MANAGEMENTSUBNETMASK\$\$;
+option subnet-mask $$MANAGEMENTSUBNETMASK$$;
 
 default-lease-time 600;
 
@@ -1163,31 +1210,33 @@ max-lease-time 7200;
 
 }
 
-\#\#\#\#\#\#\#\#\#\#
+##########
 
-\# host
+# host
 
-\#\#\#\#\#\#\#\#\#\#
+##########
 
-\# QFX5200
+# QFX5200
 
 host QFX5200-3 {
 
-hardware ethernet \$\$MACADDRESS\$\$;
+hardware ethernet $$MACADDRESS$$;
 
-fixed-address \$\$MANAGEMENTADDRESS\$\$;
+fixed-address $$MANAGEMENTADDRESS$$;
 
-option tftp-server-name \"\$\$TFTPHOSTNAME\$\$\";
+option tftp-server-name "$$TFTPHOSTNAME$$";
 
-option host-name \"\$\$HOSTNAME\$\$\";
+option host-name "$$HOSTNAME$$";
 
-option log-servers \$\$LOGSERVERADDRESS\$\$;
+option log-servers $$LOGSERVERADDRESS$$;
 
-option QFX.transfer-mode \"http\";
+option QFX.transfer-mode "http";
 
-option QFX.config-file-name \"\$\$INITIALCONFIG\$\$\";
+option QFX.config-file-name "$$INITIALCONFIG$$";
 
 }
+
+```
 
 ### 3.1.8. Installation and Configuration of tftpd
 
@@ -1209,8 +1258,8 @@ Execute the following command to install tftpd.
 
 **&lt;Execution Host: ACT/SBY&gt;**
 
-Change the tftp configuration file (/etc/ xinetd.d/tftp) as follows (the
-highlighted section).
+Change the tftp configuration file (/etc/ xinetd.d/tftp) as follows (`the
+highlighted section`).
 
 **\[vi /etc/xinetd.d/tftp\] \[Enter\]**
 
@@ -1226,7 +1275,7 @@ After Change
 
 \...
 
-disabled = no
+disabled = `no`
 
 \...
 
@@ -1486,7 +1535,7 @@ to\_syslog: yes
 > This task can be performed at either the Active or the Stand-by
 > system.
 >
-> **\[crm\_mon --fA -1\] \[Enter\]**
+> **\[crm\_mon -fA -1\] \[Enter\]**
 >
 > After entering the command, the cluster status will be displayed in
 > the screen. A warning message about STONITH, which looks like below
@@ -1506,7 +1555,7 @@ to\_syslog: yes
 >
 > Confirm the cluster status for one last time.
 >
-> **\[crm\_mon -~-~fA -1\] \[Enter\]**
+> **\[crm\_mon -fA -1\] \[Enter\]**
 >
 > After entering the command, the cluster status will be displayed in
 > the screen. If it is configured properly, the screen message will be
@@ -1565,55 +1614,55 @@ Migration Summary:
 3.2. Installation of EC Main Module
 ------------------------------
 
-Hereafter, the written expression \"\$EC\_HOME\" represents any location
-path specified by the user.
+Hereafter, the written expression \"\$EC\_HOME/\" represents any location
+path specified by the user.  
+(For example, /usr/ec_main.)
 
-In the following example, \"/usr\" is specified for the installation
-directory.
+In the case of installing some EC controller in one server,
+locate in the path of each EC contoller that specified by the user.
+(For example, like /usr/ec_main1, /usr/ec_main2.)
 
-**\[export EC\_HOME=/usr\] \[Enter\]**
-
-### Locating the Library
+### 3.2.1. Locating the Library
 
 **&lt;Execution Host: ACT/SBY&gt;**
 
 Execute the following command to locate the library file which is in the
 included accessories.
 
-**\[mkdir -p \$EC\_HOME/ec\_main/lib\] \[Enter\]**
+**\[mkdir -p \$EC\_HOME/lib\] \[Enter\]**
 
-**\[cp \~/setup/ec\_main/lib/\* \$EC\_HOME/ec\_main/lib/\] \[Enter\]**
+**\[cp \~/setup/ec\_main/lib/\* \$EC\_HOME/lib/\] \[Enter\]**
 
-### Locating the Configuration File
+### 3.2.2. Locating the Configuration File
 
 **&lt;Execution Host: ACT/SBY&gt;**
 
 Execute the following command to locate the configuration file which is
 in the included accessories.
 
-**\[mkdir -p \$EC\_HOME/ec\_main/conf\] \[Enter\]**
+**\[mkdir -p \$EC\_HOME/conf\] \[Enter\]**
 
-**\[cp \~/setup/ec\_main/conf/\* \$EC\_HOME/ec\_main/conf/\] \[Enter\]**
+**\[cp \~/setup/ec\_main/conf/\* \$EC\_HOME/conf/\] \[Enter\]**
 
 Change the EC Main Module configuration file by use of the following
 command.
 
-**\[vi \$EC\_HOME/ec\_main/conf/ec\_main.conf\] \[Enter\]**
+**\[vi \$EC\_HOME/conf/ec\_main.conf\] \[Enter\]**
 
 \*Please modify configuration values based on your installed server.
 
-Please refer to "EC\_Configuration Specifications.xlsx" for the details
+Please refer to "element\_controller\_configuration\_specifications.md" for the details
 of the change.
 
 Change the Hibernate configuration file by use of the following command.
 
-**\[vi \$EC\_HOME/ec\_main/conf/hibernate.cfg.xml\] \[Enter\]** (Change
-the highlighted section.)
+**\[vi \$EC\_HOME/conf/hibernate.cfg.xml\] \[Enter\]** (Change
+`the highlighted section`.)
 
 \...
 
-&lt;property name=\"connection.url\"&gt;jdbc:postgresql:// "Destination URL
-(IP address xxx.xxx.xxx.xxx):(Port Number XXXX)"/msf\_ec&lt;/property&gt;
+&lt;property name=\"connection.url\"&gt;jdbc:postgresql:// `"Destination URL
+(IP address xxx.xxx.xxx.xxx):(Port Number XXXX)"/msf_ec`&lt;/property&gt;
 
 \...
 
@@ -1621,33 +1670,33 @@ Change the log4j configuration file by use of the following command.
 
 **\[mkdir -p "Log Output Location"\] \[Enter\]**
 
-**\[vi \$EC\_HOME/ec\_main/conf/log4j2.xml\] \[Enter\]** (Change the
-highlighted section.)
+**\[vi \$EC\_HOME/conf/log4j2.xml\] \[Enter\]** (Change `the
+highlighted section`.)
 
 \...
 
 &lt;Properties&gt;
 
-&lt;Property name=\"log-path\"&gt;"Log Output Location"&lt;/Property&gt;
+&lt;Property name=\"log-path\"&gt;`"Log Output Location"`&lt;/Property&gt;
 
 &lt;/Properties&gt;
 
 \...
 
-### Locating the Script
+### 3.2.3. Locating the Script
 
 **&lt;Execution Host: ACT/SBY&gt;**
 
 Execute the following command to locate the script file in the included
 accessories.
 
-**\[mkdir -p \$EC\_HOME/ec\_main/bin\] \[Enter\]**
+**\[mkdir -p \$EC\_HOME/bin\] \[Enter\]**
 
-**\[cp \~/setup/ec\_main/bin/\* \$EC\_HOME/ec\_main/bin/\] \[Enter\]**
+**\[cp \~/setup/ec\_main/bin/\* \$EC\_HOME/bin/\] \[Enter\]**
 
-**\[chmod 755 \$EC\_HOME/ec\_main/bin/\*\] \[Enter\]**
+**\[chmod 755 \$EC\_HOME/bin/\*\] \[Enter\]**
 
-**\[cd \$EC\_HOME/ec\_main/bin/\] \[Enter\]**
+**\[cd \$EC\_HOME/bin/\] \[Enter\]**
 
 **\[ln -s boot.sh boot\_fail.sh\] \[Enter\]**
 
@@ -1659,7 +1708,7 @@ Add the PATH environment variable to the following file.
 
 \...
 
-export PATH=\$PATH:\$EC\_HOME/ec\_main/bin
+export PATH=\$PATH:\$EC\_HOME/bin
 
 Make the environment variable read by use of the following command.
 
@@ -1667,69 +1716,110 @@ Make the environment variable read by use of the following command.
 
 Change the environment definition by use of the following command.
 
-**\[vi \$EC\_HOME/ec\_main/bin/ec\_ctl.sh\] \[Enter\]** (Change the
-highlighted section.)
+**\[vi \$EC\_HOME/bin/ec\_ctl.sh\] \[Enter\]** (Change `the
+highlighted section`.)
 
 \...
 
 \#\# Environment Definition
 
-HOST=\"xxx.xxx.xxx.xxx\"
+HOST=`"xxx.xxx.xxx.xxx"`
 
-PORT=\"yyyyy\"
+PORT=`"yyyyy"`
+
+RETRYNUM=10
+
+FC_HOST=`"XXX.XXX.XXX.XXX"`
+
+FC_PORT=`"YYYYY"`
+
+\#\# Environment Definition (only start or stop)
+
+JARFILE=\"msf.ecmm.ope.execute.ecstate.ECMainStarter\"
+
+CONFFILE=`"/usr/ec_main`/conf/ec_main.conf\"
+
+\#\# for check starting
+
+CHECKFILE=`"/usr/ec_main`/lib/EcMainModule.jar:\"
+
+CLASSPATH=`"/usr/ec_main`/conf/\"
+
+for name in \`ls `/usr/ec_main`/lib/*.jar\`; do
+
+  CLASSPATH=\"\${CLASSPATH}:\$name\"
+
+done
+
+DEFINE=\"-Dlog4j.configurationFile=file://`/usr/ec_main`/conf/log4j2.xml\"
+
+
 
 \...
 
-**\[vi \$EC\_HOME/ec\_main/bin/boot.sh\] \[Enter\]** (Change the
-highlighted section.)
+**\[vi \$EC\_HOME/bin/boot.sh\] \[Enter\]** (Change `the
+highlighted section`.)
 
 \...
 
 \#\# Environment Definition
 
-HOST=\"xxx.xxx.xxx.xxx\"
+HOST=`"xxx.xxx.xxx.xxx"`
 
-PORT=\"yyyyy\"
-
-\...
-
-**\[vi \$EC\_HOME/ec\_main/bin/linkup.sh\] \[Enter\]** (Change the
-highlighted section.)
+PORT=`"yyyyy"`
 
 \...
 
-\#\# Environment Definition
-
-HOST=\"xxx.xxx.xxx.xxx\"
-
-PORT=\"yyyyy\"
-
-\...
-
-**\[vi \$EC\_HOME/ec\_main/bin/linkdown.sh\] \[Enter\]** (Change the
-highlighted section.)
+**\[vi \$EC\_HOME/bin/linkup.sh\] \[Enter\]** (Change `the
+highlighted section`.)
 
 \...
 
 \#\# Environment Definition
 
-HOST=\"xxx.xxx.xxx.xxx\"
+HOST=`"xxx.xxx.xxx.xxx"`
 
-PORT=\"yyyyy\"
+PORT=`"yyyyy"`
 
 \...
 
+**\[vi \$EC\_HOME/bin/linkdown.sh\] \[Enter\]** (Change `the
+highlighted section`.)
+
+\...
+
+\#\# Environment Definition
+
+HOST=`"xxx.xxx.xxx.xxx"`
+
+PORT=`"yyyyy"`
+
+\...
+
+> The "/usr/ec\_main" above must be replaced with the path of installed EC
+> controller.
+>
 > The "xxx.xxx.xxx.xxx" above must be replaced with the VIP address of
 > the destination server for the installation.
 >
 > The "yyyyy" above must be replaced with the same value as the
 > rest\_server\_port of \$EC\_HOME/ec\_main/conf/ec\_main.conf.
+>
+> The "XXX.XXX.XXX.XXX" above must be replaced with IP address of the 
+> upper controller server.
+>
+> The "YYYYY" above must be replaced with the port number of the upper
+> controller server.
 
-### Making of Schema
+### 3.2.4. Making of Schema
 
 **&lt;Execution Host: DB&gt;**
 
 Make the schema by use of the following command.
+
+In the case of installing some EC controller in one server,
+make the schema the number of EC contoller installed.
+(For example, like msf_ec1, msf_ec2.)
 
 **\[createdb msf\_ec\] \[Enter\]**
 
@@ -1738,24 +1828,36 @@ Make a table in the schema by use of the following command.
 **\[psql msf\_ec &lt; \~/setup/ec\_main/database/create\_table.sql\]
 \[Enter\]**
 
-Registration and Configuration of the Resource Agent
+3.3. Registration and Configuration of the Resource Agent
 ----------------------------------------------------
 
-### Locating the Resource Agent
+For the redundant configuration, it supports only when there is
+one EC controller on the same server.
+
+### 3.3.1. Locating the Resource Agent
 
 **&lt;Execution Host: ACT/SBY&gt;**
 
+Edit the resource agent file.
+
+**\[mkdir -p \$EC\_HOME/RA\] \[Enter\]**
+
+**\[cp \~/setup/ec\_main/RA/\* \$EC\_HOME/RA/\] \[Enter\]**
+
+**\[vi \$EC\_HOME/RA/ec\] \[Enter\]**
+
+```
+...
+EC_CONTROL_SHELL_PATH="$EC_HOME/bin/ec_ctl.sh"
+...
+```
+
 Copy the resource agent of EC to the default resource agent folder.
 
-> **\[mkdir -p \$EC\_HOME/ec\_main/RA\] \[Enter\]**
+**\[cp \$EC\_HOME/RA/ec /lib/ocf/resource.d/heartbeat/\] \[Enter\]**
 
-**\[cp \~/setup/ec\_main/RA/\* \$EC\_HOME/ec\_main/RA/\] \[Enter\]**
-
-> **\[cp \$EC\_HOME/ec\_main/RA/ec /lib/ocf/resource.d/heartbeat/\]
-> \[Enter\]**
->
-> **\[cp \$EC\_HOME/ec\_main/RA/snmptrapd
-> /lib/ocf/resource.d/heartbeat/\] \[Enter\]**
+**\[cp \$EC\_HOME/RA/snmptrapd /lib/ocf/resource.d/heartbeat/\]
+\[Enter\]**
 
 Then grant executional privilege to the resource agent of EC copied
 above.
@@ -1766,7 +1868,7 @@ above.
 >
 > **\[chmod 755 snmptrapd\] \[Enter\]**
 
-### Making of crm File
+### 3.3.2. Making of crm File
 
 **&lt;Execution Host: ACT&gt;**
 
@@ -1779,20 +1881,20 @@ Execute the following command at the folder where you locate the csv
 file to convert it into a crm file that is used for registering it to
 the resource agent.
 
-> **\[pm\_crmgen -o \$EC\_HOME/ec\_main/conf/crm\_conf.crm (located csv
+> **\[pm\_crmgen -o \$EC\_HOME/conf/crm\_conf.crm (located csv
 > file name).csv\] \[Enter\]**
 
 If the conversion completes successfully, nothing will be displayed in
 the screen but in case anything went wrong with the csv file, the
 location to be amended would be displayed.
 
-### Injection of crm File
+### 3.3.3. Injection of crm File
 
 **&lt;Execution Host: ACT&gt;**
 
 > With the following commend, register the resource agent.
 >
-> **\[crm configure load update \$EC\_HOME/ec\_main/conf/crm\_conf.crm\]
+> **\[crm configure load update \$EC\_HOME/conf/crm\_conf.crm\]
 > \[Enter\]**
 
 If the injection completes successfully, nothing will be displayed in
@@ -1807,7 +1909,7 @@ answer with Y/N whether you want to keep the injection going or not.
 When this warning is displayed, there must be errors in the
 configuration, and you should answer it by entering \[N\] \[Enter\].
 
-### Confirmation of the Result of Injection
+### 3.3.4. Confirmation of the Result of Injection
 
 **&lt;Execution Host\: ACT or SBY&gt;**
 
@@ -1834,30 +1936,35 @@ If it injected successfully, a message will be displayed as follows.
 >
 > Resource Group: grpEC
 >
-> vipCheck (ocf:\:heartbeat\:VIPcheck): Started (Active Node Name))
+> vipCheck (VIPcheck): Started (Active Node Name))
 >
-> prmIP (ocf:\:heartbeat\:IPaddr2): Started (Active Node Name)
+> prmIP (IPaddr2): Started (Active Node Name)
 >
-> prmEC (ocf:\:heartbeat\:ec): Started (Active Node Name)
+> prmEC (ec): Started (Active Node Name)
 >
-> prmSNMPTrapd (ocf:\:heartbeat\:snmptrapd): Started (Active Node Name)
+> prmSNMPTrapd (snmptrapd): Started (Active Node Name)
 >
 > Clone Set: clnDiskd \[prmDiskd\]
 >
 > Started: \[(Active Node Name) (Stand-by Node Name)\]
-
-Node Attribute:
-
-\* Node (Active Node Name)
-
-\+ diskcheck\_status\_internal : normal
-
-\* Node (Stand-by Node Name)
-
-\+ diskcheck\_status\_internal : normal
-
-Migration Summary:
-
-\* Node (Active Node Name)
-
-\* Node (Stand-by Node Name)
+>
+> Node Attribute:
+>
+> \* Node (Active Node Name)
+>
+> \+ diskcheck\_status\_internal : normal
+>
+> \* Node (Stand-by Node Name)
+>
+> \+ diskcheck\_status\_internal : normal
+>
+> Migration Summary:
+>
+> \* Node (Active Node Name)
+>
+> \* Node (Stand-by Node Name)
+> Summary:
+>
+> \* Node (Active Node Name)
+>
+> \* Node (Stand-by Node Name)

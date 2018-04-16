@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,12 +9,12 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.LagIfs;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
-
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.LagIfs;
 
 /**
  * LAGIF Information DAO Class.
@@ -36,6 +36,8 @@ public class LagIfsDAO extends BaseDAO {
    *
    * @param lagIfs
    *          LAG information to be registered
+   * @param check
+   *           check
    * @throws DBAccessException
    *           data base exception
    */
@@ -43,7 +45,7 @@ public class LagIfsDAO extends BaseDAO {
     try {
       LagIfs regLagIfs = this.search(lagIfs.getNode_id(), lagIfs.getLag_if_id());
       if (regLagIfs != null) {
-        if (!check) { 
+        if (!check) {
           this.errorMessage(DOUBLE_REGISTRATION, LAG_IFS, null);
         }
       } else {
@@ -117,6 +119,35 @@ public class LagIfsDAO extends BaseDAO {
   }
 
   /**
+   * LAGIF Name Information Table UPDATE.
+   *
+   * @param lagIfs
+   *          LAGIF information
+   * @throws DBAccessException
+   *           data base exception process
+   */
+  public void updateName(LagIfs lagIfs) throws DBAccessException {
+    try {
+      LagIfs regLagIfs = this.search(lagIfs.getNode_id(), lagIfs.getLag_if_id());
+      if (regLagIfs == null) {
+        this.errorMessage(NO_UPDATE_TARGET, LAG_IFS, null);
+      } else {
+        Query query = session.getNamedQuery("updateLagIfName");
+        query.setString("key1", lagIfs.getNode_id());
+        query.setString("key2", lagIfs.getLag_if_id());
+        query.setString("key3", lagIfs.getIf_name());
+
+        query.executeUpdate();
+      }
+    } catch (DBAccessException e1) {
+      throw e1;
+    } catch (Throwable e2) {
+      logger.debug("lag_ifs update failed.", e2);
+      this.errorMessage(UPDATE_FAILURE, LAG_IFS, e2);
+    }
+  }
+
+  /**
    * LAGIF Information Table DELETE.
    *
    * @param node_id
@@ -135,14 +166,14 @@ public class LagIfsDAO extends BaseDAO {
         LagIfs lagIfs = this.search(node_id, lag_if_id);
         if (lagIfs == null) {
           this.errorMessage(NO_DELETE_TARGET, LAG_IFS, null);
-        } 
+        }
         query = session.getNamedQuery("deleteLagIfs");
         query.setString("key1", node_id);
         query.setString("key2", lag_if_id);
       } else {
         List<LagIfs> lagIfsList = this.getList(node_id);
         if (lagIfsList == null) {
-          if (check) { 
+          if (check) {
             return;
           }
           this.errorMessage(NO_DELETE_TARGET, LAG_IFS, null);

@@ -1,0 +1,5 @@
+# Setting sar
+  - include: getrpm.yml
+    when: download_flag
+  - name: sar install 1
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/sysstat-11.6.0-1.x86_64.rpm

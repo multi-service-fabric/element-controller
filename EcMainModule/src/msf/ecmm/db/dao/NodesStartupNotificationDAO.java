@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,11 +9,11 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.pojo.NodesStartupNotification;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * Device Start-up Notification Information DAO Class.
@@ -121,7 +121,7 @@ public class NodesStartupNotificationDAO extends BaseDAO {
       if (node_id != null) {
         NodesStartupNotification nodesStartupNotification = this.search(node_id);
         if (nodesStartupNotification == null) {
-          if (check) { 
+          if (check) {
             return;
           }
           this.errorMessage(NO_DELETE_TARGET, NODES_STARTUP_NOTICE, null);
@@ -148,7 +148,7 @@ public class NodesStartupNotificationDAO extends BaseDAO {
    * Device Start-up Notification Table SELECT.
    *
    * @param node_id
-	*          device ID (primary key 1)
+   *          device ID (primary key 1)
    * @return nodesStartupNotification
    * @throws DBAccessException
    *           data base exception

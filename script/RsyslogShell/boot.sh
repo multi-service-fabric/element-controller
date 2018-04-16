@@ -6,7 +6,7 @@
 ## and does REST interface notification to EC.
 ## (URI parameters are in JSON format)
 ##
-## Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+## Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
 ##
 
 ## Environment Definition
@@ -32,6 +32,8 @@ function postSend() {
 
     result=$1
     sendText=$2
+
+    sleep 30s
 
     curl -sS --connect-timeout 5 -m 60 -w ' resultCode:%{http_code}' -H "Accept: application/json" -H "Content-type: application/json" -g -d "${sendText}" -X POST ${HOST}:${PORT}/v1/internal/node_boot/"${result}" 2>&1
 

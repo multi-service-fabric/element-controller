@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
@@ -14,6 +14,7 @@ import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.PhysicalIfs;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
@@ -66,12 +67,17 @@ public class PhysicalIfInfoAcquisition extends Operation {
 
       PhysicalIfs physicalIfsDb = session.searchPhysicalIfs(getUriKeyMap().get(KEY_NODE_ID),
           getUriKeyMap().get(KEY_PHYSICAL_IF_ID));
+      Nodes nodes = session.searchNodes(getUriKeyMap().get(KEY_NODE_ID), null);
 
       if (physicalIfsDb == null) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [PhysicalIfs]"));
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_190201);
       }
-      getPhysicalInterfaceRest = RestMapper.toPhyInInfo(physicalIfsDb);
+      if (nodes == null) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [nodes]"));
+        return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_190201);
+      }
+      getPhysicalInterfaceRest = RestMapper.toPhyInInfo(physicalIfsDb, nodes.getEquipments());
 
       response = makeSuccessResponse(RESP_OK_200, getPhysicalInterfaceRest);
 

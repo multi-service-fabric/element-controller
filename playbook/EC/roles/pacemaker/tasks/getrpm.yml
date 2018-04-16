@@ -1,0 +1,12 @@
+# Getting pacemaker rpm
+- shell: mkdir -p {{ rpm_path }}/{{ folder_name }}
+- name: wget rpm repofile
+  shell: wget --no-check-certificate --no-cookies {{ item.url }} -O {{ rpm_path }}/{{ folder_name }}/{{ item.file_name }}
+  with_items:
+    - "{{ file_list }}"
+- name: install rpm repofile
+  shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/{{ item.file_name }}
+  with_items:
+    - "{{ repo_file_list }}"
+- name: copy rpm
+  shell: cp /opt/linux-ha/pacemaker/rpm/* {{ rpm_path }}/{{ folder_name }}

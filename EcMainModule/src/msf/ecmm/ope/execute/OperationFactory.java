@@ -1,13 +1,10 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute;
 
 import java.util.HashMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.ope.execute.constitution.allinfo.AllBreakoutIfInfoAcquisition;
@@ -16,6 +13,7 @@ import msf.ecmm.ope.execute.constitution.allinfo.AllDeviceTypeInfoAcquisition;
 import msf.ecmm.ope.execute.constitution.allinfo.AllIfInfoAcquisition;
 import msf.ecmm.ope.execute.constitution.allinfo.AllLagInfoAcquisition;
 import msf.ecmm.ope.execute.constitution.allinfo.AllPhysicalIfInfoAcquisition;
+import msf.ecmm.ope.execute.constitution.device.AcceptNodeRecover;
 import msf.ecmm.ope.execute.constitution.device.BLeafAddition;
 import msf.ecmm.ope.execute.constitution.device.BLeafRemove;
 import msf.ecmm.ope.execute.constitution.device.DeviceInfoAcquisition;
@@ -27,6 +25,7 @@ import msf.ecmm.ope.execute.constitution.device.LeafRemove;
 import msf.ecmm.ope.execute.constitution.device.NodeAddedNotification;
 import msf.ecmm.ope.execute.constitution.device.NodeInfoAcquisition;
 import msf.ecmm.ope.execute.constitution.device.NodeInfoRegistration;
+import msf.ecmm.ope.execute.constitution.device.NodeRecover;
 import msf.ecmm.ope.execute.constitution.device.SpineAddition;
 import msf.ecmm.ope.execute.constitution.device.SpineRemove;
 import msf.ecmm.ope.execute.constitution.interfaces.BetweenClustersLinkCreate;
@@ -42,8 +41,10 @@ import msf.ecmm.ope.execute.constitution.interfaces.PhysicalIfInfoChange;
 import msf.ecmm.ope.execute.controllerstatemanagement.ECMainLogAcquisition;
 import msf.ecmm.ope.execute.controllerstatemanagement.ECMainStateSendNotification;
 import msf.ecmm.ope.execute.controllerstatemanagement.ECStateManagement;
+import msf.ecmm.ope.execute.cp.AllL2VlanIfChange;
 import msf.ecmm.ope.execute.cp.AllL2VlanIfCreate;
 import msf.ecmm.ope.execute.cp.AllL2VlanIfRemove;
+import msf.ecmm.ope.execute.cp.AllL3VlanIfChange;
 import msf.ecmm.ope.execute.cp.AllL3VlanIfCreate;
 import msf.ecmm.ope.execute.cp.AllL3VlanIfRemove;
 import msf.ecmm.ope.execute.cp.AllVlanIfInfoAcquisition;
@@ -55,6 +56,9 @@ import msf.ecmm.ope.execute.notification.AllTrafficDataAcquisition;
 import msf.ecmm.ope.execute.notification.SNMPTrapSignalRecieveNotification;
 import msf.ecmm.ope.execute.notification.TrafficDataAcquisition;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Operation Generation Class Definition<br>
@@ -100,10 +104,14 @@ public class OperationFactory {
       ret = new AllL2VlanIfCreate(idt, ukm);
     } else if (opeType == OperationType.AllL2VlanIfRemove) {
       ret = new AllL2VlanIfRemove(idt, ukm);
+    } else if (opeType == OperationType.AllL2VlanIfChange) {
+      ret = new AllL2VlanIfChange(idt, ukm);
     } else if (opeType == OperationType.AllL3VlanIfCreate) {
       ret = new AllL3VlanIfCreate(idt, ukm);
     } else if (opeType == OperationType.AllL3VlanIfRemove) {
       ret = new AllL3VlanIfRemove(idt, ukm);
+    } else if (opeType == OperationType.AllL3VlanIfChange) {
+      ret = new AllL3VlanIfChange(idt, ukm);
     } else if (opeType == OperationType.VlanIfChange) {
       ret = new VlanIfChange(idt, ukm);
     } else if (opeType == OperationType.DeviceInfoRegistration) {
@@ -122,6 +130,10 @@ public class OperationFactory {
       ret = new LeafRemove(idt, ukm);
     } else if (opeType == OperationType.SpineRemove) {
       ret = new SpineRemove(idt, ukm);
+    } else if (opeType == OperationType.NodeRecover) {
+      ret = new NodeRecover(idt, ukm);
+    } else if (opeType == OperationType.AcceptNodeRecover) {
+      ret = new AcceptNodeRecover(idt, ukm);
     } else if (opeType == OperationType.LagCreate) {
       ret = new LagCreate(idt, ukm);
     } else if (opeType == OperationType.LagInfoAcquisition) {
@@ -168,12 +180,12 @@ public class OperationFactory {
       ret = new BLeafRemove(idt, ukm);
     } else if (opeType == OperationType.LeafChange) {
       ret = new LeafChange(idt, ukm);
-    } else if (opeType == OperationType.ECMainLogAcquisition){
-      ret = new ECMainLogAcquisition(idt,ukm);
-    } else if (opeType == OperationType.ControllerStateSendNotification){
-      ret = new ECMainStateSendNotification(idt,ukm);
-    } else if (opeType == OperationType.TrafficDataAllAcquisition){
-        ret = new AllTrafficDataAcquisition(idt,ukm);
+    } else if (opeType == OperationType.ECMainLogAcquisition) {
+      ret = new ECMainLogAcquisition(idt, ukm);
+    } else if (opeType == OperationType.ControllerStateSendNotification) {
+      ret = new ECMainStateSendNotification(idt, ukm);
+    } else if (opeType == OperationType.TrafficDataAllAcquisition) {
+      ret = new AllTrafficDataAcquisition(idt, ukm);
     } else {
       ret = null;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.allinfo;
@@ -17,6 +17,7 @@ import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.BreakoutIfs;
 import msf.ecmm.db.pojo.LagIfs;
+import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
@@ -66,7 +67,9 @@ public class AllLagInfoAcquisition extends Operation {
 
       List<BreakoutIfs> breakoutIfsDbList = session.getBreakoutIfsList(getUriKeyMap().get(KEY_NODE_ID));
 
-      outputData = RestMapper.toLagIfInfoList(lagIfs, breakoutIfsDbList);
+      Nodes nodes = session.searchNodes(getUriKeyMap().get(KEY_NODE_ID), null);
+
+      outputData = RestMapper.toLagIfInfoList(lagIfs, breakoutIfsDbList, nodes.getEquipments());
 
       response = makeSuccessResponse(RESP_OK_200, outputData);
 

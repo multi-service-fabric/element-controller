@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo.parts;
@@ -21,15 +21,19 @@ public class CeLagInterface {
   /** LAG IF Configuration Name */
   private String name = null;
 
+  /** LAG ID. */
+  @XmlElement(name = "lag-id")
+  private Integer lagId = null;
+
   /** The Number of LAG Members */
   @XmlElement(name = "minimum-links")
   private Long minimumLinks = null;
 
-  /** Line Speed (only for LagIF Generation) */
+   /** Line Speed (only for LagIF Generation) */
   @XmlElement(name = "link-speed")
   private String linkSpeed = null;
 
-  /** Physical IF Information List for CE */
+ /** Physical IF Information List for CE */
   @XmlElement(name = "leaf-interface")
   private List<LeafInterface> leafInterfaceList = null;
 
@@ -57,6 +61,25 @@ public class CeLagInterface {
    */
   public void setName(String name) {
     this.name = name;
+  }
+
+  /**
+   * Getting LAG ID.
+   *
+   * @return Lag ID
+   */
+  public int getLagId() {
+    return lagId;
+  }
+
+  /**
+   * Setting LAG ID.
+   *
+   * @param lagId
+   *          LagID
+   */
+  public void setLagId(int lagId) {
+    this.lagId = lagId;
   }
 
   /**

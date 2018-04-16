@@ -30,6 +30,10 @@
         <property name="port_mode" type="int" />
         <property name="bgp_id" type="text" />
         <property name="vrrp_id" type="text" />
+        <property name="inflow_shaping_rate" type="float" />
+        <property name="outflow_shaping_rate" type="float" />
+        <property name="remark_menu" type="text" />
+        <property name="egress_queue_menu" type="text" />
         <set name="bgpOptionsList" table="bgp_options" lazy="true" inverse="true" cascade="all-delete-orphan">
             <key>
                 <column name="node_id" />
@@ -80,6 +84,16 @@
     <query name="updateVlanIfsIP">
         <![CDATA[
             update msf.ecmm.db.pojo.VlanIfs as vlan_ifs set ipv6_prefix = :key6, ipv6_address = :key5, ipv4_prefix = :key4, ipv4_address = :key3 where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+    <query name="updateVlanIfsQos">
+        <![CDATA[
+            update msf.ecmm.db.pojo.VlanIfs as vlan_ifs set inflow_shaping_rate = :key3, outflow_shaping_rate = :key4, remark_menu = :key5, egress_queue_menu = :key6 where node_id = :key1 and vlan_if_id = :key2
+        ]]>
+    </query>
+    <query name="updateVlanIfsName">
+        <![CDATA[
+            update msf.ecmm.db.pojo.VlanIfs as vlan_ifs set if_name = :key3 where node_id = :key1 and vlan_if_id = :key2
         ]]>
     </query>
 </hibernate-mapping>

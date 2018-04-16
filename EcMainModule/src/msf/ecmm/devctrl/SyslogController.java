@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl;
@@ -10,24 +10,24 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
- * Rsyslog Related Operations
+ * Rsyslog Related Operations.
  */
 public class SyslogController {
   /**
-   * logger
+   * logger.
    */
   private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
-  /** Self(singleton) */
+  /** Self(singleton). */
   private static SyslogController me = new SyslogController();
 
   /** the starting line of appending rsyslog.conf */
@@ -47,14 +47,14 @@ public class SyslogController {
   private static final String[] RSYSLOG_RESTART_NON_BLOCK = { "systemctl", "--no-block", "restart", "rsyslog.service" };
 
   /**
-   * Constructor
+   * Constructor.
    */
   private SyslogController() {
 
   }
 
   /**
-   * Getting Instance
+   * Getting Instance.
    *
    * @return its own instance
    */
@@ -63,7 +63,7 @@ public class SyslogController {
   }
 
   /**
-   * Syslog Monitoring Start
+   * Syslog Monitoring Start.
    *
    * @param mngAddr
    *          device's management IF address
@@ -89,7 +89,7 @@ public class SyslogController {
       Files.write(new File(syslogConfig).toPath(), rep);
 
     } catch (IOException e) {
-      logger.error(LogFormatter.out.format(LogFormatter.MSG_505030, e), e);
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_403041, e), e);
       throw new DevctrlException("rsyslog start fail.");
     }
 
@@ -100,7 +100,7 @@ public class SyslogController {
   }
 
   /**
-   * Syslog Monitoring Stop
+   * Syslog Monitoring Stop.
    *
    * @param nonblockFlag
    *          systemctl command non block flag
@@ -122,7 +122,7 @@ public class SyslogController {
       Files.write(new File(syslogConfig).toPath(), rep);
 
     } catch (IOException e) {
-      logger.error(LogFormatter.out.format(LogFormatter.MSG_505030, e), e);
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_403041, e), e);
       throw new DevctrlException("rsyslog start fail.");
     }
 
@@ -132,7 +132,7 @@ public class SyslogController {
   }
 
   /**
-   * Rsyslog Restart
+   * Rsyslog Restart.
    *
    * @param nonblockFlag
    *          systemctl command non block flag
@@ -152,14 +152,16 @@ public class SyslogController {
     logger.debug("RSYSLOG RESTART : " + stdList);
 
     if (ret != 0) {
-      logger.error(LogFormatter.out.format(LogFormatter.MSG_505030, stdList));
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_403041, stdList));
       throw new DevctrlException("rsyslog start fail. ret=" + ret);
     }
   }
 
   /**
-   * Creating Monitoring Configuration
+   * Creating Monitoring Configuration.
    *
+   * @param del
+   *          deletion mode
    * @param lines
    *          contents of rsyslog.conf
    * @param mngAddr
@@ -168,8 +170,6 @@ public class SyslogController {
    *          start-up succeeded
    * @param bootErrorMsgs
    *          start-up failed
-   * @param del
-   *          deletion mode
    * @return created configuration
    */
   private ArrayList<String> replace(boolean del, List<String> lines, String mngAddr, String bootCompleteMsg,

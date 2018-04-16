@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.control;
@@ -10,23 +10,34 @@ package msf.ecmm.ope.control;
  */
 public enum NodeAdditionState {
 
-  /** Not Configured. */
-  UnInitilized(1),
-
-  /** Configuring Device. */
-  Ready(2),
-
-  /** Infrastructure Configuration Completed. */
-  InfraSettingComplete(3),
-
-  /** Running. */
+  /** Running (Complete). */
   Complete(0),
 
-  /** Extention Failed. */
+  /** During startup (Not Configured). */
+  UnInitilized(1),
+
+  /** During startup (Configuring Device). */
+  Ready(2),
+
+  /** During startup (Infrastructure Configuration Completed). */
+  InfraSettingComplete(3),
+
+  /** Out of service (Extention Failed) */
   Failed(4),
 
-  /** Infrastructure Configuration Failed. */
-  FailedInfraSetting(5), ;
+  /** Out of service (Infrastructure Configuration Failed) */
+  FailedInfraSetting(5),
+
+  /** Out of service (Recovery Service Failed) */
+  ServiceRecoverFailed(6),
+
+  /** Out of service (Other) */
+  FailedOther(7),
+
+  /** Out of service (Recovery Node Failed) */
+  NodeRecoverFailed(8),
+
+  ;
 
   /** Japanese Name Label. */
   private int value;
@@ -69,6 +80,12 @@ public enum NodeAdditionState {
       statusStr = Complete;
     } else if (number == 4) {
       statusStr = Failed;
+    } else if (number == 6) {
+      statusStr = ServiceRecoverFailed;
+    } else if (number == 7) {
+      statusStr = FailedOther;
+    } else if (number == 8) {
+      statusStr = NodeRecoverFailed;
     } else if (number == 5) {
       statusStr = FailedInfraSetting;
     }
@@ -96,6 +113,12 @@ public enum NodeAdditionState {
       statusStr = "complete";
     } else if (status.name().equals(NodeAdditionState.Failed.name())) {
       statusStr = "failed";
+    } else if (status.name().equals(NodeAdditionState.FailedOther.name())) {
+      statusStr = "recoverfailed";
+    } else if (status.name().equals(NodeAdditionState.NodeRecoverFailed.name())) {
+      statusStr = "noderecoverfailed";
+    } else if (status.name().equals(NodeAdditionState.ServiceRecoverFailed.name())) {
+      statusStr = "servicerecoverfailed";
     } else if (status.name().equals(NodeAdditionState.FailedInfraSetting.name())) {
       statusStr = "failedinfrasetting";
     }

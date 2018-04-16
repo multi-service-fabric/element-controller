@@ -1,0 +1,32 @@
+- hosts: EC
+  become: true
+  vars_files:
+    - vars/{{group_names[1]}}.yml
+  roles:
+    - before
+    - firewall
+    - java
+    - net-snmp
+    - rsyslog
+    - ntp
+    - dhcp
+    - tftp
+    - httpd
+    - { role: pacemaker, when: "ha_flag"}
+    - sar
+    - ec
+    - { role: ra-ec, when: "ha_flag"}
+
+- hosts: DB
+  become: true
+  vars_files:
+    - vars/{{group_names[1]}}.yml
+  roles:
+    - before
+    - { role: postgre, when: "install_flag"}
+    - { role: pacemaker, when: "ha_flag"}
+    - db-ec
+    - firewall
+
+
+

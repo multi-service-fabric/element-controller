@@ -7,15 +7,15 @@
 ## and does REST interface notification to EC.
 ## (URI parameters are in JSON format)
 ##
-## Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+## Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
 ##
 
 ## Environment Definition
 HOST="192.168.51.52"
 PORT="18080"
 RETRYNUM=10
-FC_HOST="192.168.51.54" # FC通知先IP
-FC_PORT="18081"          # FC通知先PORT
+FC_HOST="192.168.51.54" 
+FC_PORT="18081"         
 
 ## Input Argument (only stop/status are used)
 EVENT=""
@@ -39,7 +39,8 @@ done
 DEFINE="-Dlog4j.configurationFile=file:///usr/ec_main/conf/log4j2.xml"
 
 ## Constant Definition
-EC_NORMAL_STOP="NORMAL_STOP"
+#EC_NORMAL_STOP="NORMAL_STOP"
+EC_CHANGEOVER="changeover"
 
 ## EC Main Module Start-up Process
 function start() {
@@ -50,55 +51,19 @@ function start() {
         echo "Error : ${CHECKFILE} is already running"
         ret=1
     else
+
+        #echo java -cp ${CLASSPATH} ${DEFINE} ${JARFILE} ${CONFFILE}
         java -cp ${CLASSPATH} ${DEFINE} ${JARFILE} ${CONFFILE} > /dev/null 2>&1 &
         ret=0
-
-        notify_start_changeover
+        
     fi
     return ${ret}
-}
-
-## Start Notification of Switching to FC
-function notify_start_changeover() {
-for i in `seq 1 ${RESTRETRYNUM}`
-do
-    JSON_MESSAGE="{\"controller\": {\"controller_type\": \"ec\", \"event\": \"start system switching\"}}"
-    response=`curl -sS --connect-timeout ${RESTTIMEOUT}  -m ${RESTTIMEOUT} -w ' resultCode:%{http_code}' -H "Accept: application/json" -H "Content-type: application/json" -X PUT -g -d "${JSON_MESSAGE}" ${FC_HOST}:${FC_PORT}/v1/internal/controller/ec_em/status 2>&1`
-
-    retd="0"
-    logger -t EcMainModule " Notify start changeover response. code=${response}."
-    err=`echo "${response}" | grep -c "resultCode\:000"`
-    errorcount=`echo "${response}" | grep -c "000001"`
-
-    if [ "${err}" -eq 0 ]; then
-        resultCode=`echo "${response}" | sed -e "s/.*resultCode://"`
-
-        if [ "${resultCode}" != "200" ]; then
-           if  [ "${errorcount}" -eq 0 ]; then
-                    logger -t EcMainModule "<error> Notify start changeover Failed. code=${resultCode}."
-                    retd=1
-                    break
-           fi
-
-           continue
-        fi
-        break
-    else
-        retd=1
-    fi
-    if [ "$retd" != "0" ]; then
-        logger -t EcMainModule "<error> Notify start changeover Failed."
-        echo "<error> Notify start changeover Failed."
-
-    fi
-done
-return 0
 }
 
 ## EC Main Module Termination Process
 function stop() {
 
-    if [ "$1" == ${EC_NORMAL_STOP} ]; then
+    if [ "$1" != ${EC_CHANGEOVER} ]; then
         parm="/normal"
     else
         parm="/chgover"
@@ -143,7 +108,6 @@ function status() {
         ret=7
         return ${ret}
     fi
-
     parm="?controller=ec&get_info=ctr-state"
     res=`postSend GET "${parm}"`
 
@@ -177,7 +141,9 @@ function postSend() {
 ## POST Response (stop) Analysis Process
 function chkStopResponse() {
 
+
     response=$1
+
 
     ret="0"
 
@@ -185,6 +151,7 @@ function chkStopResponse() {
     if [ "${err}" -eq 0 ]; then
 
         resultCode=`echo ${response} | sed -e "s/.*resultCode://"`
+
 
         if [ "${resultCode}" != "200" ]; then
             logger -t EcMainModule "responCode=""${resultCode}"
@@ -237,9 +204,11 @@ function chkStatusResponse() {
             curlErrCode=`echo ${response} | cut -d"(" -f2 | cut -d")" -f1`
 
             if [ "${curlErrCode}" = "7" ]; then
+
                 ret=10
             fi
         else
+
             logger -t EcMainModule "curl command failed.("detail error reason is unknown")"
         fi
     fi

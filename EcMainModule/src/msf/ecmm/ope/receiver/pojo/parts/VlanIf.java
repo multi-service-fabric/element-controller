@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -52,6 +52,9 @@ public class VlanIf {
 
   /** Information for VRRP. */
   private Vrrp vrrp;
+
+  /** QoS capability. */
+  private QosGetVlanIfs qos;
 
   /**
    * Getting VLANIF ID.
@@ -319,7 +322,27 @@ public class VlanIf {
     this.vrrp = vrrp;
   }
 
-  /* (Non-Javadoc)
+  /**
+   * Getting QoS capability.
+   *
+   * @return qos
+   */
+  public QosGetVlanIfs getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QoS capability.
+   *
+   * @param qos
+   *          Setting qos
+   */
+  public void setQos(QosGetVlanIfs qos) {
+    this.qos = qos;
+  }
+
+  /**
+   * Stringizing Instance
    * @see java.lang.Object#toString()
    */
   @Override
@@ -327,6 +350,6 @@ public class VlanIf {
     return "VlanIf [vlanIfId=" + vlanIfId + ", vlanId=" + vlanId + ", ifName=" + ifName + ", ifState=" + ifState
         + ", mtu=" + mtu + ", ipv4Address=" + ipv4Address + ", ipv6Address=" + ipv6Address + ", ipv4Prefix="
         + ipv4Prefix + ", ipv6Prefix=" + ipv6Prefix + ", portMode=" + portMode + ", baseIf=" + baseIf + ", bgp=" + bgp
-        + ", staticRoutes=" + staticRoutes + ", vrrp=" + vrrp + "]";
+        + ", staticRoutes=" + staticRoutes + ", vrrp=" + vrrp + ", qos=" + qos + "]";
   }
 }

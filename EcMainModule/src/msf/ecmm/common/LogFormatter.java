@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.common;
@@ -70,12 +70,6 @@ public class LogFormatter {
   public static final int MSG_504026 = 504026;
   /** Sending massage of SNMP failed. */
   public static final int MSG_505027 = 505027;
-  /** Starting up the DHCP server failed. */
-  public static final int MSG_505028 = 505028;
-  /** Terminating the DHCP server failed. */
-  public static final int MSG_505029 = 505029;
-  /** Restarting Rsyslog failed. */
-  public static final int MSG_505030 = 505030;
   /** REST request to FC/EM failed. */
   public static final int MSG_513031 = 513031;
   /** Checking the contents of configuration turned out to be an error. * The location of %s will be replaced by the key of configured value and the value actually configured. */
@@ -188,6 +182,14 @@ public class LogFormatter {
   public static final int MSG_503060 = 503060;
   /** The processing of expanded information rollback at the time of expantion failure failed: node ID=[%s]. */
   public static final int MSG_402086 = 402086;
+  /** Failed to record service state at EC startup. */
+  public static final int MSG_503090 = 503090;
+  /** Successful system switch notification (start / completion) * Start or end is entered .start indicates start, end indicates completion. */
+  public static final int MSG_303091 = 303091;
+  /** Failed to system switch notification (start / completion) * Start or end is entered .start indicates start, end indicates completion. */
+  public static final int MSG_503092 = 503092;
+  /** An error occurred because the key information of the data to be updated does not exist in "nodes" table. */
+  public static final int MSG_509093 = 509093;
 
   /** Log Message Map. */
   private static HashMap<Integer, String> dictionary = new HashMap<Integer, String>() {
@@ -220,9 +222,6 @@ public class LogFormatter {
       put(MSG_504025, "EM Decode error:[%s]");
       put(MSG_504026, "EM Encode error:[%s]");
       put(MSG_505027, "SNMP send error:[%s]");
-      put(MSG_505028, "DHCP start up error:[%s]");
-      put(MSG_505029, "DHCP stop error:[%s]");
-      put(MSG_505030, "Rsyslog restart error:[%s]");
       put(MSG_513031, "FC/EM Request REST massege error [%s]");
       put(MSG_508032, "Config check error [%s = %s]");
       put(MSG_508033, "Not found required parameter error [%s]");
@@ -266,19 +265,24 @@ public class LogFormatter {
       put(MSG_303071, "EC main module is stop.");
       put(MSG_402072, "EC main module has been stopping.");
       put(MSG_409073, "DB warn : OppositeNodes not found");
-      put(MSG_509074, "Register error  :duplicate registration[breakout_ifs]");
-      put(MSG_509075, "Register error  :duplicate registration[vlan_ifs]");
-      put(MSG_509076, "Update error  :not found update[breakout_ifs]");
-      put(MSG_509077, "Update error  :not found update[lag_ifs]");
-      put(MSG_509078, "Update error  :not found update[vlan_ifs]");
-      put(MSG_509079, "Delete error  :not found delete[breakout_ifs]");
-      put(MSG_509080, "Delete error  :not found delete[vlan_ifs]");
+      put(MSG_509074, "Register error：duplicate registration[breakout_ifs]");
+      put(MSG_509075, "Register error：duplicate registration[vlan_ifs]");
+      put(MSG_509076, "Update error：not found update[breakout_ifs]");
+      put(MSG_509077, "Update error：not found update[lag_ifs]");
+      put(MSG_509078, "Update error：not found update[vlan_ifs]");
+      put(MSG_509079, "Delete error：not found delete[breakout_ifs]");
+      put(MSG_509080, "Delete error：not found delete[vlan_ifs]");
       put(MSG_504056, "EM Request REST massege error [%s]");
       put(MSG_502057, "REST Count error");
       put(MSG_403058, "Not found required log error [%s]");
       put(MSG_503059, "Node error:[%s]");
       put(MSG_503060, "Controller status acquisition error");
       put(MSG_402086, "Rollback added node info error : nodeId=[%s]");
+      put(MSG_503090, "EC initial service status has not recorded");
+      put(MSG_303091, "Complete to system switch notification:[%s]");
+      put(MSG_503092, "Failed to system switch notification:[%s]");
+      put(MSG_509093, "Update error：not found update[Nodes]");
+
     }
   };
 

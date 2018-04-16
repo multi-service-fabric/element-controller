@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute;
@@ -37,7 +37,7 @@ public abstract class Operation {
   private AbstractRestMessage inData;
 
   /** Operation Type. */
-  private OperationType operationType = OperationType.None; 
+  private OperationType operationType = OperationType.None;
 
   /** URI Key Information. */
   private HashMap<String, String> uriKeyMap;

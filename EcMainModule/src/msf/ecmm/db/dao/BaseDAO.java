@@ -1,18 +1,17 @@
 /*
- * Copyright(c) 2017 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
 
 import static msf.ecmm.common.LogFormatter.*;
 import static msf.ecmm.db.DBAccessException.*;
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.db.DBAccessException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-
-import msf.ecmm.common.CommonDefinitions;
-import msf.ecmm.db.DBAccessException;
 
 /**
  * Data Base Regulation Class.
@@ -55,6 +54,10 @@ public class BaseDAO {
   public static final int LAG_MEMBERS = 14;
   /** Table Name (System Status Information). */
   public static final int SYSTEM_STATUS = 15;
+  /** Table Name (Remark Menu Information). */
+  public static final int REMARK_MENUS = 16;
+  /** Table Name (Egress queue Menu Information). */
+  public static final int EGRESS_QUEUE_MENUS = 17;
 
   /**
    * Error Process.
@@ -81,6 +84,8 @@ public class BaseDAO {
           case EQUIPMENT_IFS:
           case IF_NAME_RULES:
           case BOOT_ERROR_MESSAGES:
+          case EGRESS_QUEUE_MENUS:
+          case REMARK_MENUS:
             errorMessage = MSG_509001;
             break;
 
@@ -150,6 +155,10 @@ public class BaseDAO {
             errorMessage = MSG_509078;
             break;
 
+          case NODES:
+            errorMessage = MSG_509093;
+            break;
+
           default:
             errorMessage = MSG_509022;
             break;
@@ -163,6 +172,8 @@ public class BaseDAO {
           case EQUIPMENT_IFS:
           case IF_NAME_RULES:
           case BOOT_ERROR_MESSAGES:
+          case EGRESS_QUEUE_MENUS:
+          case REMARK_MENUS:
             errorMessage = MSG_509010;
             break;
 

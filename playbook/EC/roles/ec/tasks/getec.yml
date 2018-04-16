@@ -1,0 +1,20 @@
+# Getting ec jar
+  - name: wget src
+    shell: wget --no-check-certificate --no-cookies {{ item.url }} -P {{ rpm_path }}
+    with_items:
+      - "{{ src_list }}"
+    when: download_flag
+  - shell: tar xvfz {{ rpm_path }}/master.tar.gz -C {{ rpm_path }}
+    when: download_flag
+  - shell: mkdir -p {{ rpm_path }}/msf
+    when: download_flag
+  - shell: cp -r {{ rpm_path }}/element-controller-master/EcMainModule/src {{ rpm_path }}/msf
+    when: download_flag
+  - shell: cp -r {{ rpm_path }}/element-controller-master/jar_create.sh  {{ rpm_path }}
+    when: download_flag
+  - name: make jar
+    shell: sh jar_create.sh
+    args:
+      chdir: "{{ installing_ec_path }}/"
+  - name: mv jar
+    shell: mv {{ installing_ec_path }}/{{ ec_jar_name }} {{ ec_path }}/lib

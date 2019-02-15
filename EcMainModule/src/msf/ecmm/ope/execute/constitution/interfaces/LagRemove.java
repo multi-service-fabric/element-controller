@@ -43,6 +43,9 @@ public class LagRemove extends Operation {
   /** In case the CP requires LAG has not been deleted. */
   private static final String ERROR_CODE_260302 = "260302";
 
+  /** In case that the LAG to be deleted has been already configured, and cannot be deleted. */
+  private static final String ERROR_CODE_260303 = "260303";
+
   /** Disconnection or connection timeout with EM has occurred while requesting LagIF deletion to EM. */
   private static final String ERROR_CODE_260402 = "260402";
 
@@ -111,6 +114,11 @@ public class LagRemove extends Operation {
         }
       }
 
+      if (!checkExpand(lagIfsDb)) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "expand function check NG."));
+        return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_260303);
+      }
+
       CeLagAddDelete ceLagAddDeleteEm = EmMapper.toLagIfDelete(nodesDb, lagIfsDb);
 
       session.startTransaction();
@@ -177,4 +185,15 @@ public class LagRemove extends Operation {
     return result;
   }
 
+  /**
+   * Implement any check if required in extension function.
+   *
+   * @param lagIfsDb
+   *          LAGIF information（DB)
+   * @return check result
+   * @throws DBAccessException  In case abnormality occurred in DB
+   */
+  protected boolean checkExpand(LagIfs lagIfsDb) throws DBAccessException {
+    return true;
+  }
 }

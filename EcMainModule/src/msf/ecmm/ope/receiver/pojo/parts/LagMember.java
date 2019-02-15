@@ -7,6 +7,9 @@ package msf.ecmm.ope.receiver.pojo.parts;
 import java.util.ArrayList;
 import java.util.List;
 
+import msf.ecmm.ope.execute.OperationType;
+import msf.ecmm.ope.receiver.pojo.CheckDataException;
+
 /**
  * LagIF Information List.
  *
@@ -65,6 +68,23 @@ public class LagMember {
   @Override
   public String toString() {
     return "LagIf [physicalIfs=" + physicalIfs + ", breakoutIfs=" + breakoutIfs + "]";
+  }
+
+  /**
+   * Input parameter check.
+   *
+   * @param ope
+   *          Operation type
+   * @throws CheckDataException
+   *           Input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+    if (physicalIfs.size() == 0) {
+      throw new CheckDataException();
+    }
+    if (breakoutIfs.size() == 0) {
+      throw new CheckDataException();
+    }
   }
 
 }

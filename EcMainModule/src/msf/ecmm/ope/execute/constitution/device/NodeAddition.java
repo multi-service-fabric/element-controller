@@ -122,15 +122,15 @@ public abstract class NodeAddition extends Operation {
       session.startTransaction();
 
       for (Nodes nodeDb : nodesListDbMapper) {
-        ArrayList<PhysicalIfs> physiIfList = new ArrayList<PhysicalIfs>(nodeDb.getPhysicalIfsList());
-        ArrayList<LagIfs> lagIfList = new ArrayList<LagIfs>(nodeDb.getLagIfsList());
+        ArrayList<PhysicalIfs> physiIfList = new ArrayList<PhysicalIfs>(nodeDb.getPhysicalIfsList()); 
+        ArrayList<LagIfs> lagIfList = new ArrayList<LagIfs>(nodeDb.getLagIfsList()); 
         session.addNodesRelation(physiIfList, lagIfList, null);
       }
 
       boolean doNotNotifyEm = false;
       if (session.checkClusterType() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
         if (session.getNodesNum() > 1) {
-          doNotNotifyEm = true;
+          doNotNotifyEm = true; 
         }
       }
 
@@ -140,17 +140,18 @@ public abstract class NodeAddition extends Operation {
         entry = EmController.getInstance().lock(lockKey);
         emLockOkFlag = true;
 
+        int internallinkVlanId = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.INTERNAL_LINK_VLANID);
         if (doNotNotifyEm == false) {
           String ecIpaddr = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_EC_MANAGEMENT_IF);
-          if (!executeAddNode(ecIpaddr, nodesListDbMapper)) {
+          if (!executeAddNode(ecIpaddr, nodesListDbMapper, internallinkVlanId)) {
             logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed. [Node]"));
             return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080404);
           }
           em1OkFlag = true;
         }
 
-        if (isOppositeNodesInfoFlag) {
-          if (!executeAddInternalLink(nodesListDbMapper)) {
+        if (isOppositeNodesInfoFlag) { 
+          if (!executeAddInternalLink(nodesListDbMapper, internallinkVlanId)) {
             logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed. [internalLink]"));
             return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080406);
           }
@@ -212,34 +213,37 @@ public abstract class NodeAddition extends Operation {
   /**
    * EM Access (Device Extention) Execution.
    *
-   * @param nodes
-   *          device information
    * @param ecmainIpaddr
    *          IP address of EC
-   * @param oppoNodeList
-   *          opposing device information list (DB)
-   * @return success/fail
+   * @param nodesListDbMapper
+   *          Device information list（DB）
+   * @param internalLinkVlanId
+   *          Internal link VLANID
+   * @return Execution successl/fail
    * @throws EmctrlException
    *           :EM exception
    * @throws IllegalArgumentException
    *           :mapper exception
    */
-  protected abstract boolean executeAddNode(String ecmainIpaddr, List<Nodes> nodesListDbMapper)
+  protected abstract boolean executeAddNode(String ecmainIpaddr, List<Nodes> nodesListDbMapper, int internallinkVlanId)
       throws EmctrlException, IllegalArgumentException;
 
   /**
    * EM Access (Internal Link Addition) Execution.
    *
-   * @param oppoNodeList
-   *          opposing device list
-   * @return success/fail
+   * @param nodesListDbMapper
+   *          Device information list（DB）
+   * @param internalLinkVlanId
+   *         Iternal link VLANID
+   * @return Execution successl/fail
    * @throws EmctrlException
    *           :EM exception
    */
-  private boolean executeAddInternalLink(List<Nodes> nodesListDbMapper) throws EmctrlException {
+  protected boolean executeAddInternalLink(List<Nodes> nodesListDbMapper, int internallinkVlanId) throws EmctrlException {
     logger.trace(CommonDefinitions.START);
 
-    InternalLinkAddDelete internalLinkAddEm = EmMapper.toInternalLinkCreate((AddNode) getInData(), nodesListDbMapper);
+    InternalLinkAddDelete internalLinkAddEm = EmMapper.toInternalLinkCreate((AddNode) getInData(), nodesListDbMapper,
+        internallinkVlanId);
 
     EmController emController = EmController.getInstance();
     AbstractMessage ret = emController.request(internalLinkAddEm, false);

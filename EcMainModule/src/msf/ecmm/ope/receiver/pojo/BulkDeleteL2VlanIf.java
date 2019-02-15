@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import com.google.gson.annotations.SerializedName;
 
 import msf.ecmm.ope.execute.OperationType;
-import msf.ecmm.ope.receiver.pojo.parts.UpdateVlanIfs;
+import msf.ecmm.ope.receiver.pojo.parts.RemoveUpdateVlanIfs;
 import msf.ecmm.ope.receiver.pojo.parts.VlanIfsDeleteVlanIf;
 
 /**
@@ -20,12 +20,15 @@ public class BulkDeleteL2VlanIf extends AbstractRestMessage {
   /** Unique parametr for each slice ID. */
   private String vrfId;
 
-  /** List information of the VLANIF of which batch deletion is to be controlled. */
+  /** VN value. */
+  private Integer vni = null;
+
+  /** List information of VLANIF of which batch deletion is to be controlled. */
   @SerializedName("delete_vlan_ifs")
   private ArrayList<VlanIfsDeleteVlanIf> vlanIfsDeleteVlanIf;
 
-  /** List information of the VLANIF of which ESI value is to be changed. */
-  private ArrayList<UpdateVlanIfs> updateVlanIfs;
+  /** List information of VLANIF of which batch change is to be done. */
+  private ArrayList<RemoveUpdateVlanIfs> updateVlanIfs;
 
   /**
    * Getting unique parametr for each slice ID.
@@ -47,7 +50,26 @@ public class BulkDeleteL2VlanIf extends AbstractRestMessage {
   }
 
   /**
-   * Getting list information of the CP to be controlled.
+   * Getting VN value.
+   *
+   * @return vni
+   */
+  public Integer getVni() {
+    return vni;
+  }
+
+  /**
+   * Setting VN value.
+   *
+   * @param vni
+   *          Setting vni
+   */
+  public void setVni(Integer vni) {
+    this.vni = vni;
+  }
+
+  /**
+   * Getting List information of CP to be controlled.
    *
    * @return list information of the CP to be controlled
    */
@@ -66,21 +88,21 @@ public class BulkDeleteL2VlanIf extends AbstractRestMessage {
   }
 
   /**
-   * Getting list information of the VLANIF of which ESI value is to be changed.
+   * Getting list of VLANIF of which batch change is to be done.
    *
    * @return updateVlanIfs
    */
-  public ArrayList<UpdateVlanIfs> getUpdateVlanIfs() {
+  public ArrayList<RemoveUpdateVlanIfs> getUpdateVlanIfs() {
     return updateVlanIfs;
   }
 
   /**
-   * Setting list information of the VLANIF of which ESI value is to be changed.
+   * Setting VLANIF of which batch change is to be done.
    *
    * @param updateVlanIfs
-   *          set updateVlanIfs
+   *          Setting updateVlanIfs
    */
-  public void setUpdateVlanIfs(ArrayList<UpdateVlanIfs> updateVlanIfs) {
+  public void setUpdateVlanIfs(ArrayList<RemoveUpdateVlanIfs> updateVlanIfs) {
     this.updateVlanIfs = updateVlanIfs;
   }
 
@@ -92,7 +114,7 @@ public class BulkDeleteL2VlanIf extends AbstractRestMessage {
   @Override
   public String toString() {
     return "BulkDeleteL2VlanIf [vrfId=" + vrfId + ", vlanIfsDeleteVlanIf=" + vlanIfsDeleteVlanIf + ", updateVlanIfs="
-        + updateVlanIfs + "]";
+        + updateVlanIfs + ", vni=" + vni + "]";
   }
 
   /**
@@ -104,10 +126,6 @@ public class BulkDeleteL2VlanIf extends AbstractRestMessage {
    *           input check error
    */
   public void check(OperationType ope) throws CheckDataException {
-    if (vrfId == null) {
-      throw new CheckDataException();
-    }
-
     if (vlanIfsDeleteVlanIf == null && updateVlanIfs == null) {
       throw new CheckDataException();
     }
@@ -119,7 +137,7 @@ public class BulkDeleteL2VlanIf extends AbstractRestMessage {
     }
 
     if (updateVlanIfs != null) {
-      for (UpdateVlanIfs l2VlanIfs : updateVlanIfs) {
+      for (RemoveUpdateVlanIfs l2VlanIfs : updateVlanIfs) {
         l2VlanIfs.check(ope);
       }
     }

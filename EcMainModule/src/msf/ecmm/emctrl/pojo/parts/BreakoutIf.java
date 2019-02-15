@@ -71,7 +71,7 @@ public class BreakoutIf {
   }
 
   /**
-   * Getting IF speed after partition.
+   * Getting IF speed after division.
    *
    * @return speed
    */
@@ -80,17 +80,17 @@ public class BreakoutIf {
   }
 
   /**
-   * Setting IF speed after partition.
+   * Setting IF speed after division.
    *
    * @param speed
-   *          set speed
+   *          Setting speed
    */
   public void setSpeed(String speed) {
     this.speed = speed;
   }
 
   /**
-   * Getting the number of partitions.
+   * Getting no. of divisions.
    *
    * @return breakoutNum
    */
@@ -99,17 +99,17 @@ public class BreakoutIf {
   }
 
   /**
-   * Setting the number of partitions.
+   * Setting no. of divisions.
    *
    * @param num
-   *          set num
+   *          Setting num
    */
   public void setBreakoutNum(int num) {
     this.breakoutNum = num;
   }
 
   /**
-   * Stringizing Instance.
+   * Stringizing instance.
    *
    */
   @Override

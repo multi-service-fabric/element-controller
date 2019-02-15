@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
 
@@ -190,6 +190,11 @@ public class BetweenClustersLinkDelete extends Operation {
         return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_360302);
       }
 
+      if (!checkExpand(nodeId, ifType, ifId)) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "expand function check NG."));
+        return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_360302);
+      }
+
       session.startTransaction();
 
       PhysicalIfs physicalIfs = DbMapper.toPhysicalIfIpAddrChange(physicalIfsDb, null, null);
@@ -252,7 +257,7 @@ public class BetweenClustersLinkDelete extends Operation {
 
       DeleteBetweenClustersLink inputData = (DeleteBetweenClustersLink) getInData();
 
-      inputData.check(OperationType.BetweenClustersLinkDelete);
+      inputData.check(new OperationType(OperationType.BetweenClustersLinkDelete));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);
@@ -328,4 +333,21 @@ public class BetweenClustersLinkDelete extends Operation {
     }
     return false;
   }
+
+  /**
+   * Implement any check if required in extension function.
+   *
+   * @param nodeId
+   *          Device ID
+   * @param ifType
+   *          IF type
+   * @param ifId
+   *          IFID
+   * @return check result
+   * @throws DBAccessException In case abnormality occurred in DB
+   */
+  protected boolean checkExpand(String nodeId, String ifType, String ifId) throws DBAccessException {
+    return true;
+  }
+
 }

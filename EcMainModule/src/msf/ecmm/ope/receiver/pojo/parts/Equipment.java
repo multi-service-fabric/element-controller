@@ -63,16 +63,31 @@ public class Equipment {
   /** Information for ztp. */
   private Ztp ztp;
 
-  /** Configurable Device Type. */
+  /** Type of configurable device. */
   private Capabilities capabilities;
 
   /** QoS Capability. */
   private QosRegisterEquipment qos;
 
-/**
-   * Getting device ID.
+  /** Total value exixtance flag for the same VLAN number traffic acquisition. */
+  private Boolean sameVlanNumberTrafficTotalValueFlag;
+
+  /** VLAN traffic information acquisition method. */
+  private String vlanTrafficCapability;
+
+  /** VLAN traffic counter name acquisition extension MIB information. */
+  private String vlanTrafficCounterNameMibOid;
+
+  /** VLAN traffic counter value acquisition extension MIB information. */
+  private String vlanTrafficCounterValueMibOid;
+
+  /** CLI command execution and result analysis shell script path. */
+  private String cliExecPath;
+
+  /**
+   * Acquiring model ID.
    *
-   * @return device ID
+   * @return Model ID
    */
   public String getEquipmentTypeId() {
     return equipmentTypeId;
@@ -411,9 +426,102 @@ public class Equipment {
     this.qos = qos;
   }
 
-  /*
-   * Stringizing Instance.
+  /**
+   * Getting total value existance flag for the same VLAN number traffic.
    *
+   * @return sameVlanNumberTrafficTotalValueFlag
+   */
+  public Boolean getSameVlanNumberTrafficTotalValueFlag() {
+    return sameVlanNumberTrafficTotalValueFlag;
+  }
+
+  /**
+   * Setting total value existance flag for the same VLAN number traffic.
+   *
+   * @param sameVlanNumberTrafficTotalValueFlag
+   *          Setting sameVlanNumberTrafficTotalValueFlag
+   */
+  public void setSameVlanNumberTrafficTotalValueFlag(Boolean sameVlanNumberTrafficTotalValueFlag) {
+    this.sameVlanNumberTrafficTotalValueFlag = sameVlanNumberTrafficTotalValueFlag;
+  }
+
+  /**
+   * Getting VLAN traffic information acquisition method.
+   *
+   * @return vlanTrafficCapability
+   */
+  public String getVlanTrafficCapability() {
+    return vlanTrafficCapability;
+  }
+
+  /**
+   * Setting VLAN traffic information acquisition method.
+   *
+   * @param vlanTrafficCapability
+   *          Setting vlanTrafficCapability
+   */
+  public void setVlanTrafficCapability(String vlanTrafficCapability) {
+    this.vlanTrafficCapability = vlanTrafficCapability;
+  }
+
+  /**
+   * Getting VLAN traffic counter name acquisition extension MIB information.
+   *
+   * @return vlanTrafficCounterNameMibOid
+   */
+  public String getVlanTrafficCounterNameMibOid() {
+    return vlanTrafficCounterNameMibOid;
+  }
+
+  /**
+   * Setting VLAN traffic counter name acquisition extention MIB information.
+   *
+   * @param vlanTrafficCounterNameMibOid
+   *          Setting vlanTrafficCounterNameMibOid
+   */
+  public void setVlanTrafficCounterNameMibOid(String vlanTrafficCounterNameMibOid) {
+    this.vlanTrafficCounterNameMibOid = vlanTrafficCounterNameMibOid;
+  }
+
+  /**
+   * Getting VLAN traffic counter value acquisition extension MIB information.
+   *
+   * @return vlanTrafficCounterValueMibOid
+   */
+  public String getVlanTrafficCounterValueMibOid() {
+    return vlanTrafficCounterValueMibOid;
+  }
+
+  /**
+   * Setting VLAN traffic counter value acquisition extension MIB information.
+   *
+   * @param vlanTrafficCounterValueMibOid
+   *          Setting vlanTrafficCounterValueMibOid
+   */
+  public void setVlanTrafficCounterValueMibOid(String vlanTrafficCounterValueMibOid) {
+    this.vlanTrafficCounterValueMibOid = vlanTrafficCounterValueMibOid;
+  }
+
+  /**
+   * Getting CLI command execution and result analysis shell script path.
+   *
+   * @return cliExecPath
+   */
+  public String getCliExecPath() {
+    return cliExecPath;
+  }
+
+  /**
+   * Setting CLI command execution and result analysis shell script path.
+   *
+   * @param cliExecPath
+   *          Setting cliExecPath
+   */
+  public void setCliExecPath(String cliExecPath) {
+    this.cliExecPath = cliExecPath;
+  }
+
+  /* (Non Javadoc)
    * @see java.lang.Object#toString()
    */
   @Override
@@ -424,7 +532,10 @@ public class Equipment {
         + routerType + ", physicalIfNameSyntax=" + physicalIfNameSyntax + ", breakoutIfNameSyntax="
         + breakoutIfNameSyntax + ", breakoutIfNameSuffixList=" + breakoutIfNameSuffixList + ", ifNameRules="
         + ifNameRules + ", equipmentIfs=" + equipmentIfs + ", ztp=" + ztp + ", capabilities=" + capabilities + ", qos="
-        + qos + "]";
+        + qos + ", sameVlanNumberTrafficTotalValueFlag=" + sameVlanNumberTrafficTotalValueFlag
+        + ", vlanTrafficCapability=" + vlanTrafficCapability + ", vlanTrafficCounterNameMibOid="
+        + vlanTrafficCounterNameMibOid + ", vlanTrafficCounterValueMibOid=" + vlanTrafficCounterValueMibOid
+        + ", cliExecPath=" + cliExecPath + "]";
   }
 
   /**
@@ -496,6 +607,20 @@ public class Equipment {
     } else {
       for (EquipmentIf equipmentIf : equipmentIfs) {
         equipmentIf.check(operationType);
+      }
+    }
+
+    if (null != vlanTrafficCapability) {
+      if (vlanTrafficCapability.equals(CommonDefinitions.VLAN_TRAFFIC_TYPE_MIB)) {
+        if (null == vlanTrafficCounterNameMibOid || null == vlanTrafficCounterValueMibOid) {
+          throw new CheckDataException();
+        }
+      }
+
+      if (vlanTrafficCapability.equals(CommonDefinitions.VLAN_TRAFFIC_TYPE_CLI)) {
+        if (null == cliExecPath) {
+          throw new CheckDataException();
+        }
       }
     }
 

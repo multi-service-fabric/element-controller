@@ -31,6 +31,7 @@
     shell: systemctl restart firewalld
   - name: SELinux set enforce
     shell: setenforce 0
+    ignore_errors: yes
   - name: replace SELINUX setting 1
     replace: dest=/etc/selinux/config regexp='SELINUX=permissive' replace='SELINUX=disabled'
   - name: replace SELINUX setting 2

@@ -111,16 +111,16 @@ public class Vrrp {
    * Setting VRRP priority.
    *
    * @param priority
-   *          VRRP priority
+   *          VRRP priorit
    */
   public void setPriority(Integer priority) {
     this.priority = priority;
   }
 
   /**
-   * Getting tracking IF configuration information.
+   * Getting tracking IF configuraiton informaitn.
    *
-   * @return tracking IF configuration information
+   * @return Tracking IF configuraiton information
    */
   public Track getTrack() {
     return track;
@@ -130,14 +130,14 @@ public class Vrrp {
    * Setting tracking IF configuration information.
    *
    * @param track
-   *          tracking IF configuration information
+   *          Tracking IF configuraiton information
    */
   public void setTrack(Track track) {
     this.track = track;
   }
 
   /*
-   * (Non-Javadoc)
+   * (Non Javadoc)
    *
    * @see java.lang.Object#toString()
    */

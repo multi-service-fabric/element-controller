@@ -274,7 +274,7 @@ public class AllL3VlanIfCreate extends Operation {
     try {
       BulkCreateL3VlanIf inputData = (BulkCreateL3VlanIf) getInData();
 
-      inputData.check(OperationType.AllL3VlanIfCreate);
+      inputData.check(new OperationType(OperationType.AllL3VlanIfCreate));
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);
       result = false;
@@ -340,7 +340,7 @@ public class AllL3VlanIfCreate extends Operation {
   private void checkStaticRoutes(List<StaticRoute> staticListRest) throws IllegalArgumentException {
     logger.trace(CommonDefinitions.START);
     if (staticListRest == null) {
-      return;
+      return; 
     }
     for (int i = 0; i <  staticListRest.size(); i++) {
       StaticRoute static1 = staticListRest.get(i);

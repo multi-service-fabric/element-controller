@@ -34,6 +34,13 @@
             <property name="qos_remark_flg" type="boolean" not-null="true"/>
             <property name="default_remark_menu" type="text"/>
             <property name="default_egress_queue_menu" type="text"/>
+            <property name="same_vlan_number_traffic_total_value_flag" type="boolean"/>
+            <property name="vlan_traffic_capability" type="text"/>
+            <property name="vlan_traffic_counter_name_mib_oid" type="text"/>
+            <property name="vlan_traffic_counter_value_mib_oid" type="text"/>
+            <property name="cli_exec_path" type="text"/>
+            <property name="irb_asymmetric_capability" type="boolean"/>
+            <property name="irb_symmetric_capability" type="boolean"/>
 
             <set name="equipmentIfsList" table="equipment_ifs" lazy="true" inverse="true" cascade="all-delete-orphan">
                 <key>

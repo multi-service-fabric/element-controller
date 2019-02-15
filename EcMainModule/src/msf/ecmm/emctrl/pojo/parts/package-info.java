@@ -1,5 +1,5 @@
 /**
- * EC Inter-EM IF Control Functional Part (POJO)
+ * EC-EM IF Control Function Part(POJO)
  */
 
 package msf.ecmm.emctrl.pojo.parts;

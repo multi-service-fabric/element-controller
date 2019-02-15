@@ -4,6 +4,6 @@ file_list:
   - file_name: 'xinetd-2.3.15-12.el7.x86_64.rpm'
     url: 'http://mirror.centos.org/centos/7/os/x86_64/Packages/xinetd-2.3.15-13.el7.x86_64.rpm'
   - file_name: 'tftp-5.2-12.el7.x86_64.rpm'
-    url: 'http://mirror.centos.org/centos/7/os/x86_64/Packages/tftp-5.2-13.el7.x86_64.rpm'
+    url: 'https://buildlogs.centos.org/c7.1511.00/tftp/20151120190845/5.2-12.el7.x86_64/tftp-5.2-12.el7.x86_64.rpm'
   - file_name: 'tftp-server-5.2-12.el7.x86_64.rpm'
     url: 'https://buildlogs.centos.org/c7.1511.00/tftp/20151120190845/5.2-12.el7.x86_64/tftp-server-5.2-12.el7.x86_64.rpm'

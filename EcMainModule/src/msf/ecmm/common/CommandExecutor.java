@@ -89,7 +89,7 @@ public class CommandExecutor {
   }
 
   /**
-   * search for a keyword in text strings.
+   * searching for a keyword in text strings.
    *
    * @param strs
    *          standard output

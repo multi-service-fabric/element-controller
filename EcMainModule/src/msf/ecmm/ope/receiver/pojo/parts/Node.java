@@ -22,7 +22,7 @@ public class Node {
   private String managementIfAddress;
 
   /** Loopback IF Address. Call it address in accordance with the IF specification.*/
-  private String loopbackIfAdress;
+  private String loopbackIfAddress;
 
   /** SNMP Community Name. */
   private String snmpCommunity;
@@ -39,7 +39,10 @@ public class Node {
   /** L2/L3VPN Type. */
   private String vpnType;
 
-  /** Login User Name. */
+  /** IRB type. */
+  private String irbType;
+
+  /** Login user name. */
   private String username;
 
   /** Login Password. */
@@ -133,7 +136,7 @@ public class Node {
    * @return loopback address
    */
   public String getLoopbackIfAddress() {
-    return loopbackIfAdress;
+    return loopbackIfAddress;
   }
 
   /**
@@ -143,7 +146,7 @@ public class Node {
    *          loopback address
    */
   public void setLoopbackIfAddress(String loopbackIfAddress) {
-    this.loopbackIfAdress = loopbackIfAddress;
+    this.loopbackIfAddress = loopbackIfAddress;
   }
 
   /**
@@ -242,6 +245,25 @@ public class Node {
   }
 
   /**
+   * Getting IRB type.
+   *
+   * @return IRB type
+   */
+  public String getIrbType() {
+    return irbType;
+  }
+
+  /**
+   * Setting IRB type.
+   *
+   * @param irbType
+   *          IRB type
+   */
+  public void setIrbType(String irbType) {
+    this.irbType = irbType;
+  }
+
+  /**
    * Getting login user name.
    *
    * @return login user name
@@ -317,15 +339,17 @@ public class Node {
     this.plane = plane;
   }
 
-  /* (Non-Javadoc)
+  /*
+   * (Non Javadoc)
+   *
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
     return "Node [nodeId=" + nodeId + ", equipmentTypeId=" + equipmentTypeId + ", nodeState=" + nodeState
-        + ", managementIfAddress=" + managementIfAddress + ", loopbackIfAddress=" + loopbackIfAdress
-        + ", snmpCommunity=" + snmpCommunity + ", hostName=" + hostName + ", macAddr=" + macAddr + ", ntpServerAddress="
-        + ntpServerAddress + ", vpnType=" + vpnType + ", username=" + username + ", password=" + password
-        + ", provisioning=" + provisioning + ", plane=" + plane + "]";
+        + ", managementIfAddress=" + managementIfAddress + ", loopbackIfAddress=" + loopbackIfAddress
+        + ", snmpCommunity=" + snmpCommunity + ", hostName=" + hostName + ", macAddr=" + macAddr
+        + ", ntpServerAddress=" + ntpServerAddress + ", vpnType=" + vpnType + ",irbType=" + irbType + ", username="
+        + username + ", password=" + password + ", provisioning=" + provisioning + ", plane=" + plane + "]";
   }
 }

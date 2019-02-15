@@ -1,5 +1,5 @@
 # Getting ec script
-  - name: wget jar
+  - name: wget script
     shell: wget --no-check-certificate --no-cookies {{ item.url }} -O {{ ec_path }}/{{ folder_name_bin }}/{{ item.file_name }}
     with_items:
       - "{{ script_list }}"

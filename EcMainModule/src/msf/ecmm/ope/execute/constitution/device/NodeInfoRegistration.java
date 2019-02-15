@@ -96,7 +96,7 @@ public class NodeInfoRegistration extends Operation {
     AddNode addNode = (AddNode) getInData();
 
     boolean dhcpOkFlag = false;
-    boolean needCleanUpFlag = true;
+    boolean needCleanUpFlag = true; 
     boolean createInitialConfigOkFlag = false;
     boolean xinetdOkFlag = false;
     boolean startSyslogOkFlag = false;
@@ -110,6 +110,24 @@ public class NodeInfoRegistration extends Operation {
         return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080102);
       }
 
+      if (equipments.getIrb_asymmetric_capability() && !equipments.getIrb_symmetric_capability()) {
+        if (null != addNode.getCreateNode().getIrbType()
+            && !addNode.getCreateNode().getIrbType().equals(CommonDefinitions.IRB_TYPE_ASYMMETRIC)) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "IRB Type is different."));
+          return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080104);
+        }
+      } else if (!equipments.getIrb_asymmetric_capability() && equipments.getIrb_symmetric_capability()) {
+        if (null != addNode.getCreateNode().getIrbType()
+            && !addNode.getCreateNode().getIrbType().equals(CommonDefinitions.IRB_TYPE_SYMMETRIC)) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "IRB Type is different."));
+          return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080104);
+        }
+      } else if (!equipments.getIrb_asymmetric_capability() && !equipments.getIrb_symmetric_capability()) {
+        if (null != addNode.getCreateNode().getIrbType()) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "This Equipments does not support IRB."));
+          return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080104);
+        }
+      }
       if (addNode.getCreateNode().getProvisioning() == true) {
 
         if (checkPhysicalIfIdUnuse(equipments) == false) {
@@ -134,11 +152,10 @@ public class NodeInfoRegistration extends Operation {
         HttpdController.getInstance().check();
         httpdOkFlag = true;
       }
-      if (equipments.getRouter_type() == CommonDefinitions.ROUTER_TYPE_NORMAL) {
-        if (session.searchNodes(null, addNode.getCreateNode().getManagementInterface().getAddress()) != null) {
-          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Double registration. [management if address]"));
-          return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_080304);
-        }
+
+      if (!checkDoubleRegistration(equipments, addNode)) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Double registration."));
+        return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_080304);
       }
 
       Nodes nodesDb = DbMapper.toAddNode(addNode, equipments);
@@ -179,9 +196,7 @@ public class NodeInfoRegistration extends Operation {
         response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080416);
       }
 
-    } catch (
-
-    DBAccessException dbae) {
+    } catch (DBAccessException dbae) {
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Access to DB was failed."), dbae);
       if (dbae.getCode() == DBAccessException.DOUBLE_REGISTRATION) {
         response = makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_080304);
@@ -206,7 +221,7 @@ public class NodeInfoRegistration extends Operation {
 
     AddNode addNode = (AddNode) getInData();
     try {
-      addNode.check(getOperationType());
+      addNode.check(new OperationType(getOperationType()));
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);
       checkResult = false;
@@ -232,7 +247,7 @@ public class NodeInfoRegistration extends Operation {
     Set<String> eqIfIds = new HashSet<>();
 
     for (EquipmentIfs eqIfs : equipments.getEquipmentIfsList()) {
-      eqIfIds.add(eqIfs.getPhysical_if_id());
+      eqIfIds.add(eqIfs.getPhysical_if_id()); 
     }
 
     for (BreakoutBaseIf boIfs : addNode.getCreateNode().getIfInfo().getBreakoutBaseIfs()) {
@@ -294,10 +309,10 @@ public class NodeInfoRegistration extends Operation {
   private DhcpInfo createDhcpInfo(Equipments equipments) {
     logger.trace(CommonDefinitions.START);
 
-    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode();
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
     DhcpInfo dhcpInfo = new DhcpInfo(equipments.getDhcp_template(), equipments.getInitial_config(),
-        nodeInfo.getHostname(), nodeInfo.getMacAddress(), "", nodeInfo.getNtpServerAddress(),
-        nodeInfo.getManagementInterface().getAddress(), nodeInfo.getManagementInterface().getPrefix());
+        nodeInfo.getHostname(), nodeInfo.getMacAddress(), "", nodeInfo.getNtpServerAddress(), nodeInfo
+            .getManagementInterface().getAddress(), nodeInfo.getManagementInterface().getPrefix());
 
     logger.trace(CommonDefinitions.END);
     return dhcpInfo;
@@ -313,7 +328,7 @@ public class NodeInfoRegistration extends Operation {
    */
   private void startSyslogWatch(Equipments equipments) throws DevctrlException {
     logger.trace(CommonDefinitions.START);
-    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode();
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
 
     List<String> bootErrorMessages = new ArrayList<>();
     for (BootErrorMessages message : equipments.getBootErrorMessagesList()) {
@@ -351,7 +366,7 @@ public class NodeInfoRegistration extends Operation {
    */
   private InitialDeviceConfig createInitialDeviceConfig(Equipments equipments) throws DevctrlException {
     logger.trace(CommonDefinitions.START);
-    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode();
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
 
     if (nodeInfo.getVpn() == null) {
       InitialDeviceConfig initialDeviceConfigInfo = new InitialDeviceConfig(equipments.getConfig_template(),
@@ -363,16 +378,16 @@ public class NodeInfoRegistration extends Operation {
     if (nodeInfo.getVpn().getVpnType().equals("l2")) {
       InitialDeviceConfig initialDeviceConfigInfo = new InitialDeviceConfig(equipments.getConfig_template(),
           equipments.getInitial_config(), nodeInfo.getManagementInterface().getAddress(),
-          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL2vpn().getBgp().getCommunityWildcard(),
-          nodeInfo.getVpn().getL2vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
+          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL2vpn().getBgp().getCommunityWildcard(), nodeInfo
+              .getVpn().getL2vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
       logger.trace(CommonDefinitions.END);
       return initialDeviceConfigInfo;
     }
     if (nodeInfo.getVpn().getVpnType().equals("l3")) {
       InitialDeviceConfig initialDeviceConfigInfo = new InitialDeviceConfig(equipments.getConfig_template(),
           equipments.getInitial_config(), nodeInfo.getManagementInterface().getAddress(),
-          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL3vpn().getBgp().getCommunityWildcard(),
-          nodeInfo.getVpn().getL3vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
+          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL3vpn().getBgp().getCommunityWildcard(), nodeInfo
+              .getVpn().getL3vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
       logger.trace(CommonDefinitions.END);
       return initialDeviceConfigInfo;
     } else {
@@ -381,4 +396,48 @@ public class NodeInfoRegistration extends Operation {
 
   }
 
+  /**
+   * Duplication check for device registration.
+   *   Switch fabric: Performing duplication check for device name, and management IF address.
+   *   Core rooter: Conducting duplication check for device name as wel as for confirming that all devices (line card) have the same IP.
+   *
+   * @param equimpents
+   *          Model information of extension target device (DB)
+   * @param addNode
+   *          Device information of the device to be extended (REST received from FC)
+   * @return true: no duplication false: duplication
+   * @throws DBAccessException
+   *           DB exception
+   */
+  private boolean checkDoubleRegistration(Equipments equipments, AddNode addNode) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+
+    boolean ret = true;
+    String nodeName = addNode.getCreateNode().getHostname();
+    String ip = addNode.getCreateNode().getManagementInterface().getAddress();
+
+    try (DBAccessManager session = new DBAccessManager()) {
+      List<Nodes> dbNodesList = session.getNodesList();
+      for (Nodes nodes : dbNodesList) {
+        if (equipments.getRouter_type() == CommonDefinitions.ROUTER_TYPE_NORMAL) {
+          if (nodes.getNode_name().equals(nodeName) || nodes.getHost_name().equals(nodeName)
+              || nodes.getManagement_if_address().equals(ip)) {
+            ret = false;
+            break;
+          }
+        } else {
+          if (nodes.getNode_name().equals(nodeName) || nodes.getHost_name().equals(nodeName)) {
+            ret = false;
+            break;
+          }
+          if (!nodes.getManagement_if_address().equals(ip)) {
+            ret = false;
+            break;
+          }
+        }
+      }
+    }
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
 }

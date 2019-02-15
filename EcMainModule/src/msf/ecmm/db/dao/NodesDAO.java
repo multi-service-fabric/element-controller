@@ -9,11 +9,11 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.Nodes;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.Nodes;
 
 /**
  * Device Information DAO Class.
@@ -55,7 +55,7 @@ public class NodesDAO extends BaseDAO {
   }
 
   /**
-   * Device Information Table UPDATE.
+   * Device Information Table UPDATE (device status only).
    *
    * @param node_id
    *          device ID (primary key 1)
@@ -158,13 +158,13 @@ public class NodesDAO extends BaseDAO {
       nodesList = query.list();
       for (Nodes nodes : nodesList) {
         nodes.setNode_id(nodes.getNode_id());
-        nodes.toString();
+        nodes.toString(); 
         session.flush();
         session.evict(nodes);
       }
     } catch (Throwable e1) {
       logger.debug("nodes select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, NODES, e1);
+      this.errorMessage(SEARCH_FAILURE, NODES, e1);
     }
     return nodesList;
   }
@@ -190,7 +190,7 @@ public class NodesDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("nodes select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, NODES, e1);
+      this.errorMessage(SEARCH_FAILURE, NODES, e1);
     }
     return nodesList;
   }
@@ -230,7 +230,7 @@ public class NodesDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("nodes select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, NODES, e1);
+      this.errorMessage(SEARCH_FAILURE, NODES, e1);
     }
     return nodes;
   }

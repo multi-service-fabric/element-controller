@@ -8,11 +8,11 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.BGPOptions;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.BGPOptions;
 
 /**
  * The Class in which BGP option information related DB process is performed.
@@ -86,7 +86,7 @@ public class BGPOptionsDAO extends BaseDAO {
    * BGP Option Information Table SELECT.
    *
    * @param bgp_id
-   *          BGP informatio ID (primary key)
+   *          BGP information ID (primary key)
    * @return BGP option information search result
    * @throws DBAccessException
    *           data base exception
@@ -104,7 +104,7 @@ public class BGPOptionsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("bgp_Options select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, BGP_OPTIONS, e1);
+      this.errorMessage(SEARCH_FAILURE, BGP_OPTIONS, e1);
     }
     return bgpOptions;
   }
@@ -134,7 +134,7 @@ public class BGPOptionsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("bgp_Options select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, BGP_OPTIONS, e1);
+      this.errorMessage(SEARCH_FAILURE, BGP_OPTIONS, e1);
     }
     return bgpOptions;
   }

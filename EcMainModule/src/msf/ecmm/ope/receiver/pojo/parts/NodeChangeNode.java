@@ -9,23 +9,23 @@ import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.CheckDataException;
 
 /**
- * Device Information for Device Change.
+ * Device Extention Notification.
  */
 public class NodeChangeNode {
 
   /** Device ID. */
   private String nodeId;
 
-  /** Device Type. */
+  /** Device type. */
   private String nodeType;
 
-  /** OSPF Area in Multicluster. */
+  /** OSPF Area at the time of multi cluster. */
   private String clusterArea;
 
-  /** VirtualLink Configuration. */
+  /** VirtualLink configuraiton. */
   VirtualLink virtualLink;
 
-  /** OSPF Route Aggregation Configuration. */
+  /** OSPF route aggregation configuraiton. */
   AddressInfo range;
 
   /**
@@ -41,7 +41,7 @@ public class NodeChangeNode {
    * Setting device ID.
    *
    * @param nodeId
-   *          device ID
+   *          Device ID
    */
   public void setNodeId(String nodeId) {
     this.nodeId = nodeId;
@@ -60,33 +60,33 @@ public class NodeChangeNode {
    * Getting device information.
    *
    * @param nodeType
-   *          device information
+   *          Device information
    */
   public void setNodeType(String nodeType) {
     this.nodeType = nodeType;
   }
 
   /**
-   * Getting OSPF Area in multicluster.
+   * Getting OSPF Area at the time of multi-cluster.
    *
-   * @return OSPF Area in multicluster
+   * @return OSPF Area at the time of multi-cluster
    */
   public String getClusterArea() {
     return clusterArea;
   }
 
   /**
-   * Setting OSPF Area in multicluster.
+   * Setting OSPF Area at the time of multi-cluster.
    *
    * @param clusterArea
-   *          OSPF Area in multicluster
+   *          OSPF Area at the time of multi-cluster
    */
   public void setClusterArea(String clusterArea) {
     this.clusterArea = clusterArea;
   }
 
   /**
-   * Getting VirtualLink configuration.
+   * Getting VirtualLink configuration
    *
    * @return VirtualLink configuration
    */
@@ -114,7 +114,7 @@ public class NodeChangeNode {
   }
 
   /**
-   * OSPF route aggregation configuration.
+   * Setting OSPF route aggregation configuration.
    *
    * @param range
    *          OSPF route aggregation configuration
@@ -124,9 +124,9 @@ public class NodeChangeNode {
   }
 
   /**
-   * Stringizing Instance.
+   * Stringizing instance.
    *
-   * @return instance string.
+   * @return Instance string.
    */
   @Override
   public String toString() {
@@ -135,12 +135,12 @@ public class NodeChangeNode {
   }
 
   /**
-   * Input Parameter Check.
+   * Input parameter check.
    *
    * @param ope
-   *          operation type
+   *          Operation type
    * @throws CheckDataException
-   *           input check error
+   *           Input check error
    */
   public void check(OperationType ope) throws CheckDataException {
 

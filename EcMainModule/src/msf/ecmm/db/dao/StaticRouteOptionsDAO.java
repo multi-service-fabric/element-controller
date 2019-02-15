@@ -8,12 +8,12 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.StaticRouteOptions;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.StaticRouteOptions;
 
 /**
  * The class in which static route option information related DB process is performed.
@@ -99,7 +99,7 @@ public class StaticRouteOptionsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("static_route_options select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, STATIC_ROUTE_OPTIONS, e1);
+      this.errorMessage(SEARCH_FAILURE, STATIC_ROUTE_OPTIONS, e1);
     }
     return staticRouteOptions;
 
@@ -122,7 +122,7 @@ public class StaticRouteOptionsDAO extends BaseDAO {
         StaticRouteOptions staticRouteOptions = this.search(node_id, vlan_if_id);
         if (staticRouteOptions == null) {
           this.errorMessage(NO_DELETE_TARGET, STATIC_ROUTE_OPTIONS, null);
-        }
+        } 
         else {
 
           query = session.getNamedQuery("deleteStaticRouteOptions");

@@ -44,6 +44,10 @@
         <mapping resource="msf/ecmm/db/vlanIfs.hbm.xml"/>
         <mapping resource="msf/ecmm/db/lagMembers.hbm.xml"/>
         <mapping resource="msf/ecmm/db/systemStatus.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/aclConf.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/aclConfDetail.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/dummyVlanIfs.hbm.xml"/>
+        <mapping resource="msf/ecmm/db/irbInstanceInfo.hbm.xml"/>
 
     </session-factory>
 </hibernate-configuration>

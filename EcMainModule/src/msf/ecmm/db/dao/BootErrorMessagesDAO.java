@@ -8,11 +8,11 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.BootErrorMessages;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.BootErrorMessages;
 
 /**
  * The class in which start-up failure determination message information related DB process is performed.
@@ -105,7 +105,7 @@ public class BootErrorMessagesDAO extends BaseDAO {
 
     } catch (Throwable e1) {
       logger.debug("equipment_type_id select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, BOOT_ERROR_MESSAGES, e1);
+      this.errorMessage(SEARCH_FAILURE, BOOT_ERROR_MESSAGES, e1);
     }
     return bootErrorMsgList;
   }

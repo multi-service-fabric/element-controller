@@ -33,8 +33,23 @@ public class CreateVlanIfs {
   /** LACP system-id. */
   private String lacpSystemId = null;
 
-  /** QoS Configuration. */
+  /** Clag ID. */
+  private Integer clagId = null;
+
+  /** QoS configuration. */
   private QosValues qos = null;
+
+  /** IRB instance configuration. */
+  private IrbValue irb = null;
+
+  /** Route Distingusher. */
+  private String routeDistinguisher = null;
+
+  /** dummy VLAN flag. */
+  private Boolean isDummy = null;
+
+  /** multihoming configuration information. */
+  private MultiHomingValue multiHoming = null;
 
   /**
    * Getting ID information of CP to be controlled.
@@ -170,7 +185,27 @@ public class CreateVlanIfs {
   }
 
   /**
-   * Getting QoS Configuration.
+   * Getting Clag Id.
+   *
+   * @return clagId
+   */
+  public Integer getClagId() {
+    return clagId;
+  }
+
+  /**
+   * Setting Clag Id.
+   *
+   * @param clagId
+   *          setting clagId
+   */
+  public void setClagId(Integer clagId) {
+    this.clagId = clagId;
+  }
+
+  /**
+   * Getting QoS configuration.
+   *
    * @return qos
    */
   public QosValues getQos() {
@@ -178,22 +213,100 @@ public class CreateVlanIfs {
   }
 
   /**
-   * Setting QoS Configuration.
-   * @param qos setting qos
+   * Setting QoS configuration.
+   *
+   * @param qos
+   *          Setting qos
    */
   public void setQos(QosValues qos) {
     this.qos = qos;
   }
 
   /**
-   * Stringizing Instance.
+   * Getting IRB instance configuraiton.
    *
-   * @return instance string
+   * @return irb
+   */
+  public IrbValue getIrbValue() {
+    return irb;
+  }
+
+  /**
+   * Setting IRB instance configuration.
+   *
+   * @param irb
+   *          Setting irb
+   */
+  public void setIrbValue(IrbValue irb) {
+    this.irb = irb;
+  }
+
+  /**
+   * Getting Route Distingusher.
+   *
+   * @return routeDistingusher
+   */
+  public String getRouteDistingusher() {
+    return routeDistinguisher;
+  }
+
+  /**
+   * Setting Route Distingusher.
+   *
+   * @param routeDistingusher
+   *          Setting routeDistingusher
+   */
+  public void setRouteDistingusher(String routeDistinguisher) {
+    this.routeDistinguisher = routeDistinguisher;
+  }
+
+  /**
+   * Getting dummy VLAN flag.
+   *
+   * @return isDummy
+   */
+  public Boolean getIsDummy() {
+    return isDummy;
+  }
+
+  /**
+   * Setting dummy VLAN flag.
+   *
+   * @param isDummy
+   *          Setting isDummy
+   */
+  public void setIsDummy(Boolean isDummy) {
+    this.isDummy = isDummy;
+  }
+
+  /**
+   * Getting multihoming configuraiton information.
+   *
+   * @return multiHoming
+   */
+  public MultiHomingValue getMultiHomingValue() {
+    return multiHoming;
+  }
+
+  /**
+   * Setting multihoming configuration information.
+   *
+   * @param multiHoming
+   *          Setting multiHoming
+   */
+  public void setMultiHomingValue(MultiHomingValue multiHoming) {
+    this.multiHoming = multiHoming;
+  }
+
+  /* (Non Javadoc)
+   * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
     return "CreateVlanIfs [vlanIfId=" + vlanIfId + ", nodeId=" + nodeId + ", baseIf=" + baseIf + ", vlanId=" + vlanId
-        + ", portMode=" + portMode + ", esi=" + esi + ", lacpSystemId=" + lacpSystemId + ", qos=" + qos + "]";
+        + ", portMode=" + portMode + ", esi=" + esi + ", lacpSystemId=" + lacpSystemId + ", clagId=" + clagId
+        + ", qos=" + qos + ", irb=" + irb + ", routeDistinguisher=" + routeDistinguisher + ", isDummy=" + isDummy
+        + ", multiHoming=" + multiHoming + "]";
   }
 
   /**
@@ -211,16 +324,24 @@ public class CreateVlanIfs {
     if (nodeId == null) {
       throw new CheckDataException();
     }
-    if (baseIf == null) {
+    if (baseIf == null && isDummy == false) {
       throw new CheckDataException();
-    } else {
+    } else if (baseIf != null) {
       baseIf.check(ope);
     }
     if (vlanId == null) {
       throw new CheckDataException();
     }
-    if (portMode == null) {
+    if (null != isDummy && isDummy == false && portMode == null) {
       throw new CheckDataException();
+    }
+
+    if (irb != null) {
+      irb.check(ope);
+    }
+
+    if (multiHoming != null) {
+      multiHoming.check(ope);
     }
   }
 

@@ -9,20 +9,21 @@ import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.CheckDataException;
 
 /**
- * Inter-Cluster Link Information.
+ * Inter-Cluster Link Configuration.
+ *
  */
 public class ClusterLink {
 
-  /** IGP Cost. */
+  /** IGP cost. */
   private Integer cost = null;
 
-  /** IF Address. */
+  /** IF address. */
   private String address = null;
 
-  /** IF Address Prefix. */
+  /** IF address prefix. */
   private Integer prefix = null;
 
-  /** Port Status. */
+  /** Port state. */
   private String condition = null;
 
   /**
@@ -83,28 +84,28 @@ public class ClusterLink {
   }
 
   /**
-   * Getting port status.
+   * Getting port state.
    *
-   * @return port status
+   * @return port state
    */
   public String getCondition() {
     return condition;
   }
 
   /**
-   * Setting port status.
+   * Setting port state.
    *
    * @param condition
-   *          port status
+   *          port state
    */
   public void setCondition(String condition) {
     this.condition = condition;
   }
 
   /**
-   * Stringizing Instance.
+   * Stringizing instance.
    *
-   * @return instance string
+   * @return Stringizing instance
    */
   @Override
   public String toString() {
@@ -112,12 +113,12 @@ public class ClusterLink {
   }
 
   /**
-   * Input Parameter Check.
+   * Input parameter check.
    *
    * @param ope
-   *          operation type
+   *          Operation type
    * @throws CheckDataException
-   *           input check error
+   *           Input check error
    */
   public void check(OperationType ope) throws CheckDataException {
 

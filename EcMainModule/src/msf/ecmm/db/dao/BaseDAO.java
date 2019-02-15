@@ -6,12 +6,13 @@ package msf.ecmm.db.dao;
 
 import static msf.ecmm.common.LogFormatter.*;
 import static msf.ecmm.db.DBAccessException.*;
-import msf.ecmm.common.CommonDefinitions;
-import msf.ecmm.db.DBAccessException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.db.DBAccessException;
 
 /**
  * Data Base Regulation Class.
@@ -58,6 +59,14 @@ public class BaseDAO {
   public static final int REMARK_MENUS = 16;
   /** Table Name (Egress queue Menu Information). */
   public static final int EGRESS_QUEUE_MENUS = 17;
+  /** Table Name (dummy VLANIF information). */
+  public static final int DUMMY_VLAN_IFS_INFO = 18;
+  /** Table Name (IRB instance information). */
+  public static final int IRB_INSTANCE_INFO = 19;
+  /** Table Name (ACL configuration information). */
+  public static final int ACL_INFO = 20;
+  /** Table Name (ACL configuration details information). */
+  public static final int ACL_DETAIL_INFO = 21;
 
   /**
    * Error Process.
@@ -121,6 +130,22 @@ public class BaseDAO {
             errorMessage = MSG_509075;
             break;
 
+          case DUMMY_VLAN_IFS_INFO:
+            errorMessage = MSG_509081;
+            break;
+
+          case IRB_INSTANCE_INFO:
+            errorMessage = MSG_509082;
+            break;
+
+          case ACL_INFO:
+            errorMessage = MSG_509083;
+            break;
+
+          case ACL_DETAIL_INFO:
+            errorMessage = MSG_509084;
+            break;
+
           default:
             errorMessage = MSG_509019;
             break;
@@ -157,6 +182,14 @@ public class BaseDAO {
 
           case NODES:
             errorMessage = MSG_509093;
+            break;
+
+          case DUMMY_VLAN_IFS_INFO:
+            errorMessage = MSG_509085;
+            break;
+
+          case IRB_INSTANCE_INFO:
+            errorMessage = MSG_509086;
             break;
 
           default:
@@ -205,6 +238,22 @@ public class BaseDAO {
             errorMessage = MSG_509080;
             break;
 
+          case DUMMY_VLAN_IFS_INFO:
+            errorMessage = MSG_509087;
+            break;
+
+          case IRB_INSTANCE_INFO:
+            errorMessage = MSG_509088;
+            break;
+
+          case ACL_INFO:
+            errorMessage = MSG_509089;
+            break;
+
+          case ACL_DETAIL_INFO:
+            errorMessage = MSG_509090;
+            break;
+
           default:
             errorMessage = MSG_509020;
             break;
@@ -231,7 +280,7 @@ public class BaseDAO {
 
         break;
 
-      case SERCH_FAILURE:
+      case SEARCH_FAILURE:
         errorMessage = MSG_509021;
         break;
 

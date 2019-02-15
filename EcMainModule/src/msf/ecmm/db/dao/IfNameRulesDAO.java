@@ -8,11 +8,11 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.IfNameRules;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.IfNameRules;
 
 /**
  * Physical IF Naming Convention Information DAO Class.
@@ -100,7 +100,7 @@ public class IfNameRulesDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("if_name_rules select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, IF_NAME_RULES, e1);
+      this.errorMessage(SEARCH_FAILURE, IF_NAME_RULES, e1);
     }
     return ifNameRulesList;
   }
@@ -123,7 +123,7 @@ public class IfNameRulesDAO extends BaseDAO {
       ifNameRulesList = query.list();
     } catch (Throwable e1) {
       logger.debug("if_name_rules select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, IF_NAME_RULES, e1);
+      this.errorMessage(SEARCH_FAILURE, IF_NAME_RULES, e1);
     }
     return ifNameRulesList;
   }

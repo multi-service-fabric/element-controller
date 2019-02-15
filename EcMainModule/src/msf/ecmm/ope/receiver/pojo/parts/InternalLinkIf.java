@@ -34,6 +34,9 @@ public class InternalLinkIf {
   /** IF (own device side) IP Address Prefix Value. */
   private Integer prefix;
 
+  /** Cost value. */
+  private Integer cost;
+
   /**
    * Getting IF type.
    *
@@ -148,10 +151,29 @@ public class InternalLinkIf {
     this.prefix = prefix;
   }
 
+  /**
+   * Geetting cost value.
+   * @return Cost Value.
+   */
+  public Integer getCost() {
+      return cost;
+  }
+
+  /**
+   * Setting cost value.
+   * @param cost Cost value.
+   */
+  public void setCost(Integer cost) {
+      this.cost = cost;
+  }
+
+  /* (Non Javadoc)
+   * @see java.lang.Object#toString()
+   */
   @Override
   public String toString() {
     return "InternalLinkIf [ifType=" + ifType + ", ifId=" + ifId + ", lagMember=" + lagMember + ", linkSpeed="
-        + linkSpeed + ", linkIpAddress=" + linkIpAddress + ", prefix=" + prefix + "]";
+        + linkSpeed + ", linkIpAddress=" + linkIpAddress + ", prefix=" + prefix + ", cost=" + cost + "]";
   }
 
   /**
@@ -186,4 +208,6 @@ public class InternalLinkIf {
       throw new CheckDataException();
     }
   }
+
+
 }

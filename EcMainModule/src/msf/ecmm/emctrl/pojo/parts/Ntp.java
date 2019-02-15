@@ -16,7 +16,7 @@ public class Ntp {
 
   /** IPv4 Address of NTP Server */
   @XmlElement(name = "server-address")
-  private String serverAdddress = null;
+  private String serverAddress = null;
 
   /**
    * Generating new instance.
@@ -30,8 +30,8 @@ public class Ntp {
    *
    * @return IPv4 address of NTP server
    */
-  public String getServerAdddress() {
-    return serverAdddress;
+  public String getServerAddress() {
+    return serverAddress;
   }
 
   /**
@@ -40,8 +40,8 @@ public class Ntp {
    * @param serverAdddress
    *          IPv4 address of NTP server
    */
-  public void setServerAdddress(String serverAdddress) {
-    this.serverAdddress = serverAdddress;
+  public void setServerAddress(String serverAddress) {
+    this.serverAddress = serverAddress;
   }
 
   /*
@@ -51,7 +51,7 @@ public class Ntp {
    */
   @Override
   public String toString() {
-    return "Ntp [serverAdddress=" + serverAdddress + "]";
+    return "Ntp [serverAddress=" + serverAddress + "]";
   }
 
 }

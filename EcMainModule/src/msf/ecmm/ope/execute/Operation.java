@@ -8,6 +8,9 @@ import static msf.ecmm.common.CommonDefinitions.*;
 
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.ope.control.EcSession;
@@ -15,9 +18,6 @@ import msf.ecmm.ope.control.OperationControlManager;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
 * Operation Class Definition. Executing operation. (Abstract Class)
@@ -36,8 +36,8 @@ public abstract class Operation {
   /** Input Message. */
   private AbstractRestMessage inData;
 
-  /** Operation Type. */
-  private OperationType operationType = OperationType.None;
+ /** Operation Type. */
+  private int operationType = OperationType.None; 
 
   /** URI Key Information. */
   private HashMap<String, String> uriKeyMap;
@@ -175,7 +175,7 @@ public abstract class Operation {
    * @param operationType
    *          operation type
    */
-  protected void setOperationType(OperationType operationType) {
+  protected void setOperationType(int operationType) {
     this.operationType = operationType;
   }
 
@@ -202,7 +202,7 @@ public abstract class Operation {
    *
    * @return operation type
    */
-  public OperationType getOperationType() {
+  public int getOperationType() {
     return operationType;
   }
 

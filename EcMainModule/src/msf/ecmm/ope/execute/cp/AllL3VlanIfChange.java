@@ -195,7 +195,7 @@ public class AllL3VlanIfChange extends Operation {
 
       BulkUpdateL3VlanIf inputData = (BulkUpdateL3VlanIf) getInData();
 
-      inputData.check(OperationType.AllL3VlanIfChange);
+      inputData.check(new OperationType(OperationType.AllL3VlanIfChange));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);

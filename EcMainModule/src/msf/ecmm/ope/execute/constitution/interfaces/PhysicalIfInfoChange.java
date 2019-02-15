@@ -38,6 +38,9 @@ public class PhysicalIfInfoChange extends Operation {
   /** In case the information to be changed does not exist. */
   private static final String ERROR_CODE_200201 = "200201";
 
+  /** In case speed configuration deletion has been configured in target physical IF, and if speed configuration deletion cannot be done. */
+  private static final String ERROR_CODE_200302 = "200302";
+
   /** In case error has occurred in DB access. */
   private static final String ERROR_CODE_200401 = "200401";
 
@@ -68,7 +71,6 @@ public class PhysicalIfInfoChange extends Operation {
 
     try (DBAccessManager session = new DBAccessManager()) {
 
-      UpdatePhysicalInterface inputData = (UpdatePhysicalInterface) getInData();
       String nodeId = getUriKeyMap().get(KEY_NODE_ID);
       String physicalIfId = getUriKeyMap().get(KEY_PHYSICAL_IF_ID);
 
@@ -78,9 +80,16 @@ public class PhysicalIfInfoChange extends Operation {
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_200201);
       }
 
+      if (!checkExpand(physicalIfs)) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "expand function check NG."));
+        return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_200302);
+      }
+
       session.startTransaction();
 
-      if (inputData.getAction().equals("speed_set")) {
+      UpdatePhysicalInterface inputData = (UpdatePhysicalInterface) getInData();
+
+      if (inputData.getAction().equals(CommonDefinitions.SPEED_SET)) {
         Nodes nodesDb = session.searchNodes(nodeId, null);
         if (nodesDb == null) {
           logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "No input data from db."));
@@ -122,7 +131,7 @@ public class PhysicalIfInfoChange extends Operation {
 
       UpdatePhysicalInterface inputData = (UpdatePhysicalInterface) getInData();
 
-      inputData.check(OperationType.PhysicalIfInfoChange);
+      inputData.check(new OperationType(OperationType.PhysicalIfInfoChange));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);
@@ -145,4 +154,15 @@ public class PhysicalIfInfoChange extends Operation {
     return result;
   }
 
+  /**
+   * Implement any check if required in extension function.
+   *
+   * @param physicalIfs
+   *          Target physical IF information
+   * @return check result
+   * @throws DBAccessException In case abormality occurred in DB
+   */
+  protected boolean checkExpand(PhysicalIfs physicalIfs) throws DBAccessException {
+    return true;
+  }
 }

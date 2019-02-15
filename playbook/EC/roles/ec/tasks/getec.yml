@@ -1,20 +1,24 @@
 # Getting ec jar
   - name: wget src
-    shell: wget --no-check-certificate --no-cookies {{ item.url }} -P {{ rpm_path }}
+    shell: wget --no-check-certificate --no-cookies {{ item.url }} -O {{ rpm_path }}/{{ item.file_name }}
     with_items:
       - "{{ src_list }}"
     when: download_flag
-  - shell: tar xvfz {{ rpm_path }}/master.tar.gz -C {{ rpm_path }}
+  - shell: tar zxvf {{ rpm_path }}/master.tar.gz -C {{ rpm_path }}
     when: download_flag
-  - shell: mkdir -p {{ rpm_path }}/msf
+  - shell: cp -r {{ rpm_path }}/element-controller-master/EcMainModule/src/msf {{ ec_path }}
     when: download_flag
-  - shell: cp -r {{ rpm_path }}/element-controller-master/EcMainModule/src {{ rpm_path }}/msf
+  - shell: cp {{ rpm_path }}/element-controller-master/jar_create.sh  {{ ec_path }}
     when: download_flag
-  - shell: cp -r {{ rpm_path }}/element-controller-master/jar_create.sh  {{ rpm_path }}
-    when: download_flag
+  - name: copy src
+    copy: src={{ installing_ec_path }}/msf dest={{ ec_path }}
+    when: download_flag == false
+  - name: copy jar_create.sh
+    copy: src={{ installing_ec_path }}/jar_create.sh dest={{ ec_path }}
+    when: download_flag == false
   - name: make jar
     shell: sh jar_create.sh
     args:
-      chdir: "{{ installing_ec_path }}/"
+      chdir: "{{ ec_path }}/"
   - name: mv jar
-    shell: mv {{ installing_ec_path }}/{{ ec_jar_name }} {{ ec_path }}/lib
+    shell: mv {{ ec_path }}/{{ ec_jar_name }} {{ ec_path }}/lib

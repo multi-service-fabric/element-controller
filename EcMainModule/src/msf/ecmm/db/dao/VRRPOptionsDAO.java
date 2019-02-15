@@ -8,11 +8,11 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.VRRPOptions;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.VRRPOptions;
 
 /**
  * The class in which VRRP option information related DB process is performed.
@@ -103,7 +103,7 @@ public class VRRPOptionsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("vrrp_options select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, VRRP_OPTIONS, e1);
+      this.errorMessage(SEARCH_FAILURE, VRRP_OPTIONS, e1);
     }
     return vrrpOptions;
   }
@@ -132,7 +132,7 @@ public class VRRPOptionsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("vrrp_options select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, VRRP_OPTIONS, e1);
+      this.errorMessage(SEARCH_FAILURE, VRRP_OPTIONS, e1);
     }
     return vrrpOptions;
   }

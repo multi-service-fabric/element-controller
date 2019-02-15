@@ -16,27 +16,27 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * thread to read InputStream.
+ * thread to read InputStream
  */
 public class InputStreamThread extends Thread {
 
   /**
-   * logger.
+   * logger
    */
   private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
   /**
-   * read buffer.
+   * read buffer
    */
   private BufferedReader br;
 
   /**
-   * list for store read Stream.
+   * list for store read Stream
    */
   private List<String> list = new ArrayList<String>();
 
   /**
-   * constructor (to specify text code).
+   * constructor (to specify text code)
    *
    * @param is
    *          InputStream
@@ -54,7 +54,7 @@ public class InputStreamThread extends Thread {
   }
 
   /**
-   * thread execution.
+   * thread execution
    */
   @Override
   public void run() {
@@ -84,7 +84,7 @@ public class InputStreamThread extends Thread {
   }
 
   /**
-   * acquiring the read string list.
+   * Getting the read string list.
    *
    * @return the string list which has been read
    */

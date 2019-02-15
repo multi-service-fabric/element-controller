@@ -8,11 +8,11 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.LagMembers;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.LagMembers;
 
 /**
  * The class in which LAG Member Information related DB process is performed.
@@ -91,9 +91,9 @@ public class LagMembersDAO extends BaseDAO {
    * @param lag_if_id
    *          LAGIF ID (primary key 2)
    * @param physical_if_id
-   *          physical IF ID (key 3)
+   *          Physical IF ID
    * @param breakout_if_id
-   *          breakout IF ID (key 4)
+   *          breakout IF ID
    * @return lagMembers LAGMember information
    * @throws DBAccessException
    *           data base exception
@@ -124,7 +124,7 @@ public class LagMembersDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("lag_members select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, LAG_MEMBERS, e1);
+      this.errorMessage(SEARCH_FAILURE, LAG_MEMBERS, e1);
     }
     return lagMembers;
 

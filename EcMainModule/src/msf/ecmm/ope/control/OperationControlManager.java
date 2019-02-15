@@ -5,6 +5,7 @@
 package msf.ecmm.ope.control;
 
 import static msf.ecmm.common.CommonDefinitions.*;
+import static msf.ecmm.ope.execute.OperationType.*;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -16,6 +17,8 @@ import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
+import msf.ecmm.config.ExpandOperation;
+import msf.ecmm.config.ExpandOperationDetailInfo;
 import msf.ecmm.convert.LogicalPhysicalConverter;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
@@ -134,7 +137,7 @@ public class OperationControlManager {
       }
 
       ecMain = configState;
-    } else {
+    } else { 
       logger.debug("Not first boot.");
       obst = getEcMainObstraction(true);
       obstint = LogicalPhysicalConverter.toIntegerECObstructionState(obst);
@@ -205,7 +208,7 @@ public class OperationControlManager {
 
     logger.trace(CommonDefinitions.START);
 
-    if (!executeOperationHolder.containsKey(opeId)) {
+    if (!executeOperationHolder.containsKey(opeId)) { 
       executeOperationHolder.put(opeId, ope);
     } else {
       logger.debug("This operation id was already registered. :" + ope);
@@ -227,7 +230,7 @@ public class OperationControlManager {
 
     logger.trace(CommonDefinitions.START);
 
-    if (executeOperationHolder.containsKey(opeId)) {
+    if (executeOperationHolder.containsKey(opeId)) { 
       executeOperationHolder.remove(opeId);
 
       synchronized (queueMap) {
@@ -335,7 +338,7 @@ public class OperationControlManager {
 
         return true;
       }
-    } else {
+    } else { 
       ecMainState = state;
 
       logger.trace(CommonDefinitions.END + ", return=true");
@@ -374,7 +377,7 @@ public class OperationControlManager {
 
         return true;
       }
-    } else {
+    } else { 
       ecMainObstruction = obstruction;
 
       logger.trace(CommonDefinitions.END + ", return=true");
@@ -390,16 +393,25 @@ public class OperationControlManager {
    *          operation type
    * @return executable yes/no
    */
-  public boolean judgeExecution(OperationType operationType) {
+  public boolean judgeExecution(int operationType) {
 
     logger.trace(CommonDefinitions.START);
-    logger.debug("operationType=" + operationType);
+    logger.debug("operationType=" + OperationType.name(operationType));
 
     try {
-      if (operationType == OperationType.IFStateIntegrity) {
+      ExpandOperationDetailInfo detailInfo = ExpandOperation.getInstance().get(OperationType.name(operationType));
+      if (detailInfo != null) {
+        if (detailInfo.getOperationPriority().equals(CommonDefinitions.EXPAND_CONF_PRIMARY)) {
+          operationType = OperationType.__ExpandPrimaryOperation;
+        } else {
+          operationType = OperationType.__ExpandNormalOperation;
+        }
+      }
+
+      if (operationType == OperationType.IFStateIntegrity) { 
         logger.debug("IF state integrity check.");
         return !(OperationControlManager.getInstance().isIfIntegrityExecution());
-      } else if (OperationControlManager.getInstance().getEcMainState(false) == ECMainState.Stop) {
+      } else if (OperationControlManager.getInstance().getEcMainState(false) == ECMainState.Stop) { 
 
         logger.debug("EC main state is stop.");
 
@@ -409,6 +421,7 @@ public class OperationControlManager {
           case ECMainStopper:
           case ECMainStateConfirm:
           case ObstructionStateController:
+          case __ExpandPrimaryOperation:
             logger.debug("Priority operation");
             return true;
 
@@ -459,6 +472,7 @@ public class OperationControlManager {
           case ECMainLogAcquisition:
           case ControllerStateSendNotification:
           case TrafficDataAllAcquisition:
+          case __ExpandNormalOperation:
 
             logger.debug("Normal operation");
             if ((OperationControlManager.getInstance().getEcMainState(false) == ECMainState.InService)
@@ -468,7 +482,7 @@ public class OperationControlManager {
               logger.debug("Normal operation rejected.");
               return false;
             }
-          default:
+          default: 
             logger.debug("Not defined operation");
             return false;
         }
@@ -542,7 +556,7 @@ public class OperationControlManager {
         if (isLockTarget(operation.getOperationType())) {
           int timeout = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.OPERATION_QUEUE_TIMEOUT);
 
-          OperationLockKey key = new OperationLockKey(operation.getOperationType().getValue(), operation.getNodeId());
+          OperationLockKey key = new OperationLockKey(operation.getOperationType(), operation.getNodeId());
           OperationQueueEntry entry = new OperationQueueEntry(oid);
 
           LinkedList<OperationQueueEntry> queue = null;
@@ -570,11 +584,11 @@ public class OperationControlManager {
               }
               terminateOperation(oid);
               logger.debug("timeout.");
-              return null;
+              return null; 
             }
 
             synchronized (queueMap) {
-              if (queue.getFirst() == entry) {
+              if (queue.getFirst() == entry) { 
                 break;
               }
             }
@@ -612,7 +626,15 @@ public class OperationControlManager {
    *          operation type
    * @return true: to be locked
    */
-  private boolean isLockTarget(OperationType operationType) {
+  private boolean isLockTarget(int operationType) {
+
+    ExpandOperationDetailInfo detailInfo = ExpandOperation.getInstance().get(OperationType.name(operationType));
+    if (detailInfo != null) {
+      if (detailInfo.isLock()) {
+        operationType = __ExpandNeedLockOperation;
+      }
+    }
+
     switch (operationType) {
       case VlanIfChange:
       case AllL3VlanIfCreate:
@@ -642,7 +664,7 @@ public class OperationControlManager {
       case BetweenClustersLinkDelete:
       case BreakoutIfCreate:
       case BreakoutIfDelete:
-
+      case __ExpandNeedLockOperation:
         return true;
       default:
 
@@ -749,7 +771,7 @@ public class OperationControlManager {
       logger.trace(CommonDefinitions.END);
 
       return instance;
-    } else {
+    } else { 
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_402056));
       return null;
     }

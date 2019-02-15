@@ -3,7 +3,7 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
-    <!-- Remark Menus Information Class -->
+    <!-- Remark Menu Information Class -->
 
 <hibernate-mapping>
     <class name="msf.ecmm.db.pojo.RemarkMenus" table="remark_menu" lazy="true">

@@ -13,21 +13,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.snmp4j.smi.IpAddress;
+
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.devctrl.pojo.DhcpInfo;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.snmp4j.smi.IpAddress;
-
 /**
  * DHCP Related Operation.
  */
 public class DhcpController {
-
   /**
    * logger.
    */
@@ -69,10 +68,10 @@ public class DhcpController {
   /** Template Replacement Keyword the youngest value of address range of the network where the device's management IF can belongs to. */
   private static final String TEMPLATE_KEYWORD_MANAGEMENTRANGEEND = "$$MANAGEMENTRANGEEND$$";
 
-  /** Initial config path prefix "TFTP". */
+  /** The folder path of the file (initial config file) used by tftp. */
   private static final String INITIALCONFIG_PREFIX_TFTP = "/var/lib/tftpboot";
 
-  /** Initial config path prefix "HTTP". */
+  /** The folder path of the file (initial config file) used by httpd. */
   private static final String INITIALCONFIG_PREFIX_HTTP = "/var/www/html";
 
   /** DHCP Start-up. */

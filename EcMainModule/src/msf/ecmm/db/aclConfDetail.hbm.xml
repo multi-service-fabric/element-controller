@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+<!-- ACL Configuration Details Information Class -->
+
+<hibernate-mapping>
+  <class name="msf.ecmm.db.pojo.AclConfDetail" table="acl_detail_info"
+    lazy="true">
+    <composite-id>
+      <key-property name="node_id" type="text">
+        <column name="node_id" not-null="true" />
+      </key-property>
+      <key-property name="acl_id" type="text">
+        <column name="acl_id" not-null="true" />
+      </key-property>
+      <key-property name="term_name" type="text">
+        <column name="term_name" not-null="true" />
+      </key-property>
+      <generator class="assigned" />
+    </composite-id>
+    <property name="action" type="text" not-null="true" />
+    <property name="direction" type="text" not-null="true" />
+    <property name="source_mac_address" type="text" />
+    <property name="destination_mac_address" type="text" />
+    <property name="source_ip_address" type="text" />
+    <property name="destination_ip_address" type="text" />
+    <property name="source_port" type="int" />
+    <property name="destination_port" type="int" />
+    <property name="protocol" type="text" />
+    <property name="acl_priority" type="int" />
+  </class>
+  <query name="deleteAclDetailInfo">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.AclConfDetail as acl_detail_info where node_id = :key1 and acl_id = :key2 and term_name = :key3
+             ]]>
+  </query>
+  <query name="selectAclConfDetailAll">
+            <![CDATA[
+                from msf.ecmm.db.pojo.AclConfDetail as acl_detail_info where node_id = :key1
+             ]]>
+  </query>
+  <query name="selectAclConfDetail">
+            <![CDATA[
+                from msf.ecmm.db.pojo.AclConfDetail as acl_detail_info where node_id = :key1 and acl_id = :key2
+              ]]>
+  </query>
+  <query name="selectPreDeleteAclConfDetail">
+            <![CDATA[
+                from msf.ecmm.db.pojo.AclConfDetail as acl_detail_info where node_id = :key1 and acl_id = :key2 and term_name = :key3
+              ]]>
+  </query>
+</hibernate-mapping>

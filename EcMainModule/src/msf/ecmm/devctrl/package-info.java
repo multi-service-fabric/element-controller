@@ -1,5 +1,5 @@
-﻿/**
- * EC Inter-Device IF Control Functional Part
+/**
+ * EC-Device IF Control Function Part
  */
 
 package msf.ecmm.devctrl;

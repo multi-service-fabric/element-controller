@@ -1,0 +1,31 @@
+net add time zone Asia/Tokyo
+net add time ntp server $$NTPSERVER$$4 iburst
+net add time ntp source eth0
+net add routing defaults datacenter
+net add routing agentx
+net add routing service integrated-vtysh-config
+net add routing log syslog
+net add dot1x radius accounting-port 1813
+net add dot1x eap-reauth-period 0
+net add dot1x radius authentication-port 1812
+net add dot1x mab-activation-delay 30
+net del ptp interface global
+net del time ntp server 0.cumulusnetworks.pool.ntp.org
+net del time ntp server 1.cumulusnetworks.pool.ntp.org
+net del time ntp server 2.cumulusnetworks.pool.ntp.org
+net del time ntp server 3.cumulusnetworks.pool.ntp.org
+net add syslog host ip $$ECMANAGEMENTADDRESS$$ port udp 514
+net add snmp-server listening-address $$DEVICEMANAGEMENTADDRESS$$
+net add snmp-server readonly-community ntt-msf access any view all
+net add snmp-server trap-cpu-load-average one-minute 1 five-minute 1 fifteen-minute 1
+net add snmp-server trap-destination $$ECMANAGEMENTADDRESS$$ community-password ntt-msf version 2c
+net add snmp-server trap-snmp-auth-failures  
+net add snmp-server viewname all included .1
+net add acl ipv4 msf_egress_l3_ipv4 priority 10 set-qos set-dscp best-effort udp source-ip any source-port any dest-ip any dest-port 4789 dscp best-effort
+net add acl ipv4 msf_egress_l3_ipv4 priority 20 set-qos set-dscp cs1 udp source-ip any source-port any dest-ip any dest-port 4789 dscp cs1
+net add acl ipv4 msf_egress_l3_ipv4 priority 30 set-qos set-dscp cs2 udp source-ip any source-port any dest-ip any dest-port 4789 dscp cs2
+net add acl ipv4 msf_egress_l3_ipv4 priority 40 set-qos set-dscp cs3 udp source-ip any source-port any dest-ip any dest-port 4789 dscp cs3
+net add acl ipv4 msf_egress_l3_ipv4 priority 50 set-qos set-dscp best-effort udp source-ip any source-port any dest-ip any dest-port 4789
+net add interface eth0 ip address $$DEVICEMANAGEMENT_CIDRADDRESS$$
+
+net commit

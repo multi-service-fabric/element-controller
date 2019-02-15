@@ -4,9 +4,13 @@
 
 package msf.ecmm.ope.execute;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.LogFormatter;
+import msf.ecmm.config.ExpandOperation;
+import msf.ecmm.config.ExpandOperationDetailInfo;
 import msf.ecmm.ope.execute.constitution.allinfo.AllBreakoutIfInfoAcquisition;
 import msf.ecmm.ope.execute.constitution.allinfo.AllDeviceInfoAcquisition;
 import msf.ecmm.ope.execute.constitution.allinfo.AllDeviceTypeInfoAcquisition;
@@ -83,7 +87,7 @@ public class OperationFactory {
    *          URI key information
    * @return instance for executing operation
    */
-  public static Operation create(OperationType opeType, HashMap<String, String> ukm, AbstractRestMessage idt) {
+  public static Operation create(int opeType, HashMap<String, String> ukm, AbstractRestMessage idt) {
 
     logger.trace(CommonDefinitions.START);
     logger.debug("opeType=" + opeType + ", ukm=" + ukm + ", idt=" + idt);
@@ -190,8 +194,67 @@ public class OperationFactory {
       ret = null;
     }
 
+    ret = createExtendOperation(ret, opeType, ukm, idt);
+
     logger.trace(CommonDefinitions.END + ", return=" + ret);
 
     return ret;
+  }
+
+  /**
+   * Generating extention operation execution class instance.
+   *
+   * @param ret
+   *          Operation execution class instance (in case of existing in the existing operation)
+   * @param opeType
+   *          Operation type
+   * @param ukm
+   *          URI key map
+   * @param idt
+   *          Input Data
+   * @return Extension operation execution class instance/Existing operation execution class instance
+   */
+  private static Operation createExtendOperation(Operation ret, int opeType, HashMap<String, String> ukm,
+      AbstractRestMessage idt) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("opeType=" + OperationType.name(opeType));
+    ExpandOperationDetailInfo detailInfo = ExpandOperation.getInstance().get(OperationType.name(opeType));
+    if (detailInfo != null) {
+      logger.debug("detailInfo = " + detailInfo);
+      ret = createExecuteInstance(detailInfo.getOperationExecuteClassName(), ukm, idt);
+    }
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * Generating oeration execution class instance (Extension).
+   *
+   * @param className
+   *          Extension class FQCN
+   * @param ukm
+   *          URI parameter key map
+   * @param idt
+   *          Input Data
+   * @return Operation execution class instance (extension)
+   */
+  private static Operation createExecuteInstance(String className, HashMap<String, String> ukm,
+      AbstractRestMessage idt) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("className=" + className);
+    Class<?>[] types = { msf.ecmm.ope.receiver.pojo.AbstractRestMessage.class, java.util.HashMap.class };
+    Object[] argsList = { idt, ukm };
+    Object obj = null;
+
+    try {
+      Class<?> cls = Class.forName(className);
+      Constructor<?> constructor = cls.getConstructor(types);
+      obj = constructor.newInstance(argsList);
+    } catch (Throwable ex) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_503102, className));
+      throw new IllegalArgumentException(); 
+    }
+    logger.trace(CommonDefinitions.END);
+    return (Operation) obj;
   }
 }

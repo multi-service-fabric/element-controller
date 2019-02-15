@@ -1,0 +1,7 @@
+folder_name: 'expect-5.45-14'
+
+file_list:
+  - file_name: 'tcl-8.5.13-8.el7.x86_64.rpm'
+    url: 'http://mirror.centos.org/centos/7/os/x86_64/Packages/tcl-8.5.13-8.el7.x86_64.rpm'
+  - file_name: 'expect-5.45-14.el7_1.x86_64.rpm'
+    url: 'http://mirror.centos.org/centos/7/os/x86_64/Packages/expect-5.45-14.el7_1.x86_64.rpm'

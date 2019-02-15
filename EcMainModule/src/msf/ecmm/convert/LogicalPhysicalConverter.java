@@ -49,7 +49,7 @@ public class LogicalPhysicalConverter {
    *          a parameter unique for each slice ID
    * @return VRF name ("vrf" + vrf_id)
    */
-  public static String toVRF(Integer vrf_id) {
+  public static String toVrf(Integer vrf_id) {
     return new String("vrf" + vrf_id.toString());
   }
 
@@ -121,7 +121,6 @@ public class LogicalPhysicalConverter {
   public static String toPhysicalIfName(String suffix, String slotName) {
     return new String(suffix + slotName);
   }
-
 
   /**
    * Generating Physical IF Name (for DB configuration).
@@ -587,7 +586,7 @@ public class LogicalPhysicalConverter {
   }
 
   /**
-   * Acquire the speed of the real IF (physical / LAG / Breakout) for which the VLAN is set.
+   * Getting the speed of the real IF (physical / LAG / Breakout) for which the VLAN is set.
    *
    * @param vlanIfs
    *          VLANIF information
@@ -619,4 +618,78 @@ public class LogicalPhysicalConverter {
     return getIfSpeed(ifType, ifId, nodes);
   }
 
+  /**
+   * Payout function of IRB instance ID.
+   *
+   * @param stringIdList
+   *          List of IRB instance ID which has already been used
+   * @return IRB instance ID which has not been used
+   */
+  public static String getIrbInstanceId(List<String> stringIdList) {
+    logger.trace(START);
+    logger.debug("stringIdList:" + stringIdList);
+
+    String ret = null;
+    List<Integer> irbInstanceIdList = new ArrayList<Integer>();
+    if (stringIdList.size() != 0) {
+      for (String idStr : stringIdList) {
+        irbInstanceIdList.add(Integer.parseInt(idStr));
+      }
+      Collections.sort(irbInstanceIdList);
+      for (int i = 1; i < irbInstanceIdList.size() + 1; i++) {
+        if ((irbInstanceIdList.get(i - 1)) != i) {
+          ret = String.valueOf(i);
+          break;
+        } else if (irbInstanceIdList.get(irbInstanceIdList.size() - 1) == i) {
+          ret = String.valueOf(i + 1);
+        }
+      }
+
+    } else {
+      ret = "1";
+    }
+
+    logger.debug("IRB INSTANCE ID: " + ret);
+    logger.trace(END);
+    return ret;
+
+  }
+
+  /**
+   * Multiplier and singular conversions of IF (IF->IFS or IFS->IF).
+   * @param ifs original IF type
+   * @return IF type after conversion
+   */
+  public static String convertIfIfs(String ifs) {
+    String ret = ifs;
+    switch (ifs) {
+      case CommonDefinitions.IF_TYPE_PHYSICAL_IF:
+        ret = CommonDefinitions.IF_TYPE_PHYSICAL_IFS;
+        break;
+      case CommonDefinitions.IF_TYPE_LAG_IF:
+        ret = CommonDefinitions.IF_TYPE_LAG_IFS;
+        break;
+      case CommonDefinitions.IF_TYPE_BREAKOUT_IF:
+        ret = CommonDefinitions.IF_TYPE_BREAKOUT_IFS;
+        break;
+      case CommonDefinitions.IF_TYPE_VLAN_IF:
+        ret = CommonDefinitions.IF_TYPE_VLAN_IFS;
+        break;
+      case CommonDefinitions.IF_TYPE_PHYSICAL_IFS:
+        ret = CommonDefinitions.IF_TYPE_PHYSICAL_IF;
+        break;
+      case CommonDefinitions.IF_TYPE_LAG_IFS:
+        ret = CommonDefinitions.IF_TYPE_LAG_IF;
+        break;
+      case CommonDefinitions.IF_TYPE_BREAKOUT_IFS:
+        ret = CommonDefinitions.IF_TYPE_BREAKOUT_IF;
+        break;
+      case CommonDefinitions.IF_TYPE_VLAN_IFS:
+        ret = CommonDefinitions.IF_TYPE_VLAN_IF;
+        break;
+      default:
+        ret = ifs;
+    }
+    return ret;
+}
 }

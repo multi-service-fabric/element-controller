@@ -4,6 +4,6 @@ file_list:
   - file_name: 'autogen-libopts-5.18-5.el7.x86_64.rpm'
     url: 'http://mirror.centos.org/centos/7/os/x86_64/Packages/autogen-libopts-5.18-5.el7.x86_64.rpm'
   - file_name: 'ntpdate-4.2.6p5-22.el7.centos.x86_64.rpm'
-    url: 'https://buildlogs.centos.org/c7.1511.u/ntp/20160531102453/4.2.6p5-22.el7.centos.2.x86_64/ntpdate-4.2.6p5-22.el7.centos.2.x86_64.rpm'
+    url: 'https://buildlogs.centos.org/c7.1511.00/ntp/20151119214808/4.2.6p5-22.el7.centos.x86_64/ntpdate-4.2.6p5-22.el7.centos.x86_64.rpm'
   - file_name: 'ntp-4.2.6p5-22.el7.centos.x86_64.rpm'
-    url: 'https://buildlogs.centos.org/c7.1511.u/ntp/20160531102453/4.2.6p5-22.el7.centos.2.x86_64/ntp-4.2.6p5-22.el7.centos.2.x86_64.rpm'
+    url: 'https://buildlogs.centos.org/c7.1511.00/ntp/20151119214808/4.2.6p5-22.el7.centos.x86_64/ntp-4.2.6p5-22.el7.centos.x86_64.rpm'

@@ -9,20 +9,20 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.BreakoutIfs;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.BreakoutIfs;
+
 /**
- * The class in which breakoutIF information related DB process is performed.
+ * The Class in which breakoutIF information related DB process is performed.
  */
 public class BreakoutIfsDAO extends BaseDAO {
 
   /**
-   * breakoutIF Information Class Constructor
+   * breakoutIF information class constructor.
    *
    * @param session
    *          data base session
@@ -32,12 +32,12 @@ public class BreakoutIfsDAO extends BaseDAO {
   }
 
   /**
-   * breakoutIF Information Table INSERT.
+   * breakoutIF information table INSERT.
    *
    * @param breakoutIfs
-   *          breakoutIF information to be registered
+   *          breakoutIF information that you want to register
    * @param check
-   *          check
+   *          Whether is it a target to be inserted from the other relations or not?
    * @throws DBAccessException
    *           data base exception
    */
@@ -45,7 +45,7 @@ public class BreakoutIfsDAO extends BaseDAO {
     try {
       BreakoutIfs regbreakoutIfs = this.search(breakoutIfs.getNode_id(), breakoutIfs.getBreakout_if_id());
       if (regbreakoutIfs != null) {
-        if (check) {
+        if (check) { 
           this.updateIP(breakoutIfs);
         } else {
           this.errorMessage(DOUBLE_REGISTRATION, BREAKOUT_IFS, null);
@@ -62,16 +62,16 @@ public class BreakoutIfsDAO extends BaseDAO {
   }
 
   /**
-   * breakoutIF Information Table DELETE.
+   * breakoutIF information table DELETE.
    *
    * @param node_id
-   *          deviced ID (primary key1)
+   *          device ID(primary key 1)
    * @param breakout_if_id
-   *          breakoutIF ID (primary key 2) (NULL is permitted)
+   *          breakoutIF ID(primary key 2)(NULL allowed)
    * @param check
-   *          whether it is to be deleted from other relationshop or not
+   *          check whether it is the deletion target related to other
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void delete(String node_id, String breakout_if_id, boolean check) throws DBAccessException {
     try {
@@ -80,13 +80,13 @@ public class BreakoutIfsDAO extends BaseDAO {
         BreakoutIfs breakoutIfs = this.search(node_id, breakout_if_id);
         if (breakoutIfs == null) {
           this.errorMessage(NO_DELETE_TARGET, BREAKOUT_IFS, null);
-        }
+        } 
         query = session.getNamedQuery("deleteBreakoutIfs");
         query.setString("key2", breakout_if_id);
       } else {
         List<BreakoutIfs> breakoutIfsList = this.getList(node_id);
         if (breakoutIfsList == null) {
-          if (check) {
+          if (check) { 
             return;
           }
           this.errorMessage(NO_DELETE_TARGET, BREAKOUT_IFS, null);
@@ -104,13 +104,13 @@ public class BreakoutIfsDAO extends BaseDAO {
   }
 
   /**
-   * breakoutIF Information Table (condition: model ID).
+   * breakoutIF information table（condition：model ID).
    *
    * @param node_id
-   *          model ID (primary key)
+   *          model ID(primary key)
    * @return breakoutIfsList breakoutIF information list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public List<BreakoutIfs> getList(String node_id) throws DBAccessException {
@@ -124,21 +124,21 @@ public class BreakoutIfsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("breakout_ifs select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, BREAKOUT_IFS, e1);
+      this.errorMessage(SEARCH_FAILURE, BREAKOUT_IFS, e1);
     }
     return breakoutIfsList;
   }
 
   /**
-   * breakoutIF Information Table SELECT.
+   * breakoutIF information table SELECT.
    *
    * @param node_id
-   *          device ID (primary key 1)
+   *          model ID(primary key １)
    * @param breakout_if_id
-   *          breakoutIF ID (primary key 2)
+   *          breakoutIF ID(primary key 2)
    * @return breakoutIfs breakoutIF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public BreakoutIfs search(String node_id, String breakout_if_id) throws DBAccessException {
@@ -154,18 +154,18 @@ public class BreakoutIfsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("breakout_ifs select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, BREAKOUT_IFS, e1);
+      this.errorMessage(SEARCH_FAILURE, BREAKOUT_IFS, e1);
     }
     return breakoutIfs;
   }
 
   /**
-   * breakoutIF Status Information Table UPDATE.
+   * breakoutIF status information table UPDATE.
    *
    * @param breakoutIfs
    *          breakoutIF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateState(BreakoutIfs breakoutIfs) throws DBAccessException {
     try {
@@ -189,12 +189,12 @@ public class BreakoutIfsDAO extends BaseDAO {
   }
 
   /**
-   * breakoutIF IP Information Table UPDATE.
+   * breakoutIF IP status information table UPDATE.
    *
    * @param breakoutIfs
    *          breakoutIF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateIP(BreakoutIfs breakoutIfs) throws DBAccessException {
     try {
@@ -218,12 +218,12 @@ public class BreakoutIfsDAO extends BaseDAO {
   }
 
   /**
-   * breakoutIF Name Information Table UPDATE.
+   * breakoutIF information table UPDATE.
    *
    * @param breakoutIfs
    *          breakoutIF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateIfName(BreakoutIfs breakoutIfs) throws DBAccessException {
     try {

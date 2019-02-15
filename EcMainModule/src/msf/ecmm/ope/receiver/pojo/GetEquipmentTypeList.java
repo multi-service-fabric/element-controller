@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import msf.ecmm.ope.receiver.pojo.parts.Equipment;
 
 /**
- * Model List Information Acquisition
+ * Model Information Acquisition
  */
 public class GetEquipmentTypeList extends AbstractResponseMessage {
 
-  /** Model Information */
+  /** Model information */
   private ArrayList<Equipment> equipments = new ArrayList<Equipment>();
 
   /**

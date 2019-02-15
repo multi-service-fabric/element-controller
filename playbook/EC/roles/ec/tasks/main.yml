@@ -15,6 +15,7 @@
     when: download_flag
   - copy: src={{ installing_ec_path }}/conf/ dest={{ ec_path }}/conf
     when: download_flag == false
+  - shell: mv {{ ec_path }}/conf/extend_operation.conf {{ ec_path }}/lib
   - include: getbin.yml
     when: download_flag
   - copy: src={{ installing_ec_path }}/bin/ dest={{ ec_path }}/bin
@@ -130,42 +131,42 @@
       dest='{{ ec_path }}/bin/boot.sh'
       state=present
       backrefs=yes
-      regexp='HOST=.*'
+      regexp='^HOST=.*'
       line='HOST="{{ ec_rest_address }}"'
   - name: boot.sh data set 2
     lineinfile: >-
       dest='{{ ec_path }}/bin/boot.sh'
       state=present
       backrefs=yes
-      regexp='PORT=.*'
+      regexp='^PORT=.*'
       line='PORT="{{ ec_rest_port }}"'
   - name: linkdown.sh data set 1
     lineinfile: >-
       dest='{{ ec_path }}/bin/linkdown.sh'
       state=present
       backrefs=yes
-      regexp='HOST=.*'
+      regexp='^HOST=.*'
       line='HOST="{{ ec_rest_address }}"'
   - name: linkdown.sh data set 2
     lineinfile: >-
       dest='{{ ec_path }}/bin/linkdown.sh'
       state=present
       backrefs=yes
-      regexp='PORT=.*'
+      regexp='^PORT=.*'
       line='PORT="{{ ec_rest_port }}"'
   - name: linkup.sh data set 1
     lineinfile: >-
       dest='{{ ec_path }}/bin/linkup.sh'
       state=present
       backrefs=yes
-      regexp='HOST=.*'
+      regexp='^HOST=.*'
       line='HOST="{{ ec_rest_address }}"'
   - name: linkup.sh data set 2
     lineinfile: >-
       dest='{{ ec_path }}/bin/linkup.sh'
       state=present
       backrefs=yes
-      regexp='PORT=.*'
+      regexp='^PORT=.*'
       line='PORT="{{ ec_rest_port }}"'
   - name: ec_ctl.sh data set 1
     lineinfile: >-
@@ -200,28 +201,28 @@
       dest='{{ ec_path }}/bin/ec_ctl.sh'
       state=present
       backrefs=yes
-      regexp='CONFFILE=.*'
+      regexp='^CONFFILE=.*'
       line='CONFFILE="{{ ec_path }}/conf/ec_main.conf"'
   - name: ec_ctl.sh data set 6
     lineinfile: >-
       dest='{{ ec_path }}/bin/ec_ctl.sh'
       state=present
       backrefs=yes
-      regexp='CHECKFILE=.*'
+      regexp='^CHECKFILE=.*'
       line='CHECKFILE="{{ ec_path }}/lib/EcMainModule.jar:"'
   - name: ec_ctl.sh data set 7
     lineinfile: >-
       dest='{{ ec_path }}/bin/ec_ctl.sh'
       state=present
       backrefs=yes
-      regexp='CLASSPATH=\"\/.*'
+      regexp='^CLASSPATH=\"\/.*'
       line='CLASSPATH="{{ ec_path }}/conf/"'
   - name: ec_ctl.sh data set 8
     lineinfile: >-
       dest='{{ ec_path }}/bin/ec_ctl.sh'
       state=present
       backrefs=yes
-      regexp='DEFINE=.*'
+      regexp='^DEFINE=.*'
       line='DEFINE="-Dlog4j.configurationFile=file://{{ ec_path }}/conf/log4j2.xml"'
   - name: ec_ctl.sh data set 9
     lineinfile: >-

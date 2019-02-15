@@ -3,7 +3,7 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
-    <!-- Egress Queue Menus Information Class -->
+    <!-- Egress Que Menu Information Class -->
 
 <hibernate-mapping>
     <class name="msf.ecmm.db.pojo.EgressQueueMenus" table="egress_queue_menu" lazy="true">

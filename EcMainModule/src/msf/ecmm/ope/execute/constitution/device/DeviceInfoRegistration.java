@@ -94,7 +94,7 @@ public class DeviceInfoRegistration extends Operation {
     RegisterEquipmentType regiterEquipmentTypeRest = (RegisterEquipmentType) getInData();
 
     try {
-      regiterEquipmentTypeRest.check(getOperationType());
+      regiterEquipmentTypeRest.check(new OperationType(getOperationType()));
     } catch (CheckDataException e) {
       logger.warn("check error :", e);
       checkResult = false;

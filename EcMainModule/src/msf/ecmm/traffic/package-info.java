@@ -1,5 +1,5 @@
-﻿/**
- * EC Inter-EM IF Control Functional Part
+/**
+ * Device Information Collection Functional Part (POJO)
  */
 
 package msf.ecmm.traffic;

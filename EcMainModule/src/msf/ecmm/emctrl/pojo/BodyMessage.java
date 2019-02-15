@@ -182,7 +182,7 @@ public class BodyMessage extends AbstractMessage {
   }
 
   /**
-   * Getting Recover Update Node (servise reconfiguration).
+   * Getting Recover Update Node (servise reconfiguration) POJO class.
    *
    * @return recoverUpdateService
    */
@@ -191,7 +191,7 @@ public class BodyMessage extends AbstractMessage {
   }
 
   /**
-   * Setting Recover Update Node (servise reconfiguration).
+   * Setting Recover Update Node (servise reconfiguration) POJO class.
    *
    * @param recoverUpdateService
    *          set recoverUpdateService
@@ -276,10 +276,8 @@ public class BodyMessage extends AbstractMessage {
     this.breakoutIfAddDelete = breakoutIfAddDelete;
   }
 
-  /**
+  /*
    * Stringizing Instance.
-   *
-   * @return instance string
    */
   @Override
   public String toString() {

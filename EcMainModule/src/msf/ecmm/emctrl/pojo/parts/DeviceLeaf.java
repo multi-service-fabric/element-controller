@@ -21,7 +21,7 @@ public class DeviceLeaf {
   /** Leaf Device Name. */
   private String name = null;
 
-  /** VRF Configuration Information (only for L3VLAN IF Batch Generation). */
+  /** VRF configuration information. */
   private Vrf vrf = null;
 
   /** CP Configuration Information List. */
@@ -31,6 +31,14 @@ public class DeviceLeaf {
   /** CP Configuration Information List (only for L2VLAN IF Batch Generation/Change). */
   @XmlElement(name = "cp")
   private List<Cp> updCpList = null;
+
+  /** Dummy VLAN configuration information list. */
+  @XmlElement(name = "dummy_vlan")
+  private List<DummyVlan> dummyVlanList = null;
+
+  /** multi-homing. */
+  @XmlElement(name = "multi-homing")
+  private MultiHoming multiHoming = null;
 
   /**
    * Generating new instance.
@@ -118,10 +126,47 @@ public class DeviceLeaf {
   /**
    * Stringazing Instance.
    *
+   * @return updCpList
+   */
+  public MultiHoming getMultiHoming() {
+    return multiHoming;
+  }
+
+  /**
+   * Setting multihoming configuration.
+   *
+   * @param multiHoming
+   *          set multiHoming
+   */
+  public void setMultiHoming(MultiHoming multiHoming) {
+    this.multiHoming = multiHoming;
+  }
+
+  /**
+   * Acquiring dummy VLAN configuration information list.
+   *
+   * @return updCpList
+   */
+  public List<DummyVlan> getDummyVlanList() {
+    return dummyVlanList;
+  }
+
+  /**
+   * Acquring dummy VLAN configuration information list.
+   *
+   * @param dummyVlanList
+   *          set dummyVlanList
+   */
+  public void setDummyVlanList(List<DummyVlan> dummyVlanList) {
+    this.dummyVlanList = dummyVlanList;
+  }
+
+  /* (Non Javadoc)
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
-    return "DeviceLeaf [name=" + name + ", vrf=" + vrf + ", cpList=" + cpList + ", updCpList=" + updCpList + "]";
+    return "DeviceLeaf [name=" + name + ", vrf=" + vrf + ", cpList=" + cpList + ", updCpList=" + updCpList
+        + ", dummyVlanList=" + dummyVlanList + ", multiHoming=" + multiHoming + "]";
   }
 }

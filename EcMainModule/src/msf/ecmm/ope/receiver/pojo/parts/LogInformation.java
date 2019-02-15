@@ -1,7 +1,6 @@
 /*
  * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
  */
-
 package msf.ecmm.ope.receiver.pojo.parts;
 
 import java.util.ArrayList;
@@ -17,12 +16,12 @@ public class LogInformation {
   private Integer dataNumber;
 
   /**
-   * Whether the number of acquired logs exceed the upper limit or not
+   * Checking if the number of acquired logs exceed the upper limit or not?
    */
   private boolean overLimitNumber;
 
   /**
-   * Host name of the server where the log is submitted
+   * Host name of the server in which log was released
    */
   private String serverName;
 
@@ -41,39 +40,39 @@ public class LogInformation {
 
   /**
    * Setting the number of logs.
-   * @param dataNumber the number of logs
+   * @param data_number the number of logs
    */
   public void setDataNumber(Integer dataNumber) {
     this.dataNumber = dataNumber;
   }
 
   /**
-   * Getting whether the number of acquired logs exceed the upper limit or not.
-   * @return exceeded/not exceeded
+   * Getting the result of checking if the number of acquired logs exceed the upper limit.
+   * @return yes/no
    */
   public boolean isOverLimitNumber() {
     return overLimitNumber;
   }
 
   /**
-   * Setting whether the number of acquired logs exceed the upper limit or not.
-   * @param overLimitNumber exceeded/not exceeded
+   * Setting the result of checking if the number of acquired logs exceed the upper limit.
+   * @param over_limit_number yes/no
    */
   public void setOverLimitNumber(boolean overLimitNumber) {
     this.overLimitNumber = overLimitNumber;
   }
 
   /**
-   * Getting host name of the server where the log is submitted.
-   * @return server host name
+   * Getting the host name in which log was released.
+   * @return the host name in which log was released
    */
   public String getServerName() {
     return serverName;
   }
 
   /**
-   * Setting host name of the server where the log is submitted.
-   * @param serverName server host name
+   * Setting the host name in which log was released.
+   * @param server_name the host name in which log was released
    */
   public void setServerName(String serverName) {
     this.serverName = serverName;
@@ -89,7 +88,7 @@ public class LogInformation {
 
   /**
    * Setting log information list.
-   * @param logData log information list
+   * @param log_data log information list
    */
   public void setLog_data(ArrayList<LogData> logData) {
     this.logData = logData;

@@ -9,11 +9,11 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.NodesStartupNotification;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.NodesStartupNotification;
 
 /**
  * Device Start-up Notification Information DAO Class.
@@ -76,7 +76,7 @@ public class NodesStartupNotificationDAO extends BaseDAO {
 
     } catch (Throwable e1) {
       logger.debug("nodes_startup_notice select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, NODES_STARTUP_NOTICE, e1);
+      this.errorMessage(SEARCH_FAILURE, NODES_STARTUP_NOTICE, e1);
     }
     return nodesStartupNotificationList;
   }
@@ -121,7 +121,7 @@ public class NodesStartupNotificationDAO extends BaseDAO {
       if (node_id != null) {
         NodesStartupNotification nodesStartupNotification = this.search(node_id);
         if (nodesStartupNotification == null) {
-          if (check) {
+          if (check) { 
             return;
           }
           this.errorMessage(NO_DELETE_TARGET, NODES_STARTUP_NOTICE, null);
@@ -168,7 +168,7 @@ public class NodesStartupNotificationDAO extends BaseDAO {
 
     } catch (Throwable e1) {
       logger.debug("nodes_startup_notice select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, NODES_STARTUP_NOTICE, e1);
+      this.errorMessage(SEARCH_FAILURE, NODES_STARTUP_NOTICE, e1);
     }
     return nodesStartupNotification;
   }

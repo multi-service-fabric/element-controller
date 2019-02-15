@@ -1,0 +1,5 @@
+# Setting bc
+  - include: getrpm.yml
+    when: download_flag
+  - name: bc install 1
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/bc-1.06.95-13.el7.x86_64.rpm

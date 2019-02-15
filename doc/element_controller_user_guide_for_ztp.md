@@ -1,13 +1,13 @@
 # Element Controller User Guide for ZTP
 
 **Version 1.0**
-**March 28, 2018**
+**December 7, 2018**
 **Copyright(c) 2018 Nippon Telegraph and Telephone Corporation**
 
 ## 1.  Introduction
 
 This document describes how to operate ZTP in device installation or
-enhancement, which is conducted with Element Controller (EC).
+addition, which is conducted with Element Controller (EC).
 
 ZTP (Zero Touch Provisioning) is a general term for the functions which
 will be triggered by resetting or powering-on of a device to
@@ -56,9 +56,10 @@ The detail of each operation follows from the next section.
 
 Sequences and file acquisition processes are different each time
 depending on the used device, and tftpd and httpd are used.
-
 (It is presumed that tftpd and httpd have been already installed and
-launched in accordance with the Installation Manual.)
+launched in accordance with the Installation Manual.)<br>
+In addition, it is not required to check if both of tftpd and httpd are activated; however,
+it is only required to confirm activation of the process which is applicable for the type of device to perform ZTP.
 
 3.1. tftpd
 -----
@@ -144,90 +145,111 @@ In case the result is not shown, confirm the configuration of httpd.
 
 4.1. Locate the dhcpd.conf Template
 ------------------------------
+### 4.1.1. List of reserved words in file
 
-The dhcpd.conf template files are different each time depending on the
-used device.
+The following table illustrates the list of reserved words to be converted in the dhcpd. conf template file.
+(The reserved words are variables to replace different parameters depending on the environment. The MSF controller automatically replaces these words. Due to this, the user does not need to replace them.)
 
-Locate the dhcpd.conf template file corresponding to the type of device
-to be enhanced into the file path configured at the time of registering
-the device information. Please refer to the attached document for an
-actual example of the template file. The following table illustrates the
-list of attached document.
+  | No.|reserved words                       |converted value
+  |----|-------------------------------------|-----------------------|
+  | 1  |\$\$HOSTNAME\$\$                     |Device Host Name|
+  | 2  |\$\$MACADDRESS\$\$                   |Device MAC Address|
+  | 3  |\$\$TFTPHOSTNAME\$\$                 |EC Management IF|
+  | 4  |\$\$NTPSERVER\$\$                    |NTP Server Address|
+  | 5  |\$\$INITIALCONFIG\$\$                |Device Initial Injection Configuration File Path|
+  | 6  |\$\$MANAGEMENTADDRESS\$\$            |Device Management IF|
+  | 7  |\$\$LOGSERVERADDRESS\$\$             |EC Management IF|
+  | 8  |\$\$MANAGEMENTSUBNETMASK\$\$         |Subnet Mask of the network where the Device Management IF belongs to|
+  | 9  |\$\$MANAGEMENTNETWORKADDRESS\$\$     |Address of the network where the Device Management IF belongs to|
+  | 10 |\$\$MANAGEMENTRANGESTART\$\$         |The starting value of the address range which is available for the network where the Device Management IF belongs to|
+  | 11 |\$\$MANAGEMENTRANGEEND\$\$           |The ending value of the address range which is available for the network where the Device Management IF belongs to|
+
+### 4.1.2. Locate the dhcpd.conf Template
+
+The dhcpd.conf template files are different each time depending on the used device.<br>
+Locate the dhcpd.conf template file corresponding to the type of device to be added into the file path configured at the time of registering the device information to MSF controller\*\.
+Please refer to the attached document for an actual example of the template file.
+The following table illustrates the list of attached document.<br>
+*) Please make sure to be consistent with the parameters shown in the manual below.<br>
+Manual: https://github.com/multi-service-fabric/fabric-controller/blob/master/API/controller_api.xlsx <br>
+Parameter: 010101 sheet [dhcp_template]
+
 
   |\[dhcp.conf Template Files\] List of Attached Documents  ||
-  |---------------------------------------------------------|-------------------------------
-  |File Name                                                | Overview
-  |dhcpd.conf.qfx5100                                       | Juniper QFX5100 Template File
-  |dhcpd.conf.qfx5200                                       | Juniper QFX5200 Template File
-  |dhcpd.conf.ncs5001                                       | Cisco NCS5001 Template File
-  |dhcpd.conf.ncs5011                                       | Cisco NCS5011 Template File
-  |dhcpd.conf.ncs5501                                       | Cisco NCS5501 Template File
+  |---------------------------------------------------------|-------------------------------|
+  |File Name                                                | Overview|
+  |dhcpd.conf.qfx5100                                       | Juniper QFX5100 Template File|
+  |dhcpd.conf.qfx5110                                       | Juniper QFX5110 Template File|
+  |dhcpd.conf.qfx5200                                       | Juniper QFX5200 Template File|
+  |dhcpd.conf.ncs5001                                       | Cisco NCS5001 Template File|
+  |dhcpd.conf.ncs5011                                       | Cisco NCS5011 Template File|
+  |dhcpd.conf.ncs5501                                       | Cisco NCS5501 Template File|
+  |dhcpd.conf.cumulus                                       | CUMULUS Template File|
+
 
 4.2. Initial Configuration Template
 --------------------------------
 
 ### 4.2.1. List of reserved words in file
 
-The following table illustrates the list of reserved words to be converted
-in the initial configuration template.
+The following table illustrates the list of reserved words to be converted in the initial configuration template file.
+(The reserved words are variables to replace different parameters depending on the environment. The MSF controller automatically replaces these words. Due to this, the user does not need to replace them.)
 
-  | No.|reserved words                       |converted value        |
+  | No.|reserved words                       |converted value
   |----|-------------------------------------|-----------------------|
-  | 1  |\$\$DEVICEMANAGEMENTADDRESS\$\$      |Device Management Address
-  | 2  |\$\$NTPSERVER\$\$                    |NTP Server Address
-  | 3  |\$\$SUBNETMASK\$\$                   |Device Subnet Mask
-  | 4  |\$\$DEVICEMANAGEMENT_CIDRADDRESS\$\$ |Maximum Number of Prefixes of the Device
-  | 5  |\$\$ECMANAGEMENTADDRESS\$\$          |Management IF of EC <br> (element_controller_configuration_specifications.md: **REST Waiting Interface Address**)
-  | 6  |\$\$COMMUNITYMEMBERS\$\$             |BGP Community Value
-  | 7  |\$\$BELONGINGSIDEMEMBERS\$\$         |BGP Community Value both priority and not priority
+  | 1  |\$\$DEVICEMANAGEMENTADDRESS\$\$      |Device Management Address|
+  | 2  |\$\$NTPSERVER\$\$                    |NTP Server Address|
+  | 3  |\$\$SUBNETMASK\$\$                   |Device Subnet Mask|
+  | 4  |\$\$DEVICEMANAGEMENT_CIDRADDRESS\$\$ |Maximum Number of Prefixes of the Device|
+  | 5  |\$\$ECMANAGEMENTADDRESS\$\$          |Management IF of EC <br>(element_controller_configuration_specifications.md: **REST Waiting Interface Address**)|
+  | 6  |\$\$COMMUNITYMEMBERS\$\$             |BGP Community Value|
+  | 7  |\$\$BELONGINGSIDEMEMBERS\$\$         |BGP Community Value both priority and not priority|
 
 ### 4.2.2. Locate the Initial Configuration
 
-The initial configuration templates are different each time depending on the
-usage and type of the used device.
+The initial configuration templates are different each time depending on the usage and type of the used device.<br>
+Locate the initial configuration template files corresponding to the type and usage of device to be added into the file path configured at the time of registering the device information to MSF controller\*.<br>
+Please refer to the attached document for an actual example of the template file. The following table illustrates the list of attached document and each used reserved words.<br>
+In addition, device of some models requires a specific directory structure (hereinafter, referred to as ‘ZTP directory’) including files such as multiple initial configuration templates, etc.
+In the applicable models, ZTP directory is required to be located in such a way that the initial configuration templates (bold letters shown in the table below) in the ZTP directory will be located directly under path configured at the time of registering the model.<br>
+Please specify the directory to the applicable parameter\* when registering the device information to MSF controller.
+Taking No.10 as an example, please link each file location using a separated value “:”, and then specify as follows:
 
-Locate the initial configuration template files corresponding to the type and usage of
-device to be enhanced into the file path configured at the time of
-registering the device information. Please refer to the attached document for an
-actual example of the template file. The following table illustrates the
-list of attached document and each used reserved words.
+・・・【Any path】・・・/cumulus_L2Leaf_ztp /cumulus/ztp_sh_template:・・・【Any
+path】・・・/cumulus_L2Leaf_ztp/cumulus/EL3/config/config_template」）
 
-  |\[Initial Configuration Template File\] List of Attached Documents   ||||
-  |----|-----------------------------------------------|-------------------------------------------------------|-----------------------------|
-  | No.|File Name                                      |Overview                                               |Number of used reserved word |
-  | 1  |qfx5100\_L2Leaf\_1\_0\_ztp\_init.conf.template |Juniper QFX5100 Configuration Template File for L2Leaf |1,2,4,5,6,7
-  | 2  |qfx5100\_L3Leaf\_1\_0\_ztp\_init.conf.template |Juniper QFX5100 Configuration Template File for L3Leaf |1,2,4,5,6,7
-  | 3  |qfx5100\_Spine\_1\_0\_ztp\_init.conf.template  |Juniper QFX5100 Configuration Template File for Spine  |1,2,4,5
-  | 4  |qfx5200\_L3Leaf\_0\_8\_ztp\_init.conf.template |Juniper QFX5200 Configuration Template File for L3Leaf |1,2,4,5,6,7
-  | 5  |qfx5200\_Spine\_0\_8\_ztp\_init.conf.template  |Juniper QFX5200 Configuration Template File for Spine  |1,2,4,5
-  | 6  |ncs5001\_L3Leaf\_0.8\_ztp\_init.sh.template    |Cisco NCS5001 Configuration Template File for L3Leaf   |1,2,3,5,6,7
-  | 7  |ncs5011\_Spine\_0.8\_ztp\_init.sh.template     |Cisco NCS5011 Configuration Template File for Spine    |1,2,3,5
-  | 8  |ncs5501\_L3Leaf\_0.8\_ztp\_init.sh.template    |Cisco NCS5011 Configuration Template File for L3Leaf   |1,2,3,5,6,7
+In addition, you need to put the ZTP directory as shown in the table below.
+
+*) Please make sure to be consistent with the parameters shown in the manual below.<br>
+Manual: https://github.com/multi-service-fabric/fabric-controller/blob/master/API/controller_api.xlsx <br>
+Parameter: 010101 sheet [config_template]
+
+![Figure 4-2-2 configuration templates](img/Fig_4_2_2.png "Fig4-2-2")
 
 ### 4.2.3. Example of Sections in the File To Be Modified
 
 The following table illustrates the example of the correction part of the file
 that needs modification in the initial configuration template.
 
-| \[Initial Configuration Template\] (For Juniper, Spine)     ||File Number of target |
+|   |\[Initial Configuration Template\] (For Juniper, Spine)     |File Number of target |
 |---|-------------------------------------------------------------------------|-----------------|
-| 1 |policy-options {<br>    prefix-list EL_Prefix {<br>        **\[First Opposite L2Leaf Management Address\]/\[Prefix\],**<br>        **\[Second Opposite L2Leaf Management Address\]/\[Prefix\]**<br>    }<br> (\*)Make the list of the number of opposite L2Leafs. | 3,5 |
+| 1 |policy-options {<br>    prefix-list EL_Prefix {<br>        **\[First Opposite L2Leaf Management Address\]/\[Prefix\],**<br>        **\[Second Opposite L2Leaf Management Address\]/\[Prefix\]**<br>    }<br> (\*)Make the list of the number of opposite L2Leafs. | 3,6 |
 
 
 4.3. Locate the OS Image
 -------------------
 
-This operation is only required if the type of enhanced device is
-QFX5200.
+This operation is only required if the type of adding device is
+QFX5200 or Cumulus.
 
 Locate the OS image in the file path specified in the dhcpd.conf
 template. Please refer to the following figure.
 
-| \[dhcpd.conf Template\]                                               |
+| \[QFX5200 dhcpd.conf Template\]                                       |
 |-----------------------------------------------------------------------|
 | \--<br> \#\#\#\#\#\#\#\#\#\#<br> \# host<br> \#\#\#\#\#\#\#\#\#\#     |
-| \#\# QFX5200 \#\#<br> host QFX5200-1 {                                                      |
-|   hardware ethernet \$\$MACADDRESS\$\$;<br>   fixed-address \$\$MANAGEMENTADDRESS\$\$;<br>   next-server \$\$TFTPHOSTNAME\$\$;<br>   option tftp-server-name \"\$\$TFTPHOSTNAME\$\$\";<br>                     |
+| \#\# QFX5200 \#\#<br> host QFX5200-1 {|
+|   hardware ethernet \$\$MACADDRESS\$\$;<br>   fixed-address \$\$MANAGEMENTADDRESS\$\$;<br>   next-server \$\$TFTPHOSTNAME\$\$;<br>  option tftp-server-name \"\$\$TFTPHOSTNAME\$\$\";<br>                     |
 | option QFX.alt-image-file-name<br> **\"/junos-conf/jinstall-qfx-5e-flex-15.1X53-D30.5-domestic-signed.tgz\"**; |
 | option QFX.transfer-mode \"http\";<br> option QFX.config-file-name \"\$\$INITIALCONFIG\$\$\";<br> }                                                                     |
 | dhcpd.conf.qfx5200 (END)<br> \--                                                                   |
@@ -238,3 +260,57 @@ template. Please refer to the following figure.
 > here should be:
 >
 > /var/www/html/junos-conf/jinstall-qfx-5e-flex-15.1X53-D30.5-domestic-signed.tgz
+
+| \[Cumulus dhcpd.conf Template\]|
+|-----------------------------------------------------------------------|
+| option cumulus-provision-url code 239 = text; <br> subnet $$MANAGEMENTNETWORKADDRESS$$ netmask $$MANAGEMENTSUBNETMASK$$ {<br> &nbsp;&nbsp;&nbsp;&nbsp;default-lease-time 600; <br> &nbsp;&nbsp;&nbsp;&nbsp;deny unknown-clients; <br> &nbsp;&nbsp;&nbsp;&nbsp;max-lease-time 7200; <br> &nbsp;&nbsp;&nbsp;&nbsp;range $$MANAGEMENTRANGESTART$$ $$MANAGEMENTRANGEEND$$; <br> &nbsp;&nbsp;&nbsp;&nbsp;option default-url = "tftp://**\$$TFTPHOSTNAME$$/cumulus/OS/cumulus-linux-3.6.0-bcm-amd64.bin\"**; <br> &nbsp;&nbsp;&nbsp;&nbsp;option cumulus-provision-url "tftp://$$TFTPHOSTNAME$$/cumulus/ztp.sh"; <br> &nbsp;&nbsp;&nbsp;&nbsp;host $$HOSTNAME$$ { <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hardware ethernet $$MACADDRESS$$; <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fixed-address $$MANAGEMENTADDRESS$$; <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;option host-name "$$HOSTNAME$$"; <br> &nbsp;&nbsp;&nbsp;&nbsp;} <br> }
+
+(\*) **The file path (relative path) of the OS image.**
+
+> Since the Cumulus's acquisition process is tftpd, the absolute path here should be:
+> /var/lib/tftpd/cumulus/OS/cumulus-linux-3.6.0-bcm-amd64.bin
+
+## 5. Operation of Device
+
+Method for starting-up of ZTP is different depending upon the vendor of device. Operation method is described below.
+Once this procedure has been done, all configurations, etc, will be deleted automatically.
+Therefore, please make sure to create a backup of them in advance, and save them in another server.
+
+---
+### 5.1. Operational Procedures for JUNIPER’s Device
+
+If remote access via ssh is possible, use the following command to activte ZTP.
+
+\# request system zeroize Enter
+
+Enter Yes, when asked a Yes/No question.<br>
+Confirm if ssh disconnects naturally.
+
+When remote access is unavaiable, peform the above procedure from a console.
+
+### 5.2. Operational Procedures for CISCO’s Device
+
+Before a reset, it is required to complete the following procedure by performing remote accss via ssh.
+
+\# ztp clean Enter<br>
+\# configure Enter
+
+Enter the following command, when it changes to the Configuration Edit Mode.
+
+\# commit replace Enter
+
+Enter Yes, when asked a Yes/No question.<br>
+Ensure that no response will be returned from the command prompt.
+
+Power cable needs to be detached/inserted (a power switch is not provided) because CISCO’s device cannot be reset remotely.
+
+### 5.3. Operational Procedures for Cumulus
+
+Initialize the device by using the following command.
+
+\# sudo onie-select -k Enter
+
+Enter Yes, when asked a Yes/No question.<br>
+After initialization has been finished, restart the device by using the following command.
+
+\# sudo shutdown -r now Enter

@@ -27,6 +27,7 @@
         <property name="ntp_server_address" type="text" not-null="true"/>
         <property name="host_name" type="text" not-null="true"/>
         <property name="mac_addr" unique="true" type="string" not-null="true"/>
+        <property name="irb_type" unique="true" type="string"/>
         <many-to-one name="equipments" class="msf.ecmm.db.pojo.Equipments" insert="false" update="false">
             <column name="equipment_type_id" not-null="true"/>
         </many-to-one>

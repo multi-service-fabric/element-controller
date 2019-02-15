@@ -1,0 +1,7 @@
+# Setting net-snmp
+  - include: getrpm.yml
+    when: download_flag
+  - name: expect install 1
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/tcl-8.5.13-8.el7.x86_64.rpm
+  - name: expect install 2
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/expect-5.45-14.el7_1.x86_64.rpm

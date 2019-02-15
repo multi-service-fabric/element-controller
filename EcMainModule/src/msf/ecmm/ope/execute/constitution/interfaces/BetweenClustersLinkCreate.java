@@ -256,7 +256,7 @@ public class BetweenClustersLinkCreate extends Operation {
 
       CreateBetweenClustersLink inputData = (CreateBetweenClustersLink) getInData();
 
-      inputData.check(OperationType.BetweenClustersLinkCreate);
+      inputData.check(new OperationType(OperationType.BetweenClustersLinkCreate));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);

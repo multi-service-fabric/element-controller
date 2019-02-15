@@ -7,6 +7,7 @@ package msf.ecmm.ope.execute.cp;
 import static msf.ecmm.common.CommonDefinitions.*;
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,6 +16,8 @@ import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.DummyVlanIfs;
+import msf.ecmm.db.pojo.IRBInstanceInfo;
 import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.VlanIfs;
 import msf.ecmm.ope.execute.Operation;
@@ -65,9 +68,28 @@ public class AllVlanIfInfoAcquisition extends Operation {
     try (DBAccessManager session = new DBAccessManager()) {
 
       List<VlanIfs> vlanIfsDb = session.getVlanIfsList(nodeId);
+      List<IRBInstanceInfo> irbListDb = new ArrayList<IRBInstanceInfo>();
+      IRBInstanceInfo irb = null;
+      for (VlanIfs vlan : vlanIfsDb) {
+        irb = session.searchIrbInstanceInfo(nodeId, vlan.getVlan_id());
+        if (null != irb) {
+          irbListDb.add(irb);
+        }
+      }
+      List<DummyVlanIfs> dummyIfsDb = session.getDummyVlanIfsInfoList(nodeId);
+      for (DummyVlanIfs vlan : dummyIfsDb) {
+        irb = session.searchIrbInstanceInfo(nodeId, vlan.getVlan_id());
+        if (null != irb) {
+          irbListDb.add(irb);
+        }
+      }
       Nodes nodes = session.searchNodes(nodeId, null);
 
-      getVlanIfList = RestMapper.toVlanIfsInfoList(vlanIfsDb, nodes);
+      getVlanIfList = RestMapper.toVlanIfsInfoList(vlanIfsDb, nodes, irbListDb);
+      if (0 != dummyIfsDb.size()) {
+        getVlanIfList.getVlanIfs()
+            .addAll((RestMapper.toVlanIfsInfoListFromDummyIfs(dummyIfsDb, nodes, irbListDb).getVlanIfs()));
+      }
 
       response = makeSuccessResponse(RESP_OK_200, getVlanIfList);
 

@@ -3,7 +3,7 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
-   <!-- Physical IF Naming Convention Information Class -->
+    <!-- Pysical IF Naming Rule Information Class -->
 
 <hibernate-mapping>
         <class name="msf.ecmm.db.pojo.IfNameRules" table="if_name_rules" lazy="true">

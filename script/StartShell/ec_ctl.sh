@@ -14,8 +14,8 @@
 HOST="192.168.51.52"
 PORT="18080"
 RETRYNUM=10
-FC_HOST="192.168.51.54" 
-FC_PORT="18081"         
+FC_HOST="192.168.51.54"
+FC_PORT="18081"
 
 ## Input Argument (only stop/status are used)
 EVENT=""
@@ -23,6 +23,8 @@ EVENT=""
 ## Environment Variable (only start/stop is used)
 JARFILE="msf.ecmm.ope.execute.ecstate.ECMainStarter"
 CONFFILE="/usr/ec_main/conf/ec_main.conf"
+EXNTED_CONFFILE="/usr/ec_main/lib/extend_operation.conf"
+
 ## For Start-up Confirmation
 CHECKFILE="/usr/ec_main/lib/EcMainModule.jar:"
 
@@ -45,15 +47,18 @@ EC_CHANGEOVER="changeover"
 ## EC Main Module Start-up Process
 function start() {
 
+    if [ ! -f ${EXNTED_CONFFILE} ]; then
+        EXNTED_CONFFILE=""
+    fi
+    
     cnt=`ps -ef | grep ${CHECKFILE} | grep -c -v grep`
     if [ "${cnt}" != "0" ]; then
         logger -t EcMainModule "command execute failed.(${CHECKFILE} is already running)"
         echo "Error : ${CHECKFILE} is already running"
         ret=1
     else
-
-        #echo java -cp ${CLASSPATH} ${DEFINE} ${JARFILE} ${CONFFILE}
-        java -cp ${CLASSPATH} ${DEFINE} ${JARFILE} ${CONFFILE} > /dev/null 2>&1 &
+        #echo java -cp ${CLASSPATH} ${DEFINE} ${JARFILE} ${CONFFILE} ${EXNTED_CONFFILE}
+        java -cp ${CLASSPATH} ${DEFINE} ${JARFILE} ${CONFFILE} ${EXNTED_CONFFILE} > /dev/null 2>&1 &
         ret=0
         
     fi
@@ -141,9 +146,7 @@ function postSend() {
 ## POST Response (stop) Analysis Process
 function chkStopResponse() {
 
-
     response=$1
-
 
     ret="0"
 
@@ -151,7 +154,6 @@ function chkStopResponse() {
     if [ "${err}" -eq 0 ]; then
 
         resultCode=`echo ${response} | sed -e "s/.*resultCode://"`
-
 
         if [ "${resultCode}" != "200" ]; then
             logger -t EcMainModule "responCode=""${resultCode}"
@@ -185,7 +187,6 @@ function chkStatusResponse() {
 
     err=`echo "${response}" | grep -c "resultCode\:000"`
     if [ "${err}" -eq 0 ]; then
-
         resultCode=`echo ${response} | sed -e "s/.*resultCode://"`
 
         if [ "${resultCode}" != "200" ]; then
@@ -204,11 +205,9 @@ function chkStatusResponse() {
             curlErrCode=`echo ${response} | cut -d"(" -f2 | cut -d")" -f1`
 
             if [ "${curlErrCode}" = "7" ]; then
-
                 ret=10
             fi
         else
-
             logger -t EcMainModule "curl command failed.("detail error reason is unknown")"
         fi
     fi

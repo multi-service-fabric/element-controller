@@ -29,7 +29,7 @@ public class SessionManager {
    *           exception at Hibernate
    */
   private SessionManager() {
-    final StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure()
+    final StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure() 
         .build();
 
     MetadataSources ms = new MetadataSources(registry);

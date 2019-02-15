@@ -160,7 +160,7 @@ public class BreakoutIfCreate extends Operation {
 
       CreateBreakoutIf inputData = (CreateBreakoutIf) getInData();
 
-      inputData.check(OperationType.BreakoutIfCreate);
+      inputData.check(new OperationType(OperationType.BreakoutIfCreate));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);

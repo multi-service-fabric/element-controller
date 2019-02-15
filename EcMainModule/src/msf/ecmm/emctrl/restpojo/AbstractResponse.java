@@ -4,7 +4,7 @@
 package msf.ecmm.emctrl.restpojo;
 
 /**
- * REST Response Base Class
+ * REST response base class
  */
 public class AbstractResponse extends msf.ecmm.fcctrl.pojo.AbstractResponse{
 

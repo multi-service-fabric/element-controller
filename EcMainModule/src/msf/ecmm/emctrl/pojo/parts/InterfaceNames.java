@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Expansion Restoration of Node-interface infomation class.<br>
+ * Expansion Restoration of Node-interface information class.<br>
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)

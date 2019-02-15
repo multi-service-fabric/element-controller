@@ -29,6 +29,7 @@ import msf.ecmm.emctrl.pojo.AbstractMessage;
 import msf.ecmm.emctrl.pojo.RecoverUpdateNode;
 import msf.ecmm.emctrl.pojo.RecoverUpdateService;
 import msf.ecmm.ope.execute.Operation;
+import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
@@ -70,8 +71,14 @@ public class NodeRecover extends Operation {
    */
   public NodeRecover(AbstractRestMessage idt, HashMap<String, String> ukm) {
     super(idt, ukm);
+    super.setOperationType(OperationType.NodeRecover);
   }
 
+  /**
+   * Recovery extension execute.
+   *
+   * @see msf.ecmm.ope.execute.Operation#execute()
+   */
   @Override
   public AbstractResponseMessage execute() {
     logger.trace(CommonDefinitions.START);
@@ -204,8 +211,9 @@ public class NodeRecover extends Operation {
     logger.trace(CommonDefinitions.END);
     return ret.isResult();
   }
+
   /**
-   * EM Access (recover node) Execution.
+   * EM Access (service reconfiguration) Execution.
    *
    * @param input
    *          input information
@@ -220,8 +228,6 @@ public class NodeRecover extends Operation {
    * @return success/fail
    * @throws EmctrlException
    *           :EM exception
-   * @throws IllegalArgumentException
-   *           :mapper exception
    */
   private boolean executeRecoverService(RecoverNodeService input, Equipments oldEquipments, Nodes nodes,
       Map<String, String> physicalIfNamesMap, Map<String, String> lagIfNamesMap) throws EmctrlException {

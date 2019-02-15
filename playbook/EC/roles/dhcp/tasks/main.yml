@@ -5,20 +5,17 @@
     shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/dhcp-4.2.5-42.el7.centos.x86_64.rpm
   - name: add dhcp setting file
     shell: cp -p /usr/lib/systemd/system/dhcpd.service /etc/systemd/system/
+  - name: add dhcp setting 1
+    lineinfile: >-
+      dest='/etc/systemd/system/dhcpd.service'
+      state=present
+      backrefs=yes
+      regexp='ExecStart=/usr/sbin/dhcpd -f -cf /etc/dhcp/dhcpd.conf -user dhcpd -group dhcpd --no-pid'
+      line='ExecStart=/usr/sbin/dhcpd -f -cf /etc/dhcp/dhcpd.conf -user dhcpd -group dhcpd --no-pid {{ dhcp_if_name }}'
   - name: check before add setting
     find: paths=/etc/sysconfig/dhcpd
           patterns='DHCPDARGS={{ dhcp_if_name }}'
     register: found_files
-  - name: add dhcp setting 1
-    lineinfile:
-      dest=/etc/systemd/system/dhcpd.service
-      line='Type=notify'
-    when: found_files.matched == 0
-  - name: add dhcp setting 2
-    lineinfile:
-      dest=/etc/systemd/system/dhcpd.service
-      line='ExecStart=/usr/sbin/dhcpd -f -cf /etc/dhcp/dhcpd.conf -user dhcpd -group dhcpd --no-pid {{ dhcp_if_name }}'
-    when: found_files.matched == 0
   - name: add dhcp setting 3
     lineinfile:
       dest=/etc/sysconfig/dhcpd

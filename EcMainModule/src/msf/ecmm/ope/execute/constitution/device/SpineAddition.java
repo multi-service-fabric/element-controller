@@ -37,11 +37,12 @@ public class SpineAddition extends NodeAddition {
   }
 
   @Override
-  protected boolean executeAddNode(String ecmainIpaddr, List<Nodes> nodesListDbMapper)
+  protected boolean executeAddNode(String ecmainIpaddr, List<Nodes> nodesListDbMapper, int internallinkVlanId)
       throws EmctrlException, IllegalArgumentException {
     logger.trace(CommonDefinitions.START);
 
-    SpineAddDelete spineAddEm = EmMapper.toSpineInfoNodeCreate((AddNode) getInData(), ecmainIpaddr, nodesListDbMapper);
+    SpineAddDelete spineAddEm = EmMapper.toSpineInfoNodeCreate((AddNode) getInData(), ecmainIpaddr, nodesListDbMapper,
+        internallinkVlanId);
 
     EmController emController = EmController.getInstance();
     AbstractMessage ret = emController.request(spineAddEm, false);

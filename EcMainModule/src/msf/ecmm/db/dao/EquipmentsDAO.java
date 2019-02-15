@@ -8,19 +8,19 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.Equipments;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.Equipments;
+
 /**
- * Model Information DAO Class.
+ * Model IF Information DAO Class.
  */
 public class EquipmentsDAO extends BaseDAO {
 
   /**
-   * Model Information Class Constructor.
+   * Model IF Information Class Constructor.
    *
    * @param session
    *          data base session
@@ -30,10 +30,10 @@ public class EquipmentsDAO extends BaseDAO {
   }
 
   /**
-   * Model Information Table INSERT.
+   * Model information table INSERT.
    *
    * @param equipments
-   *          model information to be registered
+   *          Model information that you want to register
    * @throws DBAccessException
    *           data base exception
    */
@@ -55,7 +55,7 @@ public class EquipmentsDAO extends BaseDAO {
   }
 
   /**
-   * Model Information Table DELETE.
+   * Model information table DELETE.
    *
    * @param equipment_type_id
    *          model ID (primary key)
@@ -81,9 +81,9 @@ public class EquipmentsDAO extends BaseDAO {
   }
 
   /**
-   * Model Information Table All SELECT.
+   * Model Information TableSELECT.
    *
-   * @return model information list
+   * @return Model information list
    * @throws DBAccessException
    *           data base exception
    */
@@ -98,17 +98,17 @@ public class EquipmentsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("equipments all select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, EQUIPMENTS, e1);
+      this.errorMessage(SEARCH_FAILURE, EQUIPMENTS, e1);
     }
     return list;
   }
 
   /**
-   * Model Information Table SELECT.
+   * Model information table SELECT.
    *
    * @param equipment_type_id
-   *          model ID (primary key)
-   * @return model information
+   *          Model ID(parimary key)
+   * @return Model information
    * @throws DBAccessException
    *           data base exception
    */
@@ -125,7 +125,7 @@ public class EquipmentsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("equipments select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, EQUIPMENTS, e1);
+      this.errorMessage(SEARCH_FAILURE, EQUIPMENTS, e1);
     }
     return equipments;
   }

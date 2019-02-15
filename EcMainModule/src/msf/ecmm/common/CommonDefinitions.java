@@ -35,15 +35,15 @@ public class CommonDefinitions {
   /** infrastructure configurtion completed. */
   public static final int NODE_STATE_NODE_RESETTING_COMPLETE = 3;
   /** out of order (expansion failed). */
-  public static final int NODE_STATE_FAILER_SETTING = 4;
+  public static final int NODE_STATE_FAILURE_SETTING = 4;
   /** infrastructure configuration failed. */
-  public static final int NODE_STATE_FAILER_NODE_RESETTING = 5;
+  public static final int NODE_STATE_FAILURE_NODE_RESETTING = 5;
   /** service configuration failed. */
-  public static final int NODE_STATE_FAILER_SERVICE_SETTING = 6;
+  public static final int NODE_STATE_FAILURE_SERVICE_SETTING = 6;
   /** out of order (other). */
-  public static final int NODE_STATE_FAILER_OTHER = 7;
+  public static final int NODE_STATE_FAILURE_OTHER = 7;
   /** out of order (recovering expansion failed). */
-  public static final int NODE_STATE_FAILER_RECOVER_NODE = 8;
+  public static final int NODE_STATE_FAILURE_RECOVER_NODE = 8;
   /** active (string). */
   public static final String NODE_STATE_IN_SERVICE_STRING = "in-service";
   /** waiting for device start (string). */
@@ -53,15 +53,15 @@ public class CommonDefinitions {
   /** infrastructure configuration completed (string). */
   public static final String NODE_STATE_NODE_RESETTING_COMPLETE_STRING = "node-resetting-complete";
   /** out of order (expansion failed) (string). */
-  public static final String NODE_STATE_FAILER_SETTING_STRING = "failer-setting";
+  public static final String NODE_STATE_FAILURE_SETTING_STRING = "failure-setting";
   /** infrastructure configuration failed (string). */
-  public static final String NODE_STATE_FAILER_NODE_RESETTING_STRING = "failer-node-resetting";
+  public static final String NODE_STATE_FAILURE_NODE_RESETTING_STRING = "failure-node-resetting";
   /** service configuration failed (string). */
-  public static final String NODE_STATE_FAILER_SERVICE_SETTING_STRING = "failer-service-setting";
+  public static final String NODE_STATE_FAILURE_SERVICE_SETTING_STRING = "failure-service-setting";
   /** out of order (other) (string). */
-  public static final String NODE_STATE_FAILER_OTHER_STRING = "failer-other";
+  public static final String NODE_STATE_FAILURE_OTHER_STRING = "failure-other";
   /** out of order (recovering expansion failed) (string). */
-  public static final String NODE_STATE_FAILER_RECOVER_NODE_STRING = "failuer-recover-node";
+  public static final String NODE_STATE_FAILURE_RECOVER_NODE_STRING = "failure-recover-node";
 
   /** notification received (start success). */
   public static final int RECV_OK_NOTIFICATION = 1;
@@ -92,9 +92,9 @@ public class CommonDefinitions {
   /** IF status unknown (string). */
   public static final String IF_STATE_UNKNOWN_STRING = "unknown";
 
-  /** link up */
+  /** link up. */
   public static final String LINK_STATUS_LINKUP = "linkup";
-  /** link down */
+  /** link down. */
   public static final String LINK_STATUS_LINKDOWN = "linkdown";
 
   /** device status (active). */
@@ -102,7 +102,7 @@ public class CommonDefinitions {
   /** device status (out of order). */
   public static final String IF_NODE_DOWN_STRING = "down";
 
-  /** value (no configuration). */
+  /** value (no configuration）. */
   public static final int NOT_SET = -1;
 
   /** physical IF. */
@@ -117,6 +117,16 @@ public class CommonDefinitions {
   public static final String IF_TYPE_BREAKOUT_IF = "breakout-if";
   /** VLAN IF. */
   public static final String IF_TYPE_VLAN_IF = "vlan-if";
+
+  /** Physical IF. */
+  public static final String IF_TYPE_PHYSICAL_IFS = "physical-ifs";
+  /** LAG IF. */
+  public static final String IF_TYPE_LAG_IFS = "lag-ifs";
+  /** VLAN IF. */
+  public static final String IF_TYPE_VLAN_IFS = "vlan-ifs";
+  /** breakout IF. */
+  public static final String IF_TYPE_BREAKOUT_IFS = "breakout-ifs";
+
 
   /** blocked. */
   public static final int EC_BUSY_VALUE = 1;
@@ -135,7 +145,7 @@ public class CommonDefinitions {
   public static final String KEY_NODE_ID = "node_id";
   /** physical IF ID. */
   public static final String KEY_PHYSICAL_IF_ID = "physical_if_id";
-  /** Lag IF ID. */
+  /** LagIF ID. */
   public static final String KEY_LAG_IF_ID = "lag_if_id";
   /** slice ID. */
   public static final String KEY_SLICE_ID = "slice_id";
@@ -153,8 +163,13 @@ public class CommonDefinitions {
   public static final String KEY_CLUSTER_ID = "cluster_id";
   /** VLAN IF ID. */
   public static final String KEY_VLAN_IF_ID = "vlan_if_id";
-  /** Breakout IF ID. */
+  /** BreakoutIF ID. */
   public static final String KEY_BREAKOUT_IF_ID = "breakout_if_id";
+  /** IF type. */
+  public static final String KEY_IF_TYPE = "if_type";
+  /** IF ID. */
+  public static final String KEY_IF_ID = "if_id";
+
 
   /** normal router (switch fablic). */
   public static final int ROUTER_TYPE_NORMAL = 0;
@@ -166,7 +181,7 @@ public class CommonDefinitions {
   public static final String ROUTER_TYPE_NORMAL_STRING = "normal";
   /** core router (string). */
   public static final String ROUTER_TYPE_COREROUTER_STRING = "core-router";
-  /** not installed (string). */
+  /** core router (string). */
   public static final String ROUTER_TYPE_UNKNOWN_STRING = "unknown";
 
   /** Spine. */
@@ -196,27 +211,27 @@ public class CommonDefinitions {
   public static final int BGP_ROLE_MASTER = 1;
   /** slave. */
   public static final int BGP_ROLE_SLAVE = 2;
-  /** master (string). */
+  /** master（string）. */
   public static final String BGP_ROLE_MASTER_STRING = "master";
-  /** slave (string). */
+  /** slave（string）. */
   public static final String BGP_ROLE_SLAVE_STRING = "slave";
 
   /** IPv4. */
   public static final int STATIC_ROUTEADDRESS_TYPE_IPV4 = 4;
   /** IPv6. */
   public static final int STATIC_ROUTEADDRESS_TYPE_IPV6 = 6;
-  /** IPv4 (string). */
+  /** IPv4（string）. */
   public static final String STATIC_ROUTEADDRESS_TYPE_IPV4_STRING = "ipv4";
-  /** IPv6 (string). */
+  /** IPv6（string）. */
   public static final String STATIC_ROUTEADDRESS_TYPE_IPV6_STRING = "ipv6";
 
   /** master. */
   public static final int VRRP_ROLE_MASTER = 1;
   /** slave. */
   public static final int VRRP_ROLE_SLAVE = 2;
-  /** master (string). */
+  /** master（string）. */
   public static final String VRRP_ROLE_MASTER_STRING = "master";
-  /** slave (string). */
+  /** slave（string）. */
   public static final String VRRP_ROLE_SLAVE_STRING = "slave";
 
   /** open. */
@@ -256,5 +271,30 @@ public class CommonDefinitions {
   public static final String KEY_END_DATE = "end_date";
   /** acquired info. */
   public static final String KEY_LIMIT_NUMBER = "limit_number";
+
+  /** TRUE. */
+  public static final String EXPAND_CONF_TRUE = "true";
+  /** FALSE. */
+  public static final String EXPAND_CONF_FALSE = "false";
+  /** priority. */
+  public static final String EXPAND_CONF_PRIMARY = "primary";
+  /** normal. */
+  public static final String EXPAND_CONF_NORMAL = "normal";
+
+  /** IRB setting possible by using Asymmetric method. */
+  public static final String IRB_TYPE_ASYMMETRIC = "asymmetric";
+  /** IRB setting possible by using Symmetric method. */
+  public static final String IRB_TYPE_SYMMETRIC = "symmetric";
+
+  /** Extended MIB. */
+  public static final String VLAN_TRAFFIC_TYPE_MIB = "MIB";
+  /** CLI. */
+  public static final String VLAN_TRAFFIC_TYPE_CLI = "CLI";
+
+  /** speed set（Physical port registered）. */
+  public static final String SPEED_SET = "speed_set";
+  /** speed set deleted（Physical port deleted）. */
+  public static final String SPEED_DELETE = "speed_delete";
+
 
 }

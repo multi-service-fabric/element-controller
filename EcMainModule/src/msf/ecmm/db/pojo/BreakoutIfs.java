@@ -253,7 +253,7 @@ public class BreakoutIfs implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   * Stringize instance
    *
    * @see java.lang.Object#toString()
    */

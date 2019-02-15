@@ -29,15 +29,21 @@ public class InternalInterface {
   /** IF Type of Internal Link. */
   String type = null;
 
+  XmlIntegerElement cost = null;
+
   /** Opposing Device Name. */
   @XmlElement(name = "opposite-node-name")
   String oppositeNodeName = null;
 
   /** LagIfId. */
   @XmlElement(name = "lag-id")
-  String ifId = null;
+  Integer ifId = null;
 
-  /** The Number of LAG Members. */
+  /** VLANID for internal link. */
+  @XmlElement(name = "vlan-id")
+  Integer vlanId = null;
+
+  /** No. of members of LAG. */
   @XmlElement(name = "minimum-links")
   private Long minimumLinks = null;
 
@@ -105,7 +111,7 @@ public class InternalInterface {
    *
    * @return LagIfId
    */
-  public String getIfId() {
+  public Integer getIfId() {
     return ifId;
   }
 
@@ -115,12 +121,30 @@ public class InternalInterface {
    * @param ifId
    *          LagIfId
    */
-  public void setIfId(String ifId) {
+  public void setIfId(Integer ifId) {
     this.ifId = ifId;
   }
 
   /**
-   * Getting IF type of internal link.
+   * Acquiring VLANID for internal link.
+   *
+   * @return vlanId
+   */
+  public Integer getVlanId() {
+    return vlanId;
+  }
+
+  /**
+   * Setting VLANID for internal link.
+   *
+   * @param vlanId  set vlanId
+   */
+  public void setVlanId(Integer vlanId) {
+    this.vlanId = vlanId;
+  }
+
+  /**
+   * Acquiring IF type of internal link.
    *
    * @return IF type of internal link.
    */
@@ -139,28 +163,47 @@ public class InternalInterface {
   }
 
   /**
-   * Getting opposing device name.
+   * Acqurining cost value of internal link IF.
    *
-   * @return opposing device name.
+   * @return Cost value of internal link IF.
+   */
+  public XmlIntegerElement getCost() {
+    return cost;
+  }
+
+  /**
+   * Setting cost value of internal link IF.
+   *
+   * @param cost
+   *          Cost value of internal link IF.
+   */
+  public void setCost(XmlIntegerElement cost) {
+    this.cost = cost;
+  }
+
+  /**
+   * Acquiring name of opposint device.
+   *
+   * @return Name of opposing device.
    */
   public String getOppositeNodeName() {
     return oppositeNodeName;
   }
 
   /**
-   * Setting opposing device name.
+   * Setting name of opposing device.
    *
    * @param oppositeNodeName
-   *          opposing device name.
+   *          Name of opposing device.
    */
   public void setOppositeNodeName(String oppositeNodeName) {
     this.oppositeNodeName = oppositeNodeName;
   }
 
   /**
-   * Getting the number of LAG members.
+   * Acquiring no. of member of LAG.
    *
-   * @return the number of LAG members.
+   * @return No. of member of LAG.
    */
   public Long getMinimumLinks() {
     return minimumLinks;
@@ -254,8 +297,9 @@ public class InternalInterface {
 
   @Override
   public String toString() {
-    return "InternalInterface [operation=" + operation + ", name=" + name + ", type=" + type + ", oppositeNodeName="
-        + oppositeNodeName + ", ifId=" + ifId + ", minimumLinks=" + minimumLinks + ", linkSpeed=" + linkSpeed
-        + ", address=" + address + ", prefix=" + prefix + ", internalInterfaceMember=" + internalInterfaceMember + "]";
+    return "InternalInterface [operation=" + operation + ", name=" + name + ", type=" + type + ", cost=" + cost
+        + ", oppositeNodeName=" + oppositeNodeName + ", ifId=" + ifId + ", vlanId=" + vlanId + ", minimumLinks="
+        + minimumLinks + ", linkSpeed=" + linkSpeed + ", address=" + address + ", prefix=" + prefix
+        + ", internalInterfaceMember=" + internalInterfaceMember + "]";
   }
 }

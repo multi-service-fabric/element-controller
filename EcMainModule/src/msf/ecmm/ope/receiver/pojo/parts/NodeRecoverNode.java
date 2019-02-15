@@ -16,10 +16,10 @@ public class NodeRecoverNode {
   /** Node Type. */
   private String nodeType;
 
-  /** User Name */
+  /** Login user name. */
   private String username;
 
-  /** Password. */
+  /** Login password. */
   private String password;
 
   /** MAC Address. */
@@ -54,7 +54,7 @@ public class NodeRecoverNode {
   }
 
   /**
-   * Setting User name.
+   * Setting Login User name.
    *
    * @param username
    *          setting username
@@ -64,7 +64,7 @@ public class NodeRecoverNode {
   }
 
   /**
-   * Getting Password.
+   * Getting login password.
    *
    * @return password
    */
@@ -73,10 +73,10 @@ public class NodeRecoverNode {
   }
 
   /**
-   * Setting Password.
+   * Setting login password.
    *
    * @param password
-   *          setting password
+   *          Setting password
    */
   public void setPassword(String password) {
     this.password = password;

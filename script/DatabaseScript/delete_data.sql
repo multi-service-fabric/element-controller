@@ -1,3 +1,7 @@
+delete from dummy_vlan_ifs_info;
+delete from irb_instance_info;
+delete from acl_detail_info;
+delete from acl_info;
 delete from bgp_option;
 delete from vrrp_option;
 delete from static_route_option;
@@ -10,6 +14,8 @@ delete from physical_ifs;
 delete from nodes;
 delete from boot_error_msgs;
 delete from if_name_rules;
+delete from egress_queue_menu;
+delete from remark_menu;
 delete from equipment_ifs;
 delete from equipments;
 -- delete from system_status;

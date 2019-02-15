@@ -18,7 +18,7 @@ public class L3VlanOption {
   private String vrfId;
 
   /** Static Route Information List. */
-  private ArrayList<UpdateStaticRoute> staticRoutes = new ArrayList<UpdateStaticRoute>();
+  private ArrayList<UpdateStaticRoute> staticRoutes = null;
 
   /** QoS Configuration Infomation. */
   private QosUpdateVlanIf qos = null;

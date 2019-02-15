@@ -2,4 +2,4 @@
   - include: getrpm.yml
     when: download_flag
   - shell: createdb {{ db_name }}
-  - shell: psql {{ db_name }} < {{ ec_path }}/database/create_table.sql
+  - shell: psql {{ db_name }} < {{ rpm_path }}/{{ folder_name }}/create_table.sql

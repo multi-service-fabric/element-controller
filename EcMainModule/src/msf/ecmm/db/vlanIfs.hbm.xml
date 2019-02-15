@@ -34,6 +34,7 @@
         <property name="outflow_shaping_rate" type="float" />
         <property name="remark_menu" type="text" />
         <property name="egress_queue_menu" type="text" />
+        <property name="irb_instance_id" type="text"/>
         <set name="bgpOptionsList" table="bgp_options" lazy="true" inverse="true" cascade="all-delete-orphan">
             <key>
                 <column name="node_id" />

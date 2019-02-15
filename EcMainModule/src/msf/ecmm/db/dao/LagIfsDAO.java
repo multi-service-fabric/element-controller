@@ -9,12 +9,12 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.LagIfs;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.LagIfs;
 
 /**
  * LAGIF Information DAO Class.
@@ -45,7 +45,7 @@ public class LagIfsDAO extends BaseDAO {
     try {
       LagIfs regLagIfs = this.search(lagIfs.getNode_id(), lagIfs.getLag_if_id());
       if (regLagIfs != null) {
-        if (!check) {
+        if (!check) { 
           this.errorMessage(DOUBLE_REGISTRATION, LAG_IFS, null);
         }
       } else {
@@ -166,14 +166,14 @@ public class LagIfsDAO extends BaseDAO {
         LagIfs lagIfs = this.search(node_id, lag_if_id);
         if (lagIfs == null) {
           this.errorMessage(NO_DELETE_TARGET, LAG_IFS, null);
-        }
+        } 
         query = session.getNamedQuery("deleteLagIfs");
         query.setString("key1", node_id);
         query.setString("key2", lag_if_id);
       } else {
         List<LagIfs> lagIfsList = this.getList(node_id);
         if (lagIfsList == null) {
-          if (check) {
+          if (check) { 
             return;
           }
           this.errorMessage(NO_DELETE_TARGET, LAG_IFS, null);
@@ -211,7 +211,7 @@ public class LagIfsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("lag_ifs select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, LAG_IFS, e1);
+      this.errorMessage(SEARCH_FAILURE, LAG_IFS, e1);
     }
     return lagIfsList;
   }
@@ -243,7 +243,7 @@ public class LagIfsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("lag_ifs select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, LAG_IFS, e1);
+      this.errorMessage(SEARCH_FAILURE, LAG_IFS, e1);
     }
     return lagIfs;
   }

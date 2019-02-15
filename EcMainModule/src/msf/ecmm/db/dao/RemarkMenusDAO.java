@@ -8,11 +8,11 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.RemarkMenus;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.RemarkMenus;
 
 /**
  * Remark Menu Information DAO Class.
@@ -33,7 +33,7 @@ public class RemarkMenusDAO extends BaseDAO {
    * Remark Menu Table INSERT.
    *
    * @param remarkMenus
-   *          Remark Menu to be registered
+   *          Remark Menu
    * @throws DBAccessException
    *           data base exception
    */
@@ -57,7 +57,7 @@ public class RemarkMenusDAO extends BaseDAO {
    * Remark Menu Information Table DELETE.
    *
    * @param equipment_type_id
-   *          model ID (foreign key)
+   *          model type ID (external key)
    * @throws DBAccessException
    *           data base exception
    */
@@ -86,7 +86,7 @@ public class RemarkMenusDAO extends BaseDAO {
    * Remark Menu Information Table SELECT.
    *
    * @param equipment_type_id
-   *          model ID(foreign key)
+   *          model type ID(external key)
    * @return Remark Menu information list
    * @throws DBAccessException
    *           data base exception
@@ -103,7 +103,7 @@ public class RemarkMenusDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("RemarkMenus select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, REMARK_MENUS, e1);
+      this.errorMessage(SEARCH_FAILURE, REMARK_MENUS, e1);
     }
     return remarkMenusList;
   }

@@ -15,7 +15,10 @@ public class L2VlanOption {
   /** VRF ID. */
   private String vrfId;
 
-  /** QoS Configuration Infomation. */
+  /** VNI. */
+  private String vni;
+
+  /** QoS Configuration Information. */
   private QosUpdateVlanIf qos = null;
 
    /**
@@ -38,7 +41,26 @@ public class L2VlanOption {
   }
 
   /**
-   * Getting QoS Configuration Infomation.
+   * Getting VNI.
+   *
+   * @return vni
+   */
+  public String getVni() {
+    return vni;
+  }
+
+  /**
+   * Setting VNI.
+   *
+   * @param vni
+   *          Setting vni
+   */
+  public void setVni(String vni) {
+    this.vni = vni;
+  }
+
+  /**
+   * Getting QoS Configuration Information.
    *
    * @return qos
    */
@@ -56,14 +78,9 @@ public class L2VlanOption {
     this.qos = qos;
   }
 
-  /*
-   * Stringizing Instance.
-   *
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
-    return "L2VlanOption [vrfId=" + vrfId + ", qos=" + qos + "]";
+    return "L2VlanOption [vrfId=" + vrfId + ", vni=" + vni + ", qos=" + qos + "]";
   }
 
   /**
@@ -75,9 +92,14 @@ public class L2VlanOption {
    *           input check error
    */
   public void check(OperationType ope) throws CheckDataException {
-    if (vrfId == null) {
+    if (vrfId == null && vni == null) {
       throw new CheckDataException();
     }
+
+    if (vrfId != null && vni != null) {
+      throw new CheckDataException();
+    }
+
     if (qos != null) {
       qos.check(ope);
     }

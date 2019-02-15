@@ -4,7 +4,7 @@
 package msf.ecmm.emctrl.restpojo;
 
 /**
- * REST Request Base Class
+ * REST request base class
  */
 public class AbstractRequest extends msf.ecmm.fcctrl.pojo.AbstractRequest{
 

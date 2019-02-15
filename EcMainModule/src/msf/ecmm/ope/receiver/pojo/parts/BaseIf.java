@@ -4,7 +4,9 @@
 
 package msf.ecmm.ope.receiver.pojo.parts;
 
+import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
+import msf.ecmm.ope.receiver.pojo.CheckDataException;
 
 /**
  * Base IF Information.
@@ -63,5 +65,22 @@ public class BaseIf extends AbstractResponseMessage {
   @Override
   public String toString() {
     return "BaseIf [ifType=" + ifType + ", ifId=" + ifId + "]";
+  }
+
+  /**
+   * Input parameter check.
+   *
+   * @param ope
+   *          Operation type
+   * @throws CheckDataException
+   *           Input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+    if (ifType == null) {
+      throw new CheckDataException();
+    }
+    if (ifId == null) {
+      throw new CheckDataException();
+    }
   }
 }

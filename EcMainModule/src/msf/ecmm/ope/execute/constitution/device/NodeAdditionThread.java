@@ -84,7 +84,7 @@ public class NodeAdditionThread {
   /**
    * Getting Additional service recovery information received from FC.
    *
-   * @return Additional service recovery information received from FC
+   * @return recoverNodeInfo
    */
   public RecoverNodeService getRecoverNodeInfo() {
     return recoverNodeInfo;
@@ -94,7 +94,7 @@ public class NodeAdditionThread {
    * Setting Additional service recovery information received from FC.
    *
    * @param recoverNodeInfo
-   *          Additional service recovery information received from FC
+   *          Setting recoverNodeInfo
    */
   public void setRecoverNodeInfo(RecoverNodeService recoverNodeInfo) {
     this.recoverNodeInfo = recoverNodeInfo;
@@ -103,7 +103,7 @@ public class NodeAdditionThread {
   /**
    * Getting Additional service recovery URI Parameters information received from FC.
    *
-   * @return Additional service recovery URI Parameters information received from FC
+   * @return recoverNodeUriKeyMap
    */
   public HashMap<String, String> getRecoverNodeUriKeyMap() {
     return recoverNodeUriKeyMap;
@@ -113,7 +113,7 @@ public class NodeAdditionThread {
    * Setting Additional service recovery URI Parameters information received from FC.
    *
    * @param recoverNodeUriKeyMap
-   *          Additional service recovery URI Parameters information received from FC
+   *          Setting recoverNodeUriKeyMap
    */
   public void setRecoverNodeUriKeyMap(HashMap<String, String> recoverNodeUriKeyMap) {
     this.recoverNodeUriKeyMap = recoverNodeUriKeyMap;
@@ -204,7 +204,7 @@ public class NodeAdditionThread {
    * Device Status Update.
    *
    * @param nodeId
-   *          node ID
+   *          Device ID
    * @param condition
    *          condition
    * @param trueStatus
@@ -247,12 +247,12 @@ public class NodeAdditionThread {
     AbstractResponseMessage executeResponse = null;
     Operation operation = null;
     if (!OperationControlManager.getInstance().getRecoverExecution()) {
-      OperationType operationType = OperationType.None;
+      int operationType = OperationType.None;
       if (addNodeInfo.getCreateNode().getNodeType().equals(CommonDefinitions.NODETYPE_SPINE)) {
         operationType = OperationType.SpineAddition;
       } else if (addNodeInfo.getCreateNode().getNodeType().equals(CommonDefinitions.NODETYPE_LEAF)) {
         operationType = OperationType.LeafAddition;
-      } else {
+      } else { 
         operationType = OperationType.BLeafAddition;
       }
 
@@ -270,8 +270,6 @@ public class NodeAdditionThread {
   /**
    * Device Start-up Notifiction Information Deletion.
    *
-   * @param bootNodeId
-   *          booted node ID
    * @throws AddNodeException
    *           DB exception occurrence
    */
@@ -299,8 +297,8 @@ public class NodeAdditionThread {
    * @param executeResult
    *          process result FC notification status
    * @param nodeId
-   *          node ID
-   * @return FC notification
+   *          Device ID
+   * @return FC Notification
    * @throws AddNodeException
    *           REST request failure
    */
@@ -316,7 +314,7 @@ public class NodeAdditionThread {
       status = BOOT_RET_FAILED;
     } else {
       if (executeResult == true) {
-        status = BOOT_RET_SUCCESS;
+        status = BOOT_RET_SUCCESS; 
       } else {
         status = BOOT_RET_CANCEL;
       }

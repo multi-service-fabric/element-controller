@@ -4,11 +4,11 @@
 
 package msf.ecmm.devctrl;
 
-import msf.ecmm.common.CommonDefinitions;
-import msf.ecmm.common.LogFormatter;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.LogFormatter;
 
 /**
  * EC Inter-Device IF Control Functional Part Class.
@@ -30,7 +30,7 @@ public class DevctrlCommon {
     DhcpController dhcpController = DhcpController.getInstance();
     SyslogController syslogController = SyslogController.getInstance();
     try {
-      dhcpController.stop(false);
+      dhcpController.stop(false); 
       dhcpOkFlag = true;
       syslogController.monitorStop(true);
     } catch (DevctrlException e) {

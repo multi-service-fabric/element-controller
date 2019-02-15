@@ -51,6 +51,8 @@ public class VlanIfs implements Serializable {
   /** Remark menu. */
   private String remark_menu;
   /** Egress queue menu. */
+  private String irb_instance_id;
+  /** IRB instance ID. */
   private String egress_queue_menu;
   /** BGP Option List. */
   private Set<BGPOptions> bgpOptionsList;
@@ -421,7 +423,7 @@ public class VlanIfs implements Serializable {
    * Setting Remark menu.
    *
    * @param remark_menu
-   *          remark_menu
+   *          Set remark_menu
    */
   public void setRemark_menu(String remark_menu) {
     this.remark_menu = remark_menu;
@@ -440,14 +442,33 @@ public class VlanIfs implements Serializable {
    * Setting Egress queue menu.
    *
    * @param egress_queue_menu
-   *          Egress queue menu
+   *          Set egress_queue_menu
    */
   public void setEgress_queue_menu(String egress_queue_menu) {
     this.egress_queue_menu = egress_queue_menu;
   }
 
   /**
-   * Getting BGP option list.
+   * Acquire IRB instance ID.
+   *
+   * @return irb_instance_id
+   */
+  public String getIrb_instance_id() {
+    return irb_instance_id;
+  }
+
+  /**
+   * Set IRB instance ID.
+   *
+   * @param irb_instance_id
+   *          Set irb_instance_id
+   */
+  public void setIrb_instance_id(String irb_instance_id) {
+    this.irb_instance_id = irb_instance_id;
+  }
+
+  /**
+   * Acquire BGP Option list.
    *
    * @return BGP option list
    */
@@ -456,7 +477,7 @@ public class VlanIfs implements Serializable {
   }
 
   /**
-   * Setting BGP option list.
+   * Set BGP option list.
    *
    * @param bgpOptionsList
    *          BGP option list
@@ -548,7 +569,7 @@ public class VlanIfs implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   * Stringize instance
    *
    * @see java.lang.Object#toString()
    */
@@ -560,8 +581,8 @@ public class VlanIfs implements Serializable {
         + ", ipv6_address=" + ipv6_address + ", ipv6_prefix=" + ipv6_prefix + ", mtu=" + mtu + ", port_mode="
         + port_mode + ", bgp_id=" + bgp_id + ", vrrp_id=" + vrrp_id + ", inflow_shaping_rate=" + inflow_shaping_rate
         + ", outflow_shaping_rate=" + outflow_shaping_rate + ", remark_menu=" + remark_menu + ", egress_queue_menu="
-        + egress_queue_menu + ", bgpOptionsList=" + bgpOptionsList + ", staticRouteOptionsList="
-        + staticRouteOptionsList + ", vrrpOptionsList=" + vrrpOptionsList + "]";
+        + egress_queue_menu + ", irb_instance_id=" + irb_instance_id + ", bgpOptionsList=" + bgpOptionsList
+        + ", staticRouteOptionsList=" + staticRouteOptionsList + ", vrrpOptionsList=" + vrrpOptionsList + "]";
   }
 
 }

@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class which is used when configuring operation to non-object tags.
+ * Class which is used in operation setting for non-object tag.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 public class AttributeOperation {
@@ -27,7 +27,7 @@ public class AttributeOperation {
   }
 
   /**
-   * Settomg operation.
+   * Setting operation.
    *
    * @param operation
    *          operation

@@ -8,11 +8,11 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.SystemStatus;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.SystemStatus;
 
 /**
  * System Status Information DAO Class.
@@ -74,7 +74,7 @@ public class SystemStatusDAO extends BaseDAO {
       throw e1;
     } catch (Throwable e2) {
       logger.debug("system_status select failed.", e2);
-      this.errorMessage(SERCH_FAILURE, SYSTEM_STATUS, e2);
+      this.errorMessage(SEARCH_FAILURE, SYSTEM_STATUS, e2);
     }
     return list.get(0);
   }

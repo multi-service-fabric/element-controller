@@ -5,7 +5,7 @@
 package msf.ecmm.emctrl.restpojo;
 
 /**
- * Common Response
+ * Common response
  */
 public class CommonRequestToEm extends AbstractRequest {
 

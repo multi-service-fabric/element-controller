@@ -27,7 +27,6 @@ EC has the physical-logical mapping table for each device. The table records the
 
 ## How to use
 - installation
-  - [installation manual](doc/element_controller_installation_manual.md)
   - [Simplified installation procedure](doc/element_controller_automate_installation_manual.md)
   - [configuration specifications](doc/element_controller_configuration_specifications.md)
 - build
@@ -41,7 +40,7 @@ The following conditions are the minimum operation environment.
 | item | Configuraiton |
 | ---- | ---- |
 | OS | CentOS7.2 x86_64 |
-| CPU | Intel® Xeon® CPU E5-2420 v2 @ 2.20 GHz 2 Core or more |
+| CPU | IntelR XeonR CPU E5-2420 v2 @ 2.20 GHz 2 Core or more |
 | memory | 1G or more |
 | NIC | 1 port or more |
 

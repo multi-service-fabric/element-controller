@@ -16,7 +16,7 @@ public class Snmp {
 
   /** IPv4 Address of SNMP Server */
   @XmlElement(name = "server-address")
-  private String serverAdddress = null;
+  private String serverAddress = null;
 
   /** SNMP Community Name */
   private String community = null;
@@ -33,8 +33,8 @@ public class Snmp {
    *
    * @return IPv4 address of SNMP server
    */
-  public String getServerAdddress() {
-    return serverAdddress;
+  public String getServerAddress() {
+    return serverAddress;
   }
 
   /**
@@ -43,8 +43,8 @@ public class Snmp {
    * @param serverAdddress
    *          IPv4 address of SNMP server
    */
-  public void setServerAdddress(String serverAdddress) {
-    this.serverAdddress = serverAdddress;
+  public void setServerAddress(String serverAddress) {
+    this.serverAddress = serverAddress;
   }
 
   /**
@@ -73,7 +73,7 @@ public class Snmp {
    */
   @Override
   public String toString() {
-    return "Snmp [serverAdddress=" + serverAdddress + ", community=" + community + "]";
+    return "Snmp [serverAddress=" + serverAddress + ", community=" + community + "]";
   }
 
 }

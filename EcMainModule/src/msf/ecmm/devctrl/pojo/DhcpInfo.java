@@ -178,7 +178,7 @@ public class DhcpInfo {
   }
 
   /**
-   * Gettomg device's management IF address.
+   * Getting device's management IF address.
    *
    * @return device's management IF address
    */

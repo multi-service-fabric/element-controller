@@ -17,14 +17,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import msf.ecmm.common.CommonDefinitions;
-import msf.ecmm.common.LogFormatter;
-import msf.ecmm.config.EcConfiguration;
-import msf.ecmm.fcctrl.pojo.AbstractRequest;
-import msf.ecmm.fcctrl.pojo.AbstractResponse;
-import msf.ecmm.fcctrl.pojo.CommonResponseFromFc;
-import msf.ecmm.ope.control.RestRequestCount;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.client.ClientConfig;
@@ -34,6 +26,14 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.LogFormatter;
+import msf.ecmm.config.EcConfiguration;
+import msf.ecmm.fcctrl.pojo.AbstractRequest;
+import msf.ecmm.fcctrl.pojo.AbstractResponse;
+import msf.ecmm.fcctrl.pojo.CommonResponseFromFc;
+import msf.ecmm.ope.control.RestRequestCount;
 
 /**
  * REST Client.
@@ -47,7 +47,7 @@ public class RestClient {
 
   /** Process Execution Request. */
   public static final int OPERATION = 0;
-  /** Etxention Completion Notification. */
+  /** Extention Completion Notification. */
   public static final int NOTIFY_NODE_ADDITION = 1;
 
   /** Controler Status Notification. */
@@ -167,24 +167,24 @@ public class RestClient {
     logger.debug("requestType:" + requestType);
 
     EcConfiguration config = EcConfiguration.getInstance();
-    int retryNum = config.get(Integer.class, EcConfiguration.REST_RETRY_NUM);
-    int timeout = config.get(Integer.class, EcConfiguration.REST_TIMEOUT);
-    String fcIpaddr = config.get(String.class, getAddressKey());
-    String fcPort = config.get(String.class, getPortKey());
+    int retryNum = config.get(Integer.class, EcConfiguration.REST_RETRY_NUM); 
+    int timeout = config.get(Integer.class, EcConfiguration.REST_TIMEOUT); 
+    String fcIpaddr = config.get(String.class, getAddressKey()); 
+    String fcPort = config.get(String.class, getPortKey()); 
 
     ClientConfig clientConfig = new ClientConfig();
     clientConfig.property(ClientProperties.READ_TIMEOUT, timeout * 1000);
 
     checkKeyMap(requestType, keyMap);
 
-    String url = createUrl(fcIpaddr, fcPort);
-    String uri = createUri(requestType, keyMap);
+    String url = createUrl(fcIpaddr, fcPort); 
+    String uri = createUri(requestType, keyMap); 
     String jsonImage = "";
     if (requestData != null) {
-      jsonImage = jsonParser.toJson(requestData);
+      jsonImage = jsonParser.toJson(requestData); 
     }
     logger.debug("sendData:" + jsonImage);
-    int method = getMethod(requestType);
+    int method = getMethod(requestType); 
 
     int lastErrorReason = RestClientException.NOT_SET;
     Response response;
@@ -200,11 +200,11 @@ public class RestClient {
         } else {
           response = doGet(clientConfig, url, uri, jsonImage, keyMap);
         }
-        responseBody = response.readEntity(String.class);
+        responseBody = response.readEntity(String.class); 
 
         if (isSuccess(response)) {
           logger.debug("Recv OK");
-          break;
+          break; 
         } else {
           logger.debug("Recv NG");
           logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, getStatus(response)));
@@ -434,7 +434,7 @@ public class RestClient {
         retry = true;
       }
     } catch (Exception exp) {
-      retry = false;
+      retry = false; 
     }
     logger.trace(CommonDefinitions.END);
     return retry;

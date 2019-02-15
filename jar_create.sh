@@ -35,6 +35,9 @@ if [ ${ret} -eq 0 ]; then
     echo "java compile end."
 
     # create jar file
+    # It is assumed that no error might be occurred due to diskfull,  
+    # etc., by taking into account that jar file will be smaller than 
+    # class file in terms of module's characteristics.
     echo "jar create start..."
     jar cvf EcMainModule.jar ${EC_SRC_DIR} >/dev/null
     echo "jar create end."

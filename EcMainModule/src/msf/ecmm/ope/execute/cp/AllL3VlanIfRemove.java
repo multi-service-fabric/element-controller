@@ -44,7 +44,10 @@ public class AllL3VlanIfRemove extends Operation {
   /** In case the information of VLAN IF to be deleted does not exist. */
   private static final String ERROR_CODE_010201 = "010201";
 
-  /** Disconnection or connection timeout with EM has occurred while requesting to EM. */
+  /** In case VLAN deletion has already been configured in VLAN base IF or VLAN, and cannot be done. */
+  private static final String ERROR_CODE_010308 = "010308";
+
+   /** Disconnection or connection timeout with EM has occurred while requesting to EM. */
   private static final String ERROR_CODE_010401 = "010401";
 
   /** Error has occurred from EM while requesting to EM (error response received). */
@@ -99,6 +102,11 @@ public class AllL3VlanIfRemove extends Operation {
           }
         }
         allVlanIfsMap.put(vlanIfs.getNodeId(), session.getVlanIfsList(vlanIfs.getNodeId()));
+      }
+
+      if (!checkExpand(allVlanIfsMap, inputData.getVlanIfs())) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "expand function check NG."));
+        return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_010308);
       }
 
       session.startTransaction();
@@ -157,7 +165,7 @@ public class AllL3VlanIfRemove extends Operation {
 
       BulkDeleteL3VlanIf inputData = (BulkDeleteL3VlanIf) getInData();
 
-      inputData.check(OperationType.AllL3VlanIfRemove);
+      inputData.check(new OperationType(OperationType.AllL3VlanIfRemove));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);
@@ -169,4 +177,18 @@ public class AllL3VlanIfRemove extends Operation {
     return result;
   }
 
+  /**
+   * Implement any check if required in extension function.
+   *
+   * @param allVlanIfsMap
+   *          Entire VLAN information held by such device having deletion target VLAN
+   * @param delVlans
+   *          Deletion target VLAN
+   * @return check result
+   * @throws DBAccessException  In case abnormality occurred in DB
+   */
+  protected boolean checkExpand(Map<String, List<VlanIfs>> allVlanIfsMap,
+      List<VlanIfsDeleteVlanIf> delVlans) throws DBAccessException {
+    return true;
+  }
 }

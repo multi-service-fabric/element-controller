@@ -1,3 +1,11 @@
+DROP TABLE dummy_vlan_ifs_info;
+
+DROP TABLE irb_instance_info;
+
+DROP TABLE acl_detail_info;
+
+DROP TABLE acl_info;
+
 DROP TABLE vrrp_option;
 
 DROP TABLE static_route_option;
@@ -20,9 +28,9 @@ DROP TABLE nodes;
 
 DROP TABLE boot_error_msgs;
 
--- DROP TABLE egress_queue_menu;
+DROP TABLE egress_queue_menu;
 
--- DROP TABLE remark_menu;
+DROP TABLE remark_menu;
 
 DROP TABLE if_name_rules;
 

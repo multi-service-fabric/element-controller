@@ -55,19 +55,19 @@ public class RecoverUpdateService extends AbstractMessage {
   }
 
   /**
-   * Getting Leaf device infomation.
+   * Getting Leaf device information.
    *
-   * @return Leaf device infomation.
+   * @return Leaf device information.
    */
   public Device getDevice() {
     return device;
   }
 
    /**
-   * Setting Leaf device infomation.
+   * Setting Leaf device information.
    *
    * @param device
-   *       Leaf device infomation.
+   *       Leaf device information.
    */
   public void setDevice(Device device) {
     this.device = device;

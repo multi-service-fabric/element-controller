@@ -194,7 +194,7 @@ public class AllL2VlanIfChange extends Operation {
 
       BulkUpdateL2VlanIf inputData = (BulkUpdateL2VlanIf) getInData();
 
-      inputData.check(OperationType.AllL2VlanIfChange);
+      inputData.check(new OperationType(OperationType.AllL2VlanIfChange));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);

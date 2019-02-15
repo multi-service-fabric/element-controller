@@ -84,7 +84,7 @@ public class ECMainStateSendNotification extends Operation {
 
     try {
       EmControllerReceiveStatus inputData = (EmControllerReceiveStatus) getInData();
-      inputData.check(OperationType.ControllerStateSendNotification);
+      inputData.check(new OperationType(OperationType.ControllerStateSendNotification));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);

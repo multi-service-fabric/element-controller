@@ -190,6 +190,36 @@ public class LogFormatter {
   public static final int MSG_503092 = 503092;
   /** An error occurred because the key information of the data to be updated does not exist in "nodes" table. */
   public static final int MSG_509093 = 509093;
+  /** Failed to generate operation execution class of expansion function. */
+  public static final int MSG_503102 = 503102;
+  /** Failed to collect the traffic data from device by using extension MIB.Target device is Node ID=[%s] Model ID=[%s]. */
+  public static final int MSG_407094 = 407094;
+  /** Failed to collect the traffic data from the device by using traffic information collection shell script.Target device is Node ID=[%s] Model ID=[%s]. */
+  public static final int MSG_407095 = 407095;
+  /** Traffic information collection shell script execution error. Model information table, the value of li_exec_path =[%s]. */
+  public static final int MSG_407096 = 407096;
+  /** Traffic information collection shell script has failed in SSH connection.Connection destination IP address=[%s]. */
+  public static final int MSG_407097 = 407097;
+  /** The data you tried to register had already been registered in the dummy VLANIF information table and resulted in an error. */
+  public static final int MSG_509081 = 509081;
+  /** The data you tried to register had already been registered in the IRB instance information table and resulted in an error. */
+  public static final int MSG_509082 = 509082;
+  /** The data you tried to register had already been registered in the ACL set information table and resulted in an error. */
+  public static final int MSG_509083 = 509083;
+  /** The data you tried to register had already been registered in the ACL configuration details information table and resulted in an error. */
+  public static final int MSG_509084 = 509084;
+  /** The key information you want to update does not exist in the dummy VLANIF information table, and resulted in an error. */
+  public static final int MSG_509085 = 509085;
+  /** The key information you want to update does not exist in the IRB instance information table, and resulted in an error. */
+  public static final int MSG_509086 = 509086;
+  /** The data you want to delete does not exist in dummy VLANIF information table, and resulted in an error. */
+  public static final int MSG_509087 = 509087;
+  /** The data you want to delete does not exist in the IRB instance information table, and resulted in an error. */
+  public static final int MSG_509088 = 509088;
+  /** The data you want to delete does not exist in the ACL set information table, and resulted in an error. */
+  public static final int MSG_509089 = 509089;
+  /** The data you want to delete does not exist in the ACL configuration details information, and resulted in an error. */
+  public static final int MSG_509090 = 509090;
 
   /** Log Message Map. */
   private static HashMap<Integer, String> dictionary = new HashMap<Integer, String>() {
@@ -282,6 +312,21 @@ public class LogFormatter {
       put(MSG_303091, "Complete to system switch notification:[%s]");
       put(MSG_503092, "Failed to system switch notification:[%s]");
       put(MSG_509093, "Update error：not found update[Nodes]");
+      put(MSG_503102, "Unknown expandOperationClass:[%s]");
+      put(MSG_407094, "Fail getting traffic data by extend MIB : nodeId= [%s], equipmentTypeId= [%s]");
+      put(MSG_407095, "Fail getting traffic data with CLI script : nodeId= [%s], equipmentTypeId= [%s]");
+      put(MSG_407096, "Script execution failure : Path= [%s]");
+      put(MSG_407097, "SSH connection error : IP= [%s]");
+      put(MSG_509081, "Register error:duplicate registration[dummy_vlan_ifs_info]");
+      put(MSG_509082, "Register error:duplicate registration[irb_instance_info]");
+      put(MSG_509083, "Register error:duplicate registration[acl_info]");
+      put(MSG_509084, "Register error:duplicate registration[acl_detail_info]");
+      put(MSG_509085, "Update error：not found update[dummy_vlan_ifs_info]");
+      put(MSG_509086, "Update error：not found update[irb_instance_info]");
+      put(MSG_509087, "Delete error：not found delete[dummy_vlan_ifs_info]");
+      put(MSG_509088, "Delete error：not found delete[irb_instance_info]");
+      put(MSG_509089, "Delete error：not found delete[acl_info]");
+      put(MSG_509090, "Delete error：not found delete[acl_detail_info]");
 
     }
   };

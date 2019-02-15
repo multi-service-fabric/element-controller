@@ -7,19 +7,19 @@ package msf.ecmm.db.pojo;
 import java.io.Serializable;
 
 /**
- * BGP Option Table POJO Class.
+ * BGP option table POJO class.
  */
 public class BGPOptions implements Serializable {
 
-  /** BGP Option Information ID. */
+  /** BGP option information ID. */
   private String bgp_id = null;
-  /** BGP Role. */
+  /** BGP role. */
   private int bgp_role = 0;
-  /** BGP Adjacent AS Number. */
+  /** BGP neighbor AS number. */
   private int bgp_neighbor_as = 0;
-  /** BGP Adjacent IPv4 Address. */
+  /** BGP neighbor IPv4 address. */
   private String bgp_neighbor_ipv4_address = null;
-  /** BGP Adjacent IPv6 Address. */
+  /** BGP neighbor IPv6 address. */
   private String bgp_neighbor_ipv6_address = null;
   /** Device ID. */
   private String node_id = null;
@@ -27,7 +27,7 @@ public class BGPOptions implements Serializable {
   private String vlan_if_id = null;
 
   /**
-   * Generating new instance.
+   * Generate new instance.
    */
   public BGPOptions() {
     super();
@@ -36,7 +36,7 @@ public class BGPOptions implements Serializable {
   /**
    * Getting BGP option information ID.
    *
-   * @return BGPoption information ID
+   * @return BGP option information ID
    */
   public String getBgp_id() {
     return bgp_id;
@@ -72,76 +72,76 @@ public class BGPOptions implements Serializable {
   }
 
   /**
-   * Getting BGP adjacent AS number.
+   * Getting BGP neighbor AS number.
    *
-   * @return BGP adjacent AS number
+   * @return BGP neighbor AS number
    */
   public int getBgp_neighbor_as() {
     return bgp_neighbor_as;
   }
 
   /**
-   * Setting BGP adjacent AS number.
+   * Setting BGP neighbor AS number.
    *
    * @param bgp_neighbor_as
-   *          BGP adjacent AS number
+   *          BGP neighbor AS number
    */
   public void setBgp_neighbor_as(int bgp_neighbor_as) {
     this.bgp_neighbor_as = bgp_neighbor_as;
   }
 
   /**
-   * Getting BGP adjacent IPv4 address.
+   * Getting BGP neighbor IPv4 address.
    *
-   * @return BGP adjacent IPv4 address
+   * @return BGP neighbor IPv4 address
    */
   public String getBgp_neighbor_ipv4_address() {
     return bgp_neighbor_ipv4_address;
   }
 
   /**
-   * Setting BGP adjacent IPv4 address.
+   * Setting BGP neighbor IPv4 address.
    *
    * @param bgp_neighbor_ipv4_address
-   *          BGP adjacent IPv4 address
+   *          BGP neighbor IPv4 address
    */
   public void setBgp_neighbor_ipv4_address(String bgp_neighbor_ipv4_address) {
     this.bgp_neighbor_ipv4_address = bgp_neighbor_ipv4_address;
   }
 
   /**
-   * Getting BGP adjacent IPv6 address.
+   * Getting BGP neighbor IPv6 address.
    *
-   * @return BGP adjacent IPv6 address
+   * @return BGP neighbor IPv6 address
    */
   public String getBgp_neighbor_ipv6_address() {
     return bgp_neighbor_ipv6_address;
   }
 
   /**
-   * Setting BGP adjacent IPv6 address.
+   * Setting BGP neighbor IPv6 address.
    *
    * @param bgp_neighbor_ipv6_address
-   *          BGP adjacent IPv6 address
+   *          BGP neighbor IPv6 address
    */
   public void setBgp_neighbor_ipv6_address(String bgp_neighbor_ipv6_address) {
     this.bgp_neighbor_ipv6_address = bgp_neighbor_ipv6_address;
   }
 
   /**
-   * Getting model ID.
+   * Getting Model ID.
    *
-   * @return model ID
+   * @return Model ID
    */
   public String getNode_id() {
     return node_id;
   }
 
   /**
-   * Setting model ID.
+   * Setting Model ID.
    *
    * @param node_id
-   *          model ID
+   *          Model ID
    */
   public void setNode_id(String node_id) {
     this.node_id = node_id;
@@ -157,7 +157,7 @@ public class BGPOptions implements Serializable {
   }
 
   /**
-   * Settiing VLANIF ID.
+   * Setting VLANIF ID.
    *
    * @param vlan_if_id
    *          VLANIF ID
@@ -167,7 +167,7 @@ public class BGPOptions implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   * (Non Javadoc)
    *
    * @see java.lang.Object#hashCode()
    */
@@ -182,7 +182,7 @@ public class BGPOptions implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   * (Non Javadoc)
    *
    * @see java.lang.Object#equals(java.lang.Object)
    */
@@ -208,7 +208,7 @@ public class BGPOptions implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   * (Non Javadoc)
    *
    * @see java.lang.Object#toString()
    */

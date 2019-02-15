@@ -303,7 +303,7 @@ public class VlanIfsCreateL3VlanIf {
   /**
    * Stringizing Instance.
    *
-   * @return instance string
+   * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {

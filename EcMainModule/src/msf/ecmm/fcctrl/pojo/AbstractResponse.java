@@ -5,7 +5,7 @@
 package msf.ecmm.fcctrl.pojo;
 
 /**
- * REST Response Base Class.
+ * REST response base class
  */
 public class AbstractResponse {
 

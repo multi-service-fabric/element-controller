@@ -43,13 +43,13 @@
   - name: deamon reload
     shell: systemctl daemon-reload
   - name: replace psql setting 1
-    replace: dest=/usr/local/pgsql/9.3/data/postgresql.conf regexp="#listen_addresses = 'localhost'" replace='listen_addresses = '*''
+    replace: dest=/usr/local/pgsql/9.3/data/postgresql.conf regexp="^#listen_addresses = 'localhost'" replace='listen_addresses = '*''
   - name: replace psql setting 2
-    replace: dest=/usr/local/pgsql/9.3/data/postgresql.conf regexp="#port" replace='port'
+    replace: dest=/usr/local/pgsql/9.3/data/postgresql.conf regexp="^#port" replace='port'
   - name: replace psql setting 3
-    replace: dest=/usr/local/pgsql/9.3/data/pg_hba.conf regexp="local" replace='#local'
+    replace: dest=/usr/local/pgsql/9.3/data/pg_hba.conf regexp="^local" replace='#local'
   - name: replace psql setting 4
-    replace: dest=/usr/local/pgsql/9.3/data/pg_hba.conf regexp="host" replace='#host'
+    replace: dest=/usr/local/pgsql/9.3/data/pg_hba.conf regexp="^host" replace='#host'
   - name:  add psql setting 1
     lineinfile:
       dest=/usr/local/pgsql/9.3/data/pg_hba.conf
@@ -60,7 +60,7 @@
         - 'host    all            all             {{ controller_cidr }}         trust'
         - 'host    all            all             127.0.0.1/32            trust'
   - name: replace psql setting 5
-    replace: dest=/usr/lib/systemd/system/postgresql-9.3.service regexp="Environment=PGDATA" replace='#Environment=PGDATA'
+    replace: dest=/usr/lib/systemd/system/postgresql-9.3.service regexp="^Environment=PGDATA" replace='#Environment=PGDATA'
   - name:  add psql setting 2
     lineinfile:
       dest=/usr/lib/systemd/system/postgresql-9.3.service

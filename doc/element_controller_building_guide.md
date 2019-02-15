@@ -1,7 +1,7 @@
 ## element controller building guide
 
 **Version 1.0**
-**March 28, 2018**
+**December 7, 2018**
 **Copyright(c) 2018 Nippon Telegraph and Telephone Corporation**
 
 This text describes how to generate EcMainModule.jar from Java files.
@@ -22,7 +22,7 @@ sh jar_create.sh
 
 - create class files of java files under msf/ directory, existing in the same directory as jar_create.sh.
 - combine all java files and generated class files into jar files. (create EcMainModule.jar)
-- This script also includes a process of deleting generated class files existing under mfs/ directory as preprocessing at the time of execution.
+- This script also includes a process of deleting generated class files existing under msf/ directory as preprocessing at the time of execution.
 
 ### directories
 ```
@@ -37,6 +37,8 @@ sh jar_create.sh
   |  |  |--package-info.java
   |  |--config/
   |  |  |--EcConfiguration.java
+  |  |  |--ExpandOperation.java
+  |  |  |--ExpandOperationDetailInfo.java
   |  |  |--package-info.java
   |  |--convert/
   |  |  |--DbMapper.java
@@ -48,17 +50,23 @@ sh jar_create.sh
   |  |  |--DBAccessException.java
   |  |  |--DBAccessManager.java
   |  |  |--SessionManager.java
+  |  |  |--aclConf.hbm.xml
+  |  |  |--aclConfDetail.hbm.xml
   |  |  |--bgpOptions.hbm.xml
   |  |  |--bootErrorMessages.hbm.xml
   |  |  |--breakoutIfs.hbm.xml
   |  |  |--dao/
+  |  |  |  |--AclConfDAO.java
+  |  |  |  |--AclConfDetailDAO.java
   |  |  |  |--BGPOptionsDAO.java
   |  |  |  |--BaseDAO.java
   |  |  |  |--BootErrorMessagesDAO.java
   |  |  |  |--BreakoutIfsDAO.java
+  |  |  |  |--DummyVlanIfsDAO.java
   |  |  |  |--EgressQueueMenusDAO.java
   |  |  |  |--EquipmentIfsDAO.java
   |  |  |  |--EquipmentsDAO.java
+  |  |  |  |--IRBInstanceInfoDAO.java
   |  |  |  |--IfNameRulesDAO.java
   |  |  |  |--LagIfsDAO.java
   |  |  |  |--LagMembersDAO.java
@@ -71,10 +79,12 @@ sh jar_create.sh
   |  |  |  |--VRRPOptionsDAO.java
   |  |  |  |--VlanIfsDAO.java
   |  |  |  |--package-info.java
+  |  |  |--dummyVlanIfs.hbm.xml
   |  |  |--egressQueueMenu.hbm.xml
   |  |  |--equipmentIfs.hbm.xml
   |  |  |--equipments.hbm.xml
   |  |  |--ifNameRules.hbm.xml
+  |  |  |--irbInstanceInfo.hbm.xml
   |  |  |--lagIfs.hbm.xml
   |  |  |--lagMembers.hbm.xml
   |  |  |--nodes.hbm.xml
@@ -82,12 +92,16 @@ sh jar_create.sh
   |  |  |--package-info.java
   |  |  |--physicalIfs.hbm.xml
   |  |  |--pojo/
+  |  |  |  |--AclConf.java
+  |  |  |  |--AclConfDetail.java
   |  |  |  |--BGPOptions.java
   |  |  |  |--BootErrorMessages.java
   |  |  |  |--BreakoutIfs.java
+  |  |  |  |--DummyVlanIfs.java
   |  |  |  |--EgressQueueMenus.java
   |  |  |  |--EquipmentIfs.java
   |  |  |  |--Equipments.java
+  |  |  |  |--IRBInstanceInfo.java
   |  |  |  |--IfNameRules.java
   |  |  |  |--InterfacesList.java
   |  |  |  |--LagIfs.java
@@ -112,6 +126,7 @@ sh jar_create.sh
   |  |  |--DevctrlException.java
   |  |  |--DhcpController.java
   |  |  |--HttpdController.java
+  |  |  |--ScriptController.java
   |  |  |--SnmpController.java
   |  |  |--SyslogController.java
   |  |  |--XinetdController.java
@@ -130,6 +145,7 @@ sh jar_create.sh
   |  |  |--package-info.java
   |  |  |--pojo/
   |  |  |  |--AbstractMessage.java
+  |  |  |  |--AddAclSetting.java
   |  |  |  |--BLeafAddDelete.java
   |  |  |  |--BetweenClustersLinkAddDelete.java
   |  |  |  |--BodyMessage.java
@@ -146,19 +162,28 @@ sh jar_create.sh
   |  |  |  |--TargetMessage.java
   |  |  |  |--package-info.java
   |  |  |  |--parts/
+  |  |  |  |  |--AclFilter.java
+  |  |  |  |  |-- Anycast.java
   |  |  |  |  |--AttributeOperation.java
   |  |  |  |  |--BreakoutIf.java
   |  |  |  |  |--CeInterface.java
   |  |  |  |  |--CeLagInterface.java
+  |  |  |  |  |--Clag.java
+  |  |  |  |  |--ClagBackup.java
+  |  |  |  |  |--ClagHandOverInterface.java
+  |  |  |  |  |--ClagPeer.java
   |  |  |  |  |--ClusterLink.java
   |  |  |  |  |--Cp.java
   |  |  |  |  |--Device.java
   |  |  |  |  |--DeviceLeaf.java
+  |  |  |  |  |--DeviceLeafAcl.java
+  |  |  |  |  |--DummyVlan.java
   |  |  |  |  |--Equipment.java
   |  |  |  |  |--InterfaceNames.java
   |  |  |  |  |--InternalInterface.java
   |  |  |  |  |--InternalInterfaceMember.java
   |  |  |  |  |--InternalLag.java
+  |  |  |  |  |--Irb.java
   |  |  |  |  |--L2L3VpnAs.java
   |  |  |  |  |--L2L3VpnBgp.java
   |  |  |  |  |--L2L3VpnNeighbor.java
@@ -167,27 +192,34 @@ sh jar_create.sh
   |  |  |  |  |--L3SliceBgp.java
   |  |  |  |  |--L3SliceOspf.java
   |  |  |  |  |--L3SliceStatic.java
+  |  |  |  |  |--L3Vni.java
   |  |  |  |  |--L3Vpn.java
   |  |  |  |  |--LagMemberIf.java
   |  |  |  |  |--LeafDevice.java
   |  |  |  |  |--LeafInterface.java
+  |  |  |  |  |--Loopback.java
   |  |  |  |  |--LoopbackInterface.java
   |  |  |  |  |--ManagementInterface.java
   |  |  |  |  |--Msdp.java
   |  |  |  |  |--MsdpPeer.java
+  |  |  |  |  |--MultiHoming.java
   |  |  |  |  |--Ntp.java
   |  |  |  |  |--Ospf.java
   |  |  |  |  |--OspfAddNode.java
   |  |  |  |  |--OspfVirtualLink.java
+  |  |  |  |  |--PhysicalIpAddress.java
   |  |  |  |  |--Qos.java
   |  |  |  |  |--Range.java
   |  |  |  |  |--Route.java
   |  |  |  |  |--Snmp.java
+  |  |  |  |  |--Term.java
   |  |  |  |  |--Track.java
   |  |  |  |  |--TrackInterface.java
+  |  |  |  |  |--VirtualGateway.java
   |  |  |  |  |--Vrf.java
   |  |  |  |  |--Vrrp.java
   |  |  |  |  |--XmlFloatElement.java
+  |  |  |  |  |--XmlIntegerElement.java
   |  |  |  |  |--XmlStringElement.java
   |  |  |  |  |--package-info.java
   |  |  |--restpojo/
@@ -242,19 +274,25 @@ sh jar_create.sh
   |  |  |  |  |  |--AllDeviceTypeInfoAcquisition.java
   |  |  |  |  |  |--AllIfInfoAcquisition.java
   |  |  |  |  |  |--AllLagInfoAcquisition.java
+  |  |  |  |  |  |--AllLagInterfaceFilterAcquisition.java
   |  |  |  |  |  |--AllPhysicalIfInfoAcquisition.java
+  |  |  |  |  |  |--AllPhysicalInterfaceFilterAcquisition.java
+  |  |  |  |  |  |--AllVlanInterfaceFilterAcquisition.java
   |  |  |  |  |  |--package-info.java
   |  |  |  |  |--device/
   |  |  |  |  |  |--AcceptNodeRecover.java
+  |  |  |  |  |  |--AclUtilityDevice.java
   |  |  |  |  |  |--AddNodeException.java
   |  |  |  |  |  |--BLeafAddition.java
   |  |  |  |  |  |--BLeafRemove.java
+  |  |  |  |  |  |--BLeafRemoveAcl.java
   |  |  |  |  |  |--DeviceInfoAcquisition.java
   |  |  |  |  |  |--DeviceInfoRegistration.java
   |  |  |  |  |  |--DeviceInfoRemove.java
   |  |  |  |  |  |--LeafAddition.java
   |  |  |  |  |  |--LeafChange.java
   |  |  |  |  |  |--LeafRemove.java
+  |  |  |  |  |  |--LeafRemoveAcl.java
   |  |  |  |  |  |--NodeAddedNotification.java
   |  |  |  |  |  |--NodeAddition.java
   |  |  |  |  |  |--NodeAdditionThread.java
@@ -265,18 +303,27 @@ sh jar_create.sh
   |  |  |  |  |  |--NodeRemove.java
   |  |  |  |  |  |--SpineAddition.java
   |  |  |  |  |  |--SpineRemove.java
+  |  |  |  |  |  |--SpineRemoveAcl.java
   |  |  |  |  |  |--package-info.java
   |  |  |  |  |--interfaces/
+  |  |  |  |  |  |--AddFilter.java
   |  |  |  |  |  |--BetweenClustersLinkCreate.java
   |  |  |  |  |  |--BetweenClustersLinkDelete.java
+  |  |  |  |  |  |--BetweenClustersLinkDeleteAcl.java
   |  |  |  |  |  |--BreakoutIfCreate.java
   |  |  |  |  |  |--BreakoutIfDelete.java
   |  |  |  |  |  |--BreakoutIfInfoAcquisition.java
+  |  |  |  |  |  |--DeleteFilter.java
   |  |  |  |  |  |--LagCreate.java
   |  |  |  |  |  |--LagInfoAcquisition.java
+  |  |  |  |  |  |--LagInterfaceFilterAcquisition.java
   |  |  |  |  |  |--LagRemove.java
+  |  |  |  |  |  |--LagRemoveAcl.java
   |  |  |  |  |  |--PhysicalIfInfoAcquisition.java
   |  |  |  |  |  |--PhysicalIfInfoChange.java
+  |  |  |  |  |  |--PhysicalIfInfoChangeAcl.java
+  |  |  |  |  |  |--PhysicalInterfaceFilterAcquisition.java
+  |  |  |  |  |  |--VlanInterfaceFilterAcquisition.java
   |  |  |  |  |  |--package-info.java
   |  |  |  |  |--package-info.java
   |  |  |  |--controllerstatemanagement/
@@ -285,12 +332,15 @@ sh jar_create.sh
   |  |  |  |  |--ECStateManagement.java
   |  |  |  |  |--package-info.java
   |  |  |  |--cp/
+  |  |  |  |  |--AclUtilityCp.java
   |  |  |  |  |--AllL2VlanIfChange.java
   |  |  |  |  |--AllL2VlanIfCreate.java
   |  |  |  |  |--AllL2VlanIfRemove.java
+  |  |  |  |  |--AllL2VlanIfRemoveAcl.java
   |  |  |  |  |--AllL3VlanIfChange.java
   |  |  |  |  |--AllL3VlanIfCreate.java
   |  |  |  |  |--AllL3VlanIfRemove.java
+  |  |  |  |  |--AllL3VlanIfRemoveAcl.java
   |  |  |  |  |--AllVlanIfInfoAcquisition.java
   |  |  |  |  |--VlanIfChange.java
   |  |  |  |  |--VlanIfInfoAcquisition.java
@@ -314,6 +364,7 @@ sh jar_create.sh
   |  |  |  |--pojo/
   |  |  |  |  |--AbstractResponseMessage.java
   |  |  |  |  |--AbstractRestMessage.java
+  |  |  |  |  |--AddDeleteFilter.java
   |  |  |  |  |--AddDeleteNode.java
   |  |  |  |  |--AddNode.java
   |  |  |  |  |--BulkCreateL2VlanIf.java
@@ -342,13 +393,19 @@ sh jar_create.sh
   |  |  |  |  |--GetEquipmentTypeList.java
   |  |  |  |  |--GetInterfaceList.java
   |  |  |  |  |--GetLagInterface.java
+  |  |  |  |  |--GetLagInterfaceFilter.java
+  |  |  |  |  |--GetLagInterfaceFilterList.java
   |  |  |  |  |--GetLagInterfaceList.java
   |  |  |  |  |--GetNode.java
   |  |  |  |  |--GetNodeList.java
   |  |  |  |  |--GetNodeTraffic.java
   |  |  |  |  |--GetPhysicalInterface.java
+  |  |  |  |  |--GetPhysicalInterfaceFilter.java
+  |  |  |  |  |--GetPhysicalInterfaceFilterList.java
   |  |  |  |  |--GetPhysicalInterfaceList.java
   |  |  |  |  |--GetVlanInterface.java
+  |  |  |  |  |--GetVlanInterfaceFilter.java
+  |  |  |  |  |--GetVlanInterfaceFilterList.java
   |  |  |  |  |--GetVlanInterfaceList.java
   |  |  |  |  |--NotifyNodeStartUp.java
   |  |  |  |  |--NotifyReceiveSnmpTrap.java
@@ -359,6 +416,7 @@ sh jar_create.sh
   |  |  |  |  |--UpdateVlanIf.java
   |  |  |  |  |--package-info.java
   |  |  |  |  |--parts/
+  |  |  |  |  |  |--AddFilters.java
   |  |  |  |  |  |--AddressInfo.java
   |  |  |  |  |  |--As.java
   |  |  |  |  |  |--BaseIf.java
@@ -376,6 +434,7 @@ sh jar_create.sh
   |  |  |  |  |  |--Cpu.java
   |  |  |  |  |  |--CreateNode.java
   |  |  |  |  |  |--CreateVlanIfs.java
+  |  |  |  |  |  |--DeleteFilters.java
   |  |  |  |  |  |--DeviceInfo.java
   |  |  |  |  |  |--Disk.java
   |  |  |  |  |  |--EcEmLog.java
@@ -386,6 +445,8 @@ sh jar_create.sh
   |  |  |  |  |  |--EquipmentAddNode.java
   |  |  |  |  |  |--EquipmentIf.java
   |  |  |  |  |  |--EquipmentRegisterNode.java
+  |  |  |  |  |  |--GetTerms.java
+  |  |  |  |  |  |--IfFilter.java
   |  |  |  |  |  |--IfNameRule.java
   |  |  |  |  |  |--IfSearchIf.java
   |  |  |  |  |  |--Informations.java
@@ -394,19 +455,26 @@ sh jar_create.sh
   |  |  |  |  |  |--InternalLinkIf.java
   |  |  |  |  |  |--InternalLinkIfsDeleteNode.java
   |  |  |  |  |  |--InternalLinkInfo.java
+  |  |  |  |  |  |--IrbCapabilities.java
+  |  |  |  |  |  |--IrbUpdateValue.java
+  |  |  |  |  |  |--IrbValue.java
   |  |  |  |  |  |--L2L3vpn.java
   |  |  |  |  |  |--L2VlanOption.java
   |  |  |  |  |  |--L3VlanOption.java
+  |  |  |  |  |  |--L3VniValue.java
   |  |  |  |  |  |--L3vpn.java
   |  |  |  |  |  |--LagIf.java
   |  |  |  |  |  |--LagIfCreateLagIf.java
+  |  |  |  |  |  |--LagIfFilter.java
   |  |  |  |  |  |--LagMember.java
   |  |  |  |  |  |--LagMembersBreakoutIfs.java
   |  |  |  |  |  |--LagMembersPhysicalIfs.java
   |  |  |  |  |  |--LogConditions.java
   |  |  |  |  |  |--LogData.java
   |  |  |  |  |  |--LogInformation.java
+  |  |  |  |  |  |--LoopBackInterface.java
   |  |  |  |  |  |--Memory.java
+  |  |  |  |  |  |--MultiHomingValue.java
   |  |  |  |  |  |--Neighbor.java
   |  |  |  |  |  |--Node.java
   |  |  |  |  |  |--NodeChangeNode.java
@@ -419,6 +487,7 @@ sh jar_create.sh
   |  |  |  |  |  |--OsInfo.java
   |  |  |  |  |  |--PairNode.java
   |  |  |  |  |  |--PhysicalIf.java
+  |  |  |  |  |  |--PhysicalIfFilter.java
   |  |  |  |  |  |--PhysicalIfsCreateLagIf.java
   |  |  |  |  |  |--QosCapabilities.java
   |  |  |  |  |  |--QosConfigValues.java
@@ -427,10 +496,12 @@ sh jar_create.sh
   |  |  |  |  |  |--QosUpdateVlanIf.java
   |  |  |  |  |  |--QosValues.java
   |  |  |  |  |  |--Remark.java
+  |  |  |  |  |  |--RemoveUpdateVlanIfs.java
   |  |  |  |  |  |--Shaping.java
   |  |  |  |  |  |--StaticRoute.java
   |  |  |  |  |  |--SwitchTraffic.java
   |  |  |  |  |  |--TargetIf.java
+  |  |  |  |  |  |--Terms.java
   |  |  |  |  |  |--TrackingIf.java
   |  |  |  |  |  |--Traffic.java
   |  |  |  |  |  |--TrafficValue.java
@@ -444,6 +515,7 @@ sh jar_create.sh
   |  |  |  |  |  |--VirtualLink.java
   |  |  |  |  |  |--VirtualLinkCluster.java
   |  |  |  |  |  |--VlanIf.java
+  |  |  |  |  |  |--VlanIfFilter.java
   |  |  |  |  |  |--VlanIfUpdateOption.java
   |  |  |  |  |  |--VlanIfsBulkUpdate.java
   |  |  |  |  |  |--VlanIfsCreateL3VlanIf.java
@@ -463,9 +535,11 @@ sh jar_create.sh
   |  |  |  |  |  |--Cps.java
   |  |  |  |  |  |--EcMainModule.java
   |  |  |  |  |  |--EquipmentType.java
+  |  |  |  |  |  |--Filter.java
   |  |  |  |  |  |--Interface.java
   |  |  |  |  |  |--Node.java
   |  |  |  |  |  |--NodeTraffic.java
+  |  |  |  |  |  |--PATCH.java
   |  |  |  |  |  |--VlanInterface.java
   |  |  |  |  |  |--package-info.java
   |  |--traffic/

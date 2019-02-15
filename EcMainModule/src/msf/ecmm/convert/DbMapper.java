@@ -13,14 +13,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.db.pojo.BGPOptions;
 import msf.ecmm.db.pojo.BootErrorMessages;
 import msf.ecmm.db.pojo.BreakoutIfs;
+import msf.ecmm.db.pojo.DummyVlanIfs;
 import msf.ecmm.db.pojo.EgressQueueMenus;
 import msf.ecmm.db.pojo.EquipmentIfs;
 import msf.ecmm.db.pojo.Equipments;
+import msf.ecmm.db.pojo.IRBInstanceInfo;
 import msf.ecmm.db.pojo.IfNameRules;
 import msf.ecmm.db.pojo.LagIfs;
 import msf.ecmm.db.pojo.LagMembers;
@@ -54,10 +59,8 @@ import msf.ecmm.ope.receiver.pojo.parts.QosRegisterEquipment;
 import msf.ecmm.ope.receiver.pojo.parts.QosUpdateVlanIf;
 import msf.ecmm.ope.receiver.pojo.parts.StaticRoute;
 import msf.ecmm.ope.receiver.pojo.parts.UpdateStaticRoute;
+import msf.ecmm.ope.receiver.pojo.parts.UpdateVlanIfs;
 import msf.ecmm.ope.receiver.pojo.parts.VlanIfsCreateL3VlanIf;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * DB Data Mapping.
@@ -70,7 +73,7 @@ public class DbMapper {
 
   /**
    * DB data mapping_generate LagIF<br>
-   * Convert LagIF generation information into DB storable format.
+   * Converting LagIF generation information into DB storable format.
    *
    * @param input
    *          LagIf generation information
@@ -201,6 +204,23 @@ public class DbMapper {
       } else {
         ret.setL3vpn_capability(false);
       }
+      if (registerEquipmentTypeRest.getEquipment().getCapabilities().getIrb() != null) {
+        if (registerEquipmentTypeRest.getEquipment().getCapabilities().getIrb().getAsymmetric() != null) {
+          ret.setIrb_asymmetric_capability(
+              registerEquipmentTypeRest.getEquipment().getCapabilities().getIrb().getAsymmetric());
+        } else {
+          ret.setIrb_asymmetric_capability(false);
+        }
+        if (registerEquipmentTypeRest.getEquipment().getCapabilities().getIrb().getSymmetric() != null) {
+          ret.setIrb_symmetric_capability(
+              registerEquipmentTypeRest.getEquipment().getCapabilities().getIrb().getSymmetric());
+        } else {
+          ret.setIrb_symmetric_capability(false);
+        }
+      }else {
+        ret.setIrb_asymmetric_capability(false);
+        ret.setIrb_symmetric_capability(false);
+      }
     } else {
       ret.setEvpn_capability(false);
       ret.setL2vpn_capability(false);
@@ -279,6 +299,26 @@ public class DbMapper {
     }
     ret.setBootErrorMessagesList(bootErrorMsgsList);
 
+    if (null == registerEquipmentTypeRest.getEquipment().getSameVlanNumberTrafficTotalValueFlag()) {
+      ret.setSame_vlan_number_traffic_total_value_flag(false);
+    } else {
+      ret.setSame_vlan_number_traffic_total_value_flag(
+          registerEquipmentTypeRest.getEquipment().getSameVlanNumberTrafficTotalValueFlag());
+    }
+    if ( null != registerEquipmentTypeRest.getEquipment().getVlanTrafficCapability()) {
+      ret.setVlan_traffic_capability(registerEquipmentTypeRest.getEquipment().getVlanTrafficCapability());
+      if (registerEquipmentTypeRest.getEquipment().getVlanTrafficCapability()
+          .equals(CommonDefinitions.VLAN_TRAFFIC_TYPE_MIB)) {
+        ret.setVlan_traffic_counter_name_mib_oid(
+            registerEquipmentTypeRest.getEquipment().getVlanTrafficCounterNameMibOid());
+        ret.setVlan_traffic_counter_value_mib_oid(
+            registerEquipmentTypeRest.getEquipment().getVlanTrafficCounterValueMibOid());
+      } else if (registerEquipmentTypeRest.getEquipment().getVlanTrafficCapability()
+          .equals(CommonDefinitions.VLAN_TRAFFIC_TYPE_CLI)) {
+        ret.setCli_exec_path(registerEquipmentTypeRest.getEquipment().getCliExecPath());
+      }
+    }
+
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
     return ret;
@@ -302,11 +342,11 @@ public class DbMapper {
     ret.setNode_id(addNodeRest.getCreateNode().getNodeId());
     ret.setEquipment_type_id(addNodeRest.getEquipment().getEquipmentTypeId());
     ret.setNode_name(addNodeRest.getCreateNode().getHostname());
-    ret.setHost_name(addNodeRest.getCreateNode().getHostname());
+    ret.setHost_name(addNodeRest.getCreateNode().getHostname()); 
     ret.setManagement_if_address(addNodeRest.getCreateNode().getManagementInterface().getAddress());
     ret.setMng_if_addr_prefix(addNodeRest.getCreateNode().getManagementInterface().getPrefix());
     ret.setSnmp_community(addNodeRest.getCreateNode().getSnmpCommunity());
-    ret.setNode_state(NodeAdditionState.UnInitilized.getValue());
+    ret.setNode_state(NodeAdditionState.UnInitilized.getValue()); 
     ret.setProvisioning(addNodeRest.getCreateNode().getProvisioning());
     if (addNodeRest.getCreateNode().getPlane() == null) {
       ret.setPlane(null);
@@ -343,6 +383,8 @@ public class DbMapper {
     nodesStartupNotification.setNotification_reception_status(CommonDefinitions.WAIT_NOTIFICATION);
     nodesStartupNotificationSet.add(nodesStartupNotification);
     ret.setNodesStartupNotificationList(nodesStartupNotificationSet);
+
+    ret.setIrb_type(addNodeRest.getCreateNode().getIrbType());
 
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
@@ -412,7 +454,7 @@ public class DbMapper {
   }
 
   /**
-   * DB Data Mapping_Device Extention; Convert device information into DB storable format.
+   * DB Data Mapping_Device Extention; Converting device information into DB storable format.
    *
    * @param inData
    *          device extention information
@@ -501,7 +543,7 @@ public class DbMapper {
 
       ret = setRelatedNodesCommon(inData.getCreateNode().getNodeId(), internalLinkIf, equipments, ret);
 
-    }
+    } 
 
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
@@ -590,10 +632,10 @@ public class DbMapper {
             if (physi.getPhysical_if_id().equals(memberIf.getIfId())) {
               physi.setIf_name(createPhysicalIfName(memberIf.getIfId(), internalLinkIf.getLinkSpeed(), equipments));
               physi.setIf_speed(internalLinkIf.getLinkSpeed());
-              break;
+              break; 
             }
           }
-        } else {
+        } else { 
           lagMemberDb.setBreakout_if_id(memberIf.getIfId());
         }
         lagMembersList.add(lagMemberDb);
@@ -745,7 +787,7 @@ public class DbMapper {
       }
     }
     if (prefix != null && slot != null) {
-      physicalIfName = toPhysicalIfName(prefix, slot);
+      physicalIfName = toPhysicalIfName(prefix, slot); 
     } else {
       logger.warn("Create physical IF name error");
       throw new IllegalArgumentException();
@@ -886,7 +928,7 @@ public class DbMapper {
       lagIfs.setLagMembersList(lagIfsDb.getLagMembersList());
 
       Set<LagIfs> lagIfsSet = new HashSet<>();
-      lagIfsSet.add(lagIfs);
+      lagIfsSet.add(lagIfs); 
 
       Set<PhysicalIfs> physicalIfsSet = new HashSet<>();
 
@@ -953,7 +995,7 @@ public class DbMapper {
       ret.setPhysicalIfsList(physicalIfsSet);
       ret.setLagIfsList(new HashSet<>());
 
-    } else {
+    } else { 
 
       PhysicalIfs physicalIfsDb = null;
       FOUND_BASE_PHYSICAL_IF: for (PhysicalIfs physicalIfsDbTmp : oppoNodesDb.getPhysicalIfsList()) {
@@ -996,9 +1038,11 @@ public class DbMapper {
    *          L2VLAN IF generation information
    * @param nodesDb
    *          device information
-   * @return L2VLAN IF generation information (for DB storage)
+   * @param irbInstanceId
+   *          IRB instance ID
+   * @return L2VLAN IFDbMapper.java
    */
-  public static VlanIfs toL2VlanIfCreate(CreateVlanIfs input, Nodes nodesDb) {
+  public static VlanIfs toL2VlanIfCreate(CreateVlanIfs input, Nodes nodesDb, String irbInstanceId) {
 
     logger.trace(CommonDefinitions.START);
     logger.debug(input + ", " + nodesDb);
@@ -1036,6 +1080,7 @@ public class DbMapper {
       vlanIfs.setRemark_menu(input.getQos().getRemarkMenu());
       vlanIfs.setEgress_queue_menu(input.getQos().getEgressQueue());
     }
+     vlanIfs.setIrb_instance_id(irbInstanceId);
 
     logger.debug(vlanIfs);
     logger.trace(CommonDefinitions.END);
@@ -1053,7 +1098,7 @@ public class DbMapper {
    * @param bgpId
    *          BGP option information ID
    * @param vrrpId
-   *          VRRP opetion information ID
+   *          VRRP option information ID
    * @return L3VLAN IF genertion information (for DB storage)
    */
   public static VlanIfs toL3VlanIfCreate(VlanIfsCreateL3VlanIf input, Nodes nodesDb, String bgpId, String vrrpId) {
@@ -1155,7 +1200,7 @@ public class DbMapper {
   }
 
   /**
-   * Search the each of IF information list of device information with IF ID as a key, and acquire the IF name.
+   * Searching the each of IF information list of device information with IF ID as a key, and getting the IF name.
    *
    * @param ifType
    *          IF type
@@ -1198,7 +1243,7 @@ public class DbMapper {
 
   /**
    * DB Data Mapping_VLAN IF Change<br>
-   * Convert VLAN IF change into DB storable format.
+   * Converting VLAN IF change into DB storable format.
    *
    * @param input
    *          VLAN IF change information
@@ -1233,7 +1278,7 @@ public class DbMapper {
 
   /**
    * DB Data Mapping_VLAN IF Change（QoS setting）<br>
-   * Convert VLAN IF change into DB storable format.
+   * Converting VLAN IF change into DB storable format.
    *
    * @param input
    *          VLAN IF change information
@@ -1264,7 +1309,7 @@ public class DbMapper {
 
   /**
    * DB Data Mapping_VLAN IF Batch Change（QoS setting）<br>
-   * Convert VLAN IF change into DB storable format.
+   * Converting VLAN IF change into DB storable format.
    *
    * @param input
    *          Remark menu information
@@ -1286,15 +1331,16 @@ public class DbMapper {
   }
 
   /**
-   * Check inflow shaping rate value.
+   * Checking inflow shaping rate value.
    *
    * @param input
    *          inflow shaping rate value
    * @param ifSpeed
-   *          interface speed
+   *          Speed of IF to which QoS is set
    * @param capability
-   *          capability
-   * @return true:check OK  false:check NG
+   *          Inflow shaping possible/ impossible
+   * @return Setting of inflow shaping rate to DB/EM is possible：true<br>
+   *         Setting of inflow shaping rate to DB/EM is impossibe：false
    */
   public static boolean checkQosShapingRateValue(Float input, int ifSpeed, boolean capability) {
 
@@ -1317,13 +1363,14 @@ public class DbMapper {
   }
 
   /**
-   * Check remark menu value.
+   * Checking remark menu value to be set to DB.
    *
    * @param input
-   *          remark menu value
+   *          remark menu value transferred from FC
    * @param equipmentDb
-   *          device information(DB)
-   * @return true:check OK  false:check NG
+   *          Defice information
+   * @return Setting of remark menu value to DB/EM is possible：true<br>
+   *         Setting of remark menu value to DB/EM is impossible：false
    */
   public static boolean checkQosRemarkMenuValue(String input, Equipments equipmentDb) {
 
@@ -1351,13 +1398,14 @@ public class DbMapper {
   }
 
   /**
-   * Check egress queue menu value.
+   * Getting egress queue menu value to be set to DB.
    *
    * @param input
-   *          egress queue menu value
+   *          Egress queue menu value transferred from FC
    * @param equipmentDb
-   *          device information(DB)
-   * @return true:check OK  false:check NG
+   *          Device information
+   * @return Setting of Egress queue menu to DB/EM is possible：true<br>
+   *         Setting of Egress queue menu to DB/EM is impossible：false
    */
   public static boolean checkQosEgressQueueMenuValue(String input, Equipments equipmentDb) {
 
@@ -1386,7 +1434,7 @@ public class DbMapper {
 
 /**
  * DB Data Mapping_breakoutIF generation<br>
- * Convert the information for generating breakoutIF into DB storable format.
+ * Converting the information for generating breakoutIF into DB storable format.
  *
  * @param input
  *          information for generating breakoutIF
@@ -1423,7 +1471,7 @@ public class DbMapper {
 
   /**
    * DB Data Mapping_Physical IF IP Address Change<br>
-   * Convert physical IF IP address into DB storable format.
+   * Converting physical IF IP address into DB storable format.
    *
    * @param input
    *          information for changing physical IF IP address
@@ -1453,7 +1501,7 @@ public class DbMapper {
 
   /**
    * DB Data Mapping_LAGIF IP Address Change<br>
-   * Convert the information for changing LAGIF IP address into DB storable format.
+   * Converting the information for changing LAGIF IP address into DB storable format.
    *
    * @param input
    *          Information for changing LAGIF IP address
@@ -1483,7 +1531,7 @@ public class DbMapper {
 
   /**
    * DB Data Mapping_breakoutIF IP Address Change<br>
-   * Convert the information for changing breakoutIF IP address into DB storable format.
+   * Converting the information for changing breakoutIF IP address into DB storable format.
    *
    * @param input
    *          information for changing breakoutIF IP address
@@ -1513,15 +1561,15 @@ public class DbMapper {
 
   /**
    * DB Data Mapping_Additional service recovery<br>
-   * Generate DB-POJO to be used for change processing of device information and IF information (including addition and deletion of physical interface)<br>
-   * Create conversion table from IF name before restoration to IF name after restoration.
+   * Generating DB-POJO to be used for change processing of device information and IF information (including addition and deletion of physical interface)<br>
+   * Creating conversion table from IF name before restoration to IF name after restoration.
    *
    * @param input
    *          input rest information(Additional service recovery)
    * @param inputNodes
    *          Device information to be recovered（including physical IF、LAGIF、breakoutIF）
    * @param inputVlanIfsList
-   *          Vlan list registered in the recovery target device
+   *          Vlan list registered in the device to be recovered
    * @param inputEquipments
    *          Device information after recovery（including IF information）
    * @param retAddPhysicalIfsList
@@ -1722,5 +1770,124 @@ public class DbMapper {
     logger.debug(retVlanIfsList);
     logger.trace(CommonDefinitions.END);
     return ret;
+  }
+
+  /**
+   * DB data mapping L2VLAN IF batch generation/change<br>
+   * Converting the dummy VLAN IF generation information in DB storable format.
+   *
+   * @param input
+   *          VLAN IF generation information
+   * @param nodesDb
+   *          Device information
+   * @param irbInstanceId
+   *          IRB instance ID
+   * @return Dummy VLAN IF generation information (for DB  storage)
+   */
+  public static DummyVlanIfs toDummyVlanIfCreate(CreateVlanIfs input, Nodes nodesDb, String irbInstanceId) {
+
+    logger.trace(CommonDefinitions.START);
+    logger.debug(input + ", " + nodesDb + "," + irbInstanceId);
+
+    DummyVlanIfs dummyVlanIfs = new DummyVlanIfs();
+    dummyVlanIfs.setNode_id(nodesDb.getNode_id());
+    dummyVlanIfs.setVlan_if_id(input.getVlanIfId());
+    dummyVlanIfs.setVlan_id(input.getVlanId().toString());
+    dummyVlanIfs.setIrb_instance_id(irbInstanceId);
+
+    logger.debug(dummyVlanIfs);
+    logger.trace(CommonDefinitions.END);
+    return dummyVlanIfs;
+  }
+
+  /**
+   * DB data maping L2VLAN IF batch generatin/change<br>
+   * Converting the IRB instance inforation generation information in DB storable format.
+   *
+   * @param input
+   *          VLAN IF generation information
+   * @param nodesDb
+   *          Device information
+   * @param irbInstanceId
+   *          IRB instance ID
+   * @return IRB instance generation information (for DB storage)
+   */
+  public static IRBInstanceInfo toIrbInstanceInfoCreate(CreateVlanIfs input, Nodes nodesDb, String irbInstanceId) {
+
+    logger.trace(CommonDefinitions.START);
+    logger.debug(input + ", " + nodesDb + "," + irbInstanceId);
+
+    IRBInstanceInfo irbInstance = new IRBInstanceInfo();
+    irbInstance.setNode_id(nodesDb.getNode_id());
+    irbInstance.setVlan_id(input.getVlanId().toString());
+    irbInstance.setIrb_instance_id(irbInstanceId);
+    irbInstance.setIrb_vni(input.getIrbValue().getVni().toString());
+    irbInstance.setIrb_ipv4_address(input.getIrbValue().getIpv4Address());
+    irbInstance.setIrb_ipv4_prefix(input.getIrbValue().getIpv4Prefix());
+    irbInstance.setVirtual_gateway_address(input.getIrbValue().getVirtualGatewayAddress());
+
+    logger.debug(irbInstance);
+    logger.trace(CommonDefinitions.END);
+    return irbInstance;
+  }
+
+  /**
+   * DB data mapping L2VLAN IF batch generation/ change<br>
+   * Converting the L2VLAN IF generation information from updated information into DB storable format.
+   *
+   * @param input
+   *          L2VLAN IF update information
+   * @param nodesDb
+   *          Device information
+   * @param irbInstanceId
+   *          IRB instance ID
+   * @param vlanId
+   *          VLAN ID
+   * @return L2VLAN IF generation information (for DB storage)
+   */
+  public static VlanIfs toL2VlanIfCreateFromUpdate(UpdateVlanIfs input, Nodes nodesDb, String irbInstanceId,
+      String vlanId) {
+
+    logger.trace(CommonDefinitions.START);
+    logger.debug(input + ", " + nodesDb);
+
+    String baseIfType = input.getBaseIf().getIfType();
+    String baseIfId = input.getBaseIf().getIfId();
+    VlanIfs vlanIfs = new VlanIfs();
+    vlanIfs.setNode_id(input.getBaseIf().getNodeId());
+    vlanIfs.setVlan_if_id(input.getVlanIfId());
+    if (baseIfType.equals(CommonDefinitions.IF_TYPE_PHYSICAL_IF)) {
+      vlanIfs.setPhysical_if_id(baseIfId);
+    } else if (baseIfType.equals(CommonDefinitions.IF_TYPE_LAG_IF)) {
+      if (nodesDb.getLagIfsList() != null) {
+        for (LagIfs elem : nodesDb.getLagIfsList()) {
+          if (elem.getFc_lag_if_id().equals(baseIfId)) {
+            vlanIfs.setLag_if_id(elem.getLag_if_id());
+            break;
+          }
+        }
+      }
+    } else if (baseIfType.equals(CommonDefinitions.IF_TYPE_BREAKOUT_IF)) {
+      vlanIfs.setBreakout_if_id(baseIfId);
+    }
+    vlanIfs.setIf_name(getIfName(baseIfType, baseIfId, nodesDb));
+    vlanIfs.setVlan_id(vlanId);
+    vlanIfs.setIf_status(CommonDefinitions.IF_STATE_UNKNOWN);
+    if (input.getPortMode().equals(CommonDefinitions.VLAN_PORTMODE_ACCESS_STRING)) {
+      vlanIfs.setPort_mode(CommonDefinitions.VLAN_PORTMODE_ACCESS);
+    } else if (input.getPortMode().equals(CommonDefinitions.VLAN_PORTMODE_TRUNK_STRING)) {
+      vlanIfs.setPort_mode(CommonDefinitions.VLAN_PORTMODE_TRUNK);
+    }
+    if (input.getQos() != null) {
+      vlanIfs.setInflow_shaping_rate(input.getQos().getInflowShapingRate());
+      vlanIfs.setOutflow_shaping_rate(input.getQos().getOutflowShapingRate());
+      vlanIfs.setRemark_menu(input.getQos().getRemarkMenu());
+      vlanIfs.setEgress_queue_menu(input.getQos().getEgressQueue());
+    }
+    vlanIfs.setIrb_instance_id(irbInstanceId);
+
+    logger.debug(vlanIfs);
+    logger.trace(CommonDefinitions.END);
+    return vlanIfs;
   }
 }

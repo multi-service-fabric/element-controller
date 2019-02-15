@@ -1,5 +1,5 @@
 /**
- * Operation Request Reception Functional Part (Resource)
+* Operation Request Receiving Function Part (resource)
  */
 
 package msf.ecmm.ope.receiver.resources;

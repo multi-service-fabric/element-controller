@@ -19,8 +19,6 @@ public class SnmpIfTraffic {
   private long outOctets;
 
   /**
-   * Constructor.
-   *
    * @param ifName
    *          IF name
    * @param inOctets

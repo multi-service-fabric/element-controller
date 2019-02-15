@@ -26,6 +26,7 @@ import com.google.gson.JsonSyntaxException;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.config.ExpandOperation;
 import msf.ecmm.ope.control.RestRequestCount;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationFactory;
@@ -64,7 +65,7 @@ public abstract class BaseResource {
   /**
    * Operation Type
    */
-  protected OperationType operationType = OperationType.None;
+  protected int operationType = OperationType.None;
 
   /**
    * Operation Group Type
@@ -77,6 +78,11 @@ public abstract class BaseResource {
   protected String prepareErrorCode;
   /** Error code of unexpected error */
   protected String unexpectedErrorCode;
+
+  /**
+   * Extension function operation name.
+   */
+  protected String expandOperationName = "";
 
 
   /**
@@ -92,7 +98,6 @@ public abstract class BaseResource {
       Class<? extends AbstractRestMessage> reqestBodyType) {
 
     logger.trace(CommonDefinitions.START);
-    logger.debug("operationType:" + operationType);
 
     Response response = null;
     boolean requestSuccessFlag = false;
@@ -100,6 +105,13 @@ public abstract class BaseResource {
     RestRequestCount.requestcount(RestRequestCount.REST_RECEPTION);
 
     try {
+
+      if (!expandOperationName.isEmpty()) {
+        operationType = ExpandOperation.getInstance().get(expandOperationName).getOperationTypeId();
+      }
+
+      logger.debug("operationType:" + OperationType.name(operationType));
+
       String requestJson = "";
       AbstractRestMessage requestPojo = null;
 

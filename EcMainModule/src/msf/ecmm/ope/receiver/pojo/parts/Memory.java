@@ -12,28 +12,28 @@ public class Memory {
   /**
    * Using Memory Size
    */
-  private Float used;
+  private Integer used;
 
   /**
    * Free Memory Size
    */
-  private Float free;
+  private Integer free;
 
   /**
    * Memory Size Allocated for Buffer Cache and Page Cache
    */
-  private Float buffCache;
+  private Integer buffCache;
 
   /**
    * Using Virtual Memory Size
    */
-  private Float swpd;
+  private Integer swpd;
 
   /**
    * Getting using memory size.
    * @return using memory size
    */
-  public Float getUsed() {
+  public Integer getUsed() {
     return used;
   }
 
@@ -41,7 +41,7 @@ public class Memory {
    * Setting using memory size.
    * @param used2 using memory size
    */
-  public void setUsed(Float used2) {
+  public void setUsed(Integer used2) {
     this.used = used2;
   }
 
@@ -49,7 +49,7 @@ public class Memory {
    * Getting free memory size.
    * @return free memory size
    */
-  public Float getFree() {
+  public Integer getFree() {
     return free;
   }
 
@@ -57,7 +57,7 @@ public class Memory {
    * Setting free memory size.
    * @param free2 free memory size
    */
-  public void setFree(Float free2) {
+  public void setFree(Integer free2) {
     this.free = free2;
   }
 
@@ -65,7 +65,7 @@ public class Memory {
    * Getting memory size allocated for buffer cache and page cache.
    * @return memory size allocated for buffer cache and page cache
    */
-  public Float getBuffCache() {
+  public Integer getBuffCache() {
     return buffCache;
   }
 
@@ -73,7 +73,7 @@ public class Memory {
    * Setting memory size allocated for buffer cache and page cache.
    * @param buffers memory size allocated for buffer cache and page cache
    */
-  public void setBuffCache(Float buffers) {
+  public void setBuffCache(Integer buffers) {
     this.buffCache = buffers;
   }
 
@@ -81,7 +81,7 @@ public class Memory {
    * Getting using virtual memory size.
    * @return using virtual memory size
    */
-  public Float getSwpd() {
+  public Integer getSwpd() {
     return swpd;
   }
 
@@ -89,7 +89,7 @@ public class Memory {
    * Setting using virtual memory size.
    * @param swapUsed using virtual memory size
    */
-  public void setSwpd(Float swapUsed) {
+  public void setSwpd(Integer swapUsed) {
     this.swpd = swapUsed;
   }
 

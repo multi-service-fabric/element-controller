@@ -3,7 +3,7 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
-    <!-- LAG Membar Information Class -->
+    <!-- LAG Member Information Class -->
 
 <hibernate-mapping>
        <class name="msf.ecmm.db.pojo.LagMembers" table="lag_ifs_member" lazy="true">

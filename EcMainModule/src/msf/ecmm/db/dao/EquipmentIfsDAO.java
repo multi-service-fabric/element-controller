@@ -9,11 +9,11 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.EquipmentIfs;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.EquipmentIfs;
 
 /**
  * Model IF Information DAO Class.
@@ -34,9 +34,9 @@ public class EquipmentIfsDAO extends BaseDAO {
    * Model IF Table INSERT.
    *
    * @param equipmentIfs
-   *          model IF to be registered
+   *          Model IF to be registered
    * @throws DBAccessException
-   *           data base exception
+   *           Database exception
    */
   public void save(EquipmentIfs equipmentIfs) throws DBAccessException {
     try {
@@ -55,12 +55,12 @@ public class EquipmentIfsDAO extends BaseDAO {
   }
 
   /**
-   * Model IF Information Table DELETE.
+   * Model IF information table deletion.
    *
    * @param equipment_type_id
-   *          model ID (primary key)
+	*          Model ID (Main key)
    * @throws DBAccessException
-   *           data base exception
+   *           Database exception
    */
   public void delete(String equipment_type_id) throws DBAccessException {
     try {
@@ -86,11 +86,11 @@ public class EquipmentIfsDAO extends BaseDAO {
   }
 
   /**
-   * Model Information TableSELECT.
+   * Model information table selection.
    *
-   * @return equipmentList search result
+   * @return equipmentList Search results
    * @throws DBAccessException
-   *           data base exception
+   *           Database exception
    */
   @SuppressWarnings("unchecked")
   public List<EquipmentIfs> getList() throws DBAccessException {
@@ -104,13 +104,13 @@ public class EquipmentIfsDAO extends BaseDAO {
 
     } catch (Throwable e1) {
       logger.debug("equipment_ifs select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, EQUIPMENT_IFS, e1);
+      this.errorMessage(SEARCH_FAILURE, EQUIPMENT_IFS, e1);
     }
     return equipmentIfsList;
   }
 
   /**
-   * Model Information IF Table SELECT.
+   * Model information IF table selection.
    *
    * @param equipment_type_id
    *          model ID (primary key)
@@ -127,7 +127,7 @@ public class EquipmentIfsDAO extends BaseDAO {
       equipmentIfsList = query.list();
     } catch (Throwable e1) {
       logger.debug("equipment_ifs select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, EQUIPMENT_IFS, e1);
+      this.errorMessage(SEARCH_FAILURE, EQUIPMENT_IFS, e1);
     }
     return equipmentIfsList;
   }

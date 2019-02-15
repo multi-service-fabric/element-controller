@@ -18,15 +18,27 @@ public class Vrf {
   @XmlElement(name = "vrf-name")
   private String vrfName = null;
 
-  /** Route Target */
+  /** VRF ID (used for L2VLAN generation). */
+  @XmlElement(name = "vrf-id")
+  private String vrfId = null;
+
+  /** Route Target. */
   private String rt = null;
 
-  /** Route Distinguisher */
+  /** Route Distinguisher. */
   private String rd = null;
 
-  /** Route ID */
+  /** Route ID. */
   @XmlElement(name = "router-id")
   private String routerId = null;
+
+  /** LoopBack.Using for L2VLAN generation */
+  @XmlElement(name = "loopback")
+  private Loopback loopback = null;
+
+  /** l3-vni. Using for L2VLAN generation */
+  @XmlElement(name = "l3-vni")
+  private L3Vni l3Vni = null;
 
   /**
    * Generating new instance.
@@ -111,6 +123,63 @@ public class Vrf {
     this.routerId = routerId;
   }
 
+  /**
+   * Getting VRF-ID.
+   *
+   * @return VRF-ID
+   */
+  public String getVrfId() {
+    return vrfId;
+  }
+
+  /**
+   * Setting VRF-ID.
+   *
+   * @param vrfId
+   *          VRF-ID
+   */
+  public void setVrfId(String vrfId) {
+    this.vrfId = vrfId;
+  }
+
+  /**
+   * Getting Loopback.
+   *
+   * @return Loopback
+   */
+  public Loopback getLoopback() {
+    return loopback;
+  }
+
+  /**
+   * Setting LoopBack.
+   *
+   * @param loopback
+   *          Loopback
+   */
+  public void setLoopback(Loopback loopback) {
+    this.loopback = loopback;
+  }
+
+  /**
+   * Getting L3-VNI.
+   *
+   * @return L3Vni
+   */
+  public L3Vni getL3Vni() {
+    return l3Vni;
+  }
+
+  /**
+   * Setting L3-VNI.
+   *
+   * @param l3Vni
+   *          L3Vni
+   */
+  public void setL3Vni(L3Vni l3Vni) {
+    this.l3Vni = l3Vni;
+  }
+
   /*
    * (Non-Javadoc)
    *
@@ -118,6 +187,7 @@ public class Vrf {
    */
   @Override
   public String toString() {
-    return "Vrf [vrfName=" + vrfName + ", rt=" + rt + ", rd=" + rd + ", routerId=" + routerId + "]";
+    return "Vrf [vrfName=" + vrfName + ", vrfId=" + vrfId + ", rt=" + rt + ", rd=" + rd + ", routerId=" + routerId
+        + ", loopback=" + loopback + ", l3Vni=" + l3Vni + "]";
   }
 }

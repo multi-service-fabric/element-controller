@@ -66,7 +66,10 @@ public class CreateNode {
   /** VPN Configuration Information. */
   private Vpn vpn;
 
-  /** OSPF Area in Multicluster. */
+  /** IRB type. */
+  private String irbType;
+
+  /** OSPF Area at the tine of multicluster. */
   private String clusterArea;
 
   /** VirtualLink Configuration. */
@@ -361,9 +364,28 @@ public class CreateNode {
   }
 
   /**
-   * Getting OSPF Area in multicluster.
+   * Getting IRB type.
    *
-   * @return OSPF Area in multicluster
+   * @return IRB type information
+   */
+  public String getIrbType() {
+    return irbType;
+  }
+
+  /**
+   * Setting IRB type.
+   *
+   * @param irbType
+   *          IRB type information
+   */
+  public void setIrbType(String irbType) {
+    this.irbType = irbType;
+  }
+
+  /**
+   * Getting OSPF Area at multicluster.
+   *
+   * @return OSPF Area at multicluster
    */
   public String getClusterArea() {
     return clusterArea;
@@ -436,10 +458,8 @@ public class CreateNode {
     if (nodeType == null) {
       throw new CheckDataException();
     } else {
-      if (!nodeType.equals(CommonDefinitions.NODETYPE_SPINE)
-          && !nodeType.equals(CommonDefinitions.NODETYPE_LEAF)
-          && !nodeType.equals(CommonDefinitions.NODETYPE_BLEAF)
-          && !nodeType.equals(CommonDefinitions.NODETYPE_RR)) {
+      if (!nodeType.equals(CommonDefinitions.NODETYPE_SPINE) && !nodeType.equals(CommonDefinitions.NODETYPE_LEAF)
+          && !nodeType.equals(CommonDefinitions.NODETYPE_BLEAF) && !nodeType.equals(CommonDefinitions.NODETYPE_RR)) {
         throw new CheckDataException();
       }
     }
@@ -493,6 +513,12 @@ public class CreateNode {
     if (range != null) {
       range.check(ope);
     }
+    if (irbType != null) {
+      if (!irbType.equals(CommonDefinitions.IRB_TYPE_SYMMETRIC)
+          && !irbType.equals(CommonDefinitions.IRB_TYPE_ASYMMETRIC)) {
+        throw new CheckDataException();
+      }
+    }
   }
 
   /*
@@ -506,8 +532,8 @@ public class CreateNode {
         + username + ", password=" + password + ", macAddress=" + macAddress + ", provisioning=" + provisioning
         + ", ntpServerAddress=" + ntpServerAddress + ", managementInterface=" + managementInterface
         + ", loopbackInterface=" + loopbackInterface + ", plane=" + plane + ", snmpCommunity=" + snmpCommunity
-        + ", ifInfo=" + ifInfo + ", oppositeNodes=" + oppositeNodes + ", vpn=" + vpn + ", clusterArea=" + clusterArea
-        + ", virtualLink=" + virtualLink + ", range=" + range + "]";
+        + ", ifInfo=" + ifInfo + ", oppositeNodes=" + oppositeNodes + ", vpn=" + vpn + ", irbType=" + irbType
+        + ", clusterArea=" + clusterArea + ", virtualLink=" + virtualLink + ", range=" + range + "]";
   }
 
 }

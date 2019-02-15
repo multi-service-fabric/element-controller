@@ -1,0 +1,16 @@
+option cumulus-provision-url code 239 = text;
+subnet $$MANAGEMENTNETWORKADDRESS$$ netmask $$MANAGEMENTSUBNETMASK$$ {
+    default-lease-time 600;
+    deny unknown-clients;
+    max-lease-time 7200;
+    range $$MANAGEMENTRANGESTART$$ $$MANAGEMENTRANGEEND$$;
+    option default-url = "tftp://$$TFTPHOSTNAME$$/cumulus/OS/cumulus-linux-3.6.0-bcm-amd64.bin";
+    option cumulus-provision-url "tftp://$$TFTPHOSTNAME$$/cumulus/ztp.sh";
+
+    host $$HOSTNAME$$ {
+        hardware ethernet $$MACADDRESS$$;
+        fixed-address $$MANAGEMENTADDRESS$$;
+        option host-name "$$HOSTNAME$$";
+    }
+
+}

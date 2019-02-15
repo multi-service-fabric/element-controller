@@ -20,7 +20,7 @@ import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.DeleteNode;
 
 /**
- * B-Leaf Device Removal.
+ * B-Leaf device removal.
  */
 public class BLeafRemove extends NodeRemove {
 
@@ -28,7 +28,7 @@ public class BLeafRemove extends NodeRemove {
    * Constructor.
    *
    * @param idt
-   *          input data
+   *          Input data
    * @param ukm
    *          URI key information
    */
@@ -44,12 +44,12 @@ public class BLeafRemove extends NodeRemove {
     AbstractMessage ret = null;
 
     try (DBAccessManager session = new DBAccessManager()) {
-      Nodes pareNodes = null;
+      Nodes pairNodes = null;
       if (((DeleteNode) getInData()).getUpdateNode() != null) {
-        pareNodes = session.searchNodes(((DeleteNode) getInData()).getUpdateNode().getNodeId(), null);
+        pairNodes = session.searchNodes(((DeleteNode) getInData()).getUpdateNode().getNodeId(), null);
       }
 
-      BLeafAddDelete bleafDeleteEm = EmMapper.toBLeafInfoNodeDelete(targetNodeDb, (DeleteNode) getInData(), pareNodes);
+      BLeafAddDelete bleafDeleteEm = EmMapper.toBLeafInfoNodeDelete(targetNodeDb, (DeleteNode) getInData(), pairNodes);
 
       EmController emController = EmController.getInstance();
       ret = emController.request(bleafDeleteEm, false);

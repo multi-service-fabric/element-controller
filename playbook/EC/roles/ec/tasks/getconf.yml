@@ -1,5 +1,5 @@
 # Getting ec conf
-  - name: wget jar
+  - name: wget conf
     shell: wget --no-check-certificate --no-cookies {{ item.url }} -O {{ ec_path }}/{{ folder_name_conf }}/{{ item.file_name }}
     with_items:
       - "{{ conf_list }}"

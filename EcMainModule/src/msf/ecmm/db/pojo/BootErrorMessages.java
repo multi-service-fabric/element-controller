@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 public class BootErrorMessages implements Serializable {
 
-  /** model ID. */
+  /** Model ID. */
   private String equipment_type_id = null;
   /** start-up error message. */
   private String boot_error_msgs = null;

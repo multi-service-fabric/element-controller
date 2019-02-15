@@ -50,6 +50,8 @@ public abstract class NodeRemove extends Operation {
   private static final String ERROR_CODE_080201 = "080201";
   /** In case CP requiring LAG has not been deleted (80: rollback at FC). */
   private static final String ERROR_CODE_800303 = "800303";
+  /** In the case where it is additionally setting to the internal link IF of the target device to be reduced (or the opposing device) and can not be deleted (80: rollback at FC). */
+  private static final String ERROR_CODE_800305 = "800305";
   /** DHCP termination failed while in removing (80: rollback at FC). */
   private static final String ERROR_CODE_800401 = "800401";
   /** Syslog monitoring termination failed while in removing (80: rollback at FC). */
@@ -104,7 +106,7 @@ public abstract class NodeRemove extends Operation {
     boolean dhcpOkFlag = false;
     boolean emLockOkFlag = false;
     boolean em1FinFlag = false;
-    boolean needCleanUpFlag = true;
+    boolean needCleanUpFlag = true; 
 
     try (DBAccessManager session = new DBAccessManager()) {
 
@@ -133,7 +135,12 @@ public abstract class NodeRemove extends Operation {
         }
         oppoNodeList.add(oppoNodesDb);
       }
-      oppoNodeList.toString();
+      oppoNodeList.toString(); 
+
+      if (!checkExpand(nodesDb)) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "expand function check NG."));
+        return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_800305);
+      }
 
       session.startTransaction();
 
@@ -145,7 +152,7 @@ public abstract class NodeRemove extends Operation {
       boolean doNotNotifyEm = false;
       if (session.checkClusterType() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
         if (session.getNodesNum() > 0) {
-          doNotNotifyEm = true;
+          doNotNotifyEm = true; 
         }
       }
 
@@ -235,7 +242,7 @@ public abstract class NodeRemove extends Operation {
     if (response == null) {
       response = super.makeFailedResponse(rescode, errcode);
     }
-    return (CommonResponse) response;
+    return (CommonResponse) response; 
   }
 
   /**
@@ -251,7 +258,7 @@ public abstract class NodeRemove extends Operation {
     DeleteNode deleteNodeRest = (DeleteNode) getInData();
 
     try {
-      deleteNodeRest.check(OperationType.LeafRemove);
+      deleteNodeRest.check(new OperationType(OperationType.LeafRemove));
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);
       checkResult = false;
@@ -264,7 +271,7 @@ public abstract class NodeRemove extends Operation {
   /**
    * Opposing Device ID List Acquisition.
    *
-   * @return opposing ID list
+   * @return Opposing Device ID list
    */
   protected ArrayList<String> getOppositeNodeIdList() {
     logger.trace(CommonDefinitions.START);
@@ -343,6 +350,18 @@ public abstract class NodeRemove extends Operation {
 
     logger.trace(CommonDefinitions.END);
     return result;
+  }
+
+  /**
+   * Implement any check if required in extension function.
+   *
+   * @param nodes
+   *          Removal target device information
+   * @return Check result
+   * @throws In case abnormality occurred in DBAccessException DB
+   */
+  protected boolean checkExpand(Nodes nodes) throws DBAccessException {
+    return true;
   }
 
 }

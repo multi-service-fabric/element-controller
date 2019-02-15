@@ -5,14 +5,14 @@
 package msf.ecmm.ope.receiver.pojo.parts;
 
 /**
- * Server Machine Resource Information
+ * Server Machine Resource Information.
  */
 public class Controller {
 
-  /** Controller Type */
+  /** Controller type */
   private String controller_type;
 
-  /** Occurring Event */
+  /** Occurred Event. */
   private String event;
 
   /**
@@ -32,16 +32,16 @@ public class Controller {
   }
 
   /**
-  * Getting occurring event.
-  * @return occurring event
+  * Getting occurred event.
+  * @return occurred event
   */
   public String getEvent() {
     return event;
   }
 
   /**
-   * Setting occurring event.
-   * @param event occurring event
+   * Setting occurred event.
+   * @param event occurred event
    */
   public void setEvent(String event) {
     this.event = event;

@@ -5,6 +5,7 @@
 package msf.ecmm.devctrl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
@@ -19,6 +20,7 @@ import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.devctrl.pojo.InitialDeviceConfig;
+import msf.ecmm.ope.receiver.pojo.parts.Ztp;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,7 +29,6 @@ import org.apache.logging.log4j.Logger;
  * Device initial config file creation.
  */
 public class CreateInitialDeviceConfig {
-
   /**
    * logger.
    */
@@ -56,6 +57,7 @@ public class CreateInitialDeviceConfig {
 
   /** Template Replacement Keyword  BGP Master / Slave community value. */
   private static final String TEMPLATE_KEYWORD_BELONGINGSIDEMEMBERS = "$$BELONGINGSIDEMEMBERS$$";
+
 
   /**
    * Constructor.
@@ -99,23 +101,81 @@ public class CreateInitialDeviceConfig {
         replaceKeys.put(TEMPLATE_KEYWORD_COMMUNITYMEMBERS, info.getCommmunityMembers());
         replaceKeys.put(TEMPLATE_KEYWORD_BELONGINGSIDEMEMBERS, info.getBelongingSideMembers());
       }
-      List<String> temple = Files.readAllLines(new File(info.getConfigTemplete()).toPath());
-      ArrayList<String> rep = replace(replaceKeys, temple);
-      Files.write(new File(info.getInitialConfig()).toPath(), rep);
-      Set<PosixFilePermission> filePermission = new HashSet<PosixFilePermission>();
-      filePermission.add(PosixFilePermission.OWNER_READ);
-      filePermission.add(PosixFilePermission.OWNER_WRITE);
-      filePermission.add(PosixFilePermission.GROUP_READ);
-      filePermission.add(PosixFilePermission.OTHERS_READ);
-      Files.setPosixFilePermissions(new File(info.getInitialConfig()).toPath(), filePermission);
-    } catch (IOException e1) {
+
+
+      File template = new File(info.getConfigTemplate());
+      if (template.exists() && template.isFile()) {
+        logger.debug("template is file.");
+        exportFile(new File(info.getConfigTemplate()), replaceKeys, new File(info.getInitialConfig()));
+      } else {
+        logger.debug("template is not file.");
+        String[] templateDirs = info.getConfigTemplate().split(Ztp.INITIAL_DIR_DELIMITER);
+        String[] initialDirs = info.getInitialConfig().split(Ztp.INITIAL_DIR_DELIMITER);
+        if (templateDirs.length != initialDirs.length) {
+          logger.debug("Unmatch dirctory number.");
+          throw new IOException();
+        }
+        boolean isFile = false;
+        for (int i = 0; i < templateDirs.length; i++) {
+          List<File> templateFiles = getFileList(templateDirs[i]);
+          for (File templateFile : templateFiles) {
+            File outfile = new File(initialDirs[i] + "/" + templateFile.getName());
+            exportFile(templateFile, replaceKeys, outfile);
+            isFile = true;
+          }
+        }
+        if (!isFile) {
+          logger.debug("File not found.");
+          throw new FileNotFoundException();
+        }
+      }
+    } catch (Exception e1) {
       logger.error(LogFormatter.out.format(LogFormatter.MSG_403041, e1));
       throw new DevctrlException("Could not create initial config ");
     }
   }
 
   /**
-   * Template Replacement.
+   * File export.
+   * @param template input template file
+   * @param replaceKeys  replacement keyword
+   * @param outfile  Output file
+   * @throws Exception  At the time of exception occurrence
+   */
+  private void exportFile(File template, HashMap<String, String> replaceKeys, File outfile) throws Exception {
+    List<String> templateLines = Files.readAllLines(template.toPath());
+    ArrayList<String> rep = replace(replaceKeys, templateLines);
+    Files.write(outfile.toPath(), rep);
+    Set<PosixFilePermission> filePermission = new HashSet<PosixFilePermission>();
+    filePermission.add(PosixFilePermission.OWNER_READ);
+    filePermission.add(PosixFilePermission.OWNER_WRITE);
+    filePermission.add(PosixFilePermission.GROUP_READ);
+    filePermission.add(PosixFilePermission.OTHERS_READ);
+    filePermission.add(PosixFilePermission.OWNER_EXECUTE);
+    filePermission.add(PosixFilePermission.GROUP_EXECUTE);
+    filePermission.add(PosixFilePermission.OTHERS_EXECUTE);
+    Files.setPosixFilePermissions(outfile.toPath(), filePermission);
+    logger.debug("initial config file create. " + template + " -> " + outfile);
+  }
+
+  /**
+   * File list creation.
+   * @param dirName  Directory name
+   * @return  File list
+   */
+  private List<File> getFileList(String dirName) {
+    List<File> ret = new ArrayList<>();
+    File dir = new File(dirName);
+    for (File file : dir.listFiles()) {
+      if (file.isFile()) {
+        ret.add(file);
+      }
+    }
+    return ret;
+  }
+
+  /**
+   * Templace replacement.
    *
    * @param keys
    *          replacement character string

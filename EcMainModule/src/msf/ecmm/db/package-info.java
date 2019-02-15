@@ -1,4 +1,4 @@
 /**
- * DB Control Functional Part
+ * DB Control Function Part
  */
 package msf.ecmm.db;

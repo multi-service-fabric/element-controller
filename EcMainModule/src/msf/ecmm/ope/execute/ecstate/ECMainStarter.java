@@ -10,6 +10,7 @@ import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
+import msf.ecmm.config.ExpandOperation;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.SystemStatus;
@@ -22,6 +23,7 @@ import msf.ecmm.fcctrl.pojo.ControllerStatusToFc;
 import msf.ecmm.fcctrl.pojo.parts.Controller;
 import msf.ecmm.ope.control.ECMainState;
 import msf.ecmm.ope.control.OperationControlManager;
+import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.RestServer;
 import msf.ecmm.traffic.InterfaceIntegrityValidationManager;
 import msf.ecmm.traffic.TrafficDataGatheringManager;
@@ -68,6 +70,18 @@ public class ECMainStarter {
       System.exit(1);
       return;
     }
+
+    if (args.length == 2) {
+      try {
+        ExpandOperation.getInstance().read(args[1]);
+      } catch (Exception e1) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_503038, e1));
+        System.exit(1);
+        return;
+      }
+    }
+
+    OperationType.init();
 
     logger.debug("Read db.");
     try (DBAccessManager session = new DBAccessManager()) {

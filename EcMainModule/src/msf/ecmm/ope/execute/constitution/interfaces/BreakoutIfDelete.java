@@ -183,7 +183,7 @@ public class BreakoutIfDelete extends Operation {
 
       DeleteBreakoutIf inputData = (DeleteBreakoutIf) getInData();
 
-      inputData.check(OperationType.BreakoutIfDelete);
+      inputData.check(new OperationType(OperationType.BreakoutIfDelete));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);

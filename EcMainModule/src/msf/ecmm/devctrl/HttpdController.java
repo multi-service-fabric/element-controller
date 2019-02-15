@@ -7,18 +7,17 @@ package msf.ecmm.devctrl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * httpd start-up / confirmation.
  */
 public class HttpdController {
-
   /**
    * logger.
    */
@@ -27,7 +26,7 @@ public class HttpdController {
   /** Self(singleton) */
   private static HttpdController me = new HttpdController();
 
-  /** httpd confirmation. */
+  /** httpd start-up state confirmation. */
   private static final String[] HTTPD_STATUS_CHECK = { "systemctl", "status", "httpd.service" };
 
   /** httpd start-up. */

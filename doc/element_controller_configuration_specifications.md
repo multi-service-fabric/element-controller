@@ -1,7 +1,7 @@
 ## Element Controller Configuration Specifications
 
 **Version 1.0**
-**March 28, 2018**
+**December 7, 2018**
 **Copyright(c) 2018 Nippon Telegraph and Telephone Corporation**
 
 ### Configuration Definitions
@@ -78,3 +78,4 @@ The table below shows the detail of items which are managed in the EC configurat
 |33|EM Connection Port Number (for REST)|em_rest_port|EM connection port number (for REST); equal or greater than 0, equal or smaller thatn 65535|Yes|-|INT|-|Operation Execution Functional Part|-|
 |34|No. of REST Requests Average Time|rest_request_average|the unit time (sec) used in calculating the number of REST requests|Yes|3600|INT|sec|Operation Execution Functional Part|-|
 |35|Log File Path|log_file_path|the path where the Processing log file (application.log) is located|Yes|-|TEXT|-|Operation Execution Functional Part|-|
+|36|Internal Link VLAN ID|internal_link_vlanid|VLAN ID for Internal Link IF|Yes|-|INT|-|Operation Execution Functional Part|-|

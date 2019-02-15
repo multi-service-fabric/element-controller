@@ -10,22 +10,22 @@
   - name: add ntp setting file
     shell: touch /var/lib/ntp/drift
   - name: check before add setting
-    find: paths=/etc/rsyslog.conf
+    find: paths=/etc/ntp.conf
           patterns='restrict default ignore'
     register: found_files
-  - name: add rsyslog setting 1
+  - name: add ntp setting 1
     lineinfile:
       dest=/etc/ntp.conf
       insertafter='#restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap'
-      line='server {{ ntp_server_address }} iburst}'
+      line='server {{ ntp_server_address }} iburst'
     when: found_files.matched == 0
-  - name: add rsyslog setting 2
+  - name: add ntp setting 2
     lineinfile:
       dest=/etc/ntp.conf
       insertafter='#restrict 192.168.1.0 mask 255.255.255.0 nomodify notrap'
       line='restrict {{ ntp_server_address }} noquery nomodify'
     when: found_files.matched == 0
-  - name: add rsyslog setting 3
+  - name: add ntp setting 3
     lineinfile:
       dest=/etc/ntp.conf
       insertafter='restrict default nomodify notrap nopeer noquery'

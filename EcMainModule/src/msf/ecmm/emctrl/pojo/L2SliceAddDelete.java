@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import msf.ecmm.emctrl.pojo.parts.DeviceLeaf;
 
 /**
- * L2VLAN IF Batch Generation/Deletion POJO Class
+ * L3VLAN IF Batch Generation/Deletion POJO Class
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "l2-slice")

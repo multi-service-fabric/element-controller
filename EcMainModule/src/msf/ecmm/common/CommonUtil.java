@@ -15,7 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Common Utility.
+ * Common Utility
  */
 public class CommonUtil {
 
@@ -26,11 +26,11 @@ public class CommonUtil {
    * load mitigation of loop or SpinLocks.
    */
   public static void sleep() {
-    sleep(50);
+    sleep(50); 
   }
 
   /**
-   * wait for specified time.
+   * waiting for specified time.
    *
    * @param mills
    *          waiting time (msec)
@@ -68,4 +68,15 @@ public class CommonUtil {
       throw new IllegalArgumentException();
     }
   }
+
+  /**
+   * Padding with zero.
+   * @param input target character string
+   * @param length the entire length
+   * @return target character string padded with zero
+   */
+  public static String zeroPadding(String input, int length) {
+    return String.format("%" + length + "s", input).replace(" ", "0");
+  }
+
 }

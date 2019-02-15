@@ -38,8 +38,8 @@ public abstract class AbstractRestMessage {
    * @param requestType
    *          POJO type
    * @throws JsonSyntaxException
-   *           in case error has occurred in converting POJO -> json
-   * @return json POJO instance in which data is mapped
+   *           In case error has occurred at the time of POJO->json conversion
+   * @return POJO instance in which json data is mapped
    */
   public static AbstractRestMessage createInstance(String jsonMessage, Class<? extends AbstractRestMessage> requestType)
       throws JsonSyntaxException {

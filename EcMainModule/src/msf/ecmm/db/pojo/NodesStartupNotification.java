@@ -7,45 +7,48 @@ package msf.ecmm.db.pojo;
 import java.io.Serializable;
 
 /**
- * Device Start-up Notification Information Table POJO Class.
+ * Device Start-up Notification Information POJO Class.
  */
 public class NodesStartupNotification implements Serializable {
 
   /** Device ID. */
   private String node_id = null;
-  /** Notification Reception Status. */
+  /** Notification reception status. */
   private int notification_reception_status = 0;
 
   /**
-   * Generating new instance.
+   * Device Start-up Notification Information POJO Class Constuctor.
+   *
+   * @param session
+   *          data base session
    */
   public NodesStartupNotification() {
     super();
   }
 
   /**
-   * Getting device ID.
+   * GettingDevice ID.
    *
-   * @return device ID
+   * @return Device ID
    */
   public String getNode_id() {
     return node_id;
   }
 
   /**
-   * Setting device ID.
+   * Setting Device ID.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    */
   public void setNode_id(String node_id) {
     this.node_id = node_id;
   }
 
   /**
-   * Getting device start-up status.
+   * Getting Device Start-up status.
    *
-   * @return device start-up status
+   * @return Device start-up status
    */
   public int getNotification_reception_status() {
     return notification_reception_status;
@@ -55,14 +58,14 @@ public class NodesStartupNotification implements Serializable {
    * Setting device start-up status.
    *
    * @param notification_reception_status
-   *          device start-up status
+   *          Device start-up status
    */
   public void setNotification_reception_status(int notification_reception_status) {
     this.notification_reception_status = notification_reception_status;
   }
 
   /*
-   * (Non-Javadoc)
+   * (Non Javadoc)
    *
    * @see java.lang.Object#hashCode()
    */
@@ -76,7 +79,7 @@ public class NodesStartupNotification implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   * (Non Javadoc)
    *
    * @see java.lang.Object#equals(java.lang.Object)
    */
@@ -102,7 +105,7 @@ public class NodesStartupNotification implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   * (Non Javadoc)
    *
    * @see java.lang.Object#toString()
    */

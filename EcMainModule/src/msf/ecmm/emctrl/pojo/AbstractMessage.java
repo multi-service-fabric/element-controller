@@ -12,16 +12,16 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.LogFormatter;
+import msf.ecmm.emctrl.EmctrlException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
-import msf.ecmm.common.CommonDefinitions;
-import msf.ecmm.common.LogFormatter;
-import msf.ecmm.emctrl.EmctrlException;
 
 /**
  * Message Operation for EM Class.
@@ -32,9 +32,9 @@ public class AbstractMessage {
   private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
 
   /** String Operation Parts (XML Declaration Top). */
-  private static final String XML_START_TAG = "<?xml";
+  protected static final String XML_START_TAG = "<?xml";
   /** String Operation Parts (Close Tag). */
-  private static final String XML_END_TAG = "?>\n";
+  protected static final String XML_END_TAG = "?>\n";
   /** Process Success Response Tag. */
   private static final String SUCCESS_TAG = "ok";
   /** Process Error Response Tag. */

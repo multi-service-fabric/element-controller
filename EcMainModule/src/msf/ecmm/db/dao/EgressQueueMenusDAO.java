@@ -8,34 +8,34 @@ import static msf.ecmm.db.DBAccessException.*;
 
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.EgressQueueMenus;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.EgressQueueMenus;
+
 /**
- * Egress Queue Menu Information DAO Class.
+ * Class which performs DB processing related to the Egress queue menu information.
  */
 public class EgressQueueMenusDAO extends BaseDAO {
 
   /**
-   * Egress Queue Menu Information Class Constructor.
+   * Egress queue menu information constructor.
    *
    * @param session
-   *          data base session
+   *          database session
    */
   public EgressQueueMenusDAO(Session session) {
     this.session = session;
   }
 
   /**
-   * Egress Queue Menu Table INSERT.
+   * Egress queue menu information table INSERT.
    *
    * @param egressQueueMenus
-   *          Egress Queue Menu to be registered
+   *          Egress queue menu information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void save(EgressQueueMenus egressQueueMenus) throws DBAccessException {
     try {
@@ -54,12 +54,12 @@ public class EgressQueueMenusDAO extends BaseDAO {
   }
 
   /**
-   * Egress Queue Menu Information Table DELETE.
+   * Egress queue menu information table DELETE.
    *
    * @param equipment_type_id
-   *          model ID (primary key)
+   *          model type ID(external key)
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void delete(String equipment_type_id) throws DBAccessException {
     try {
@@ -83,13 +83,13 @@ public class EgressQueueMenusDAO extends BaseDAO {
   }
 
   /**
-   * Egress Queue Menu Information Table SELECT.
+   * Egress queue menu information table SELECT.
    *
    * @param equipment_type_id
-   *          model ID(foreign key)
-   * @return Egress Queue Menu information list
+   *          model type ID(external key)
+   * @return egressQueueMenusList Egress queue menu information list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public List<EgressQueueMenus> search(String equipment_type_id) throws DBAccessException {
@@ -103,7 +103,7 @@ public class EgressQueueMenusDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("equipment_type_id select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, EGRESS_QUEUE_MENUS, e1);
+      this.errorMessage(SEARCH_FAILURE, EGRESS_QUEUE_MENUS, e1);
     }
     return egressQueueMenusList;
   }

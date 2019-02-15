@@ -10,13 +10,13 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Rsyslog Related Operations.
@@ -160,8 +160,6 @@ public class SyslogController {
   /**
    * Creating Monitoring Configuration.
    *
-   * @param del
-   *          deletion mode
    * @param lines
    *          contents of rsyslog.conf
    * @param mngAddr

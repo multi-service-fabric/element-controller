@@ -29,7 +29,7 @@ public class EquipmentAddNode {
    * @param equipmentTypeId device ID.
    */
   public void setEquipmentTypeId(String equipmentTypeId) {
-      this.equipmentTypeId = equipmentTypeId;
+    this.equipmentTypeId = equipmentTypeId;
   }
 
   @Override

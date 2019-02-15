@@ -9,24 +9,18 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.VlanIfs;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
+
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.VlanIfs;
 
 /**
  * The class in which VLANIF information related DB process is performed.
  */
 public class VlanIfsDAO extends BaseDAO {
 
-  /**
-   * VLANIF Information Class Constructor.
-   *
-   * @param session
-   *          data base session
-   */
   public VlanIfsDAO(Session session) {
     this.session = session;
   }
@@ -149,7 +143,7 @@ public class VlanIfsDAO extends BaseDAO {
   }
 
   /**
-   * VLAN IF IP Information Table UPDATE(Name).
+   * VLAN IF IP Information Table UPDATE.
    *
    * @param vlanIfs
    *          VLANIF information
@@ -196,13 +190,13 @@ public class VlanIfsDAO extends BaseDAO {
         VlanIfs vlanIfs = this.search(node_id, vlan_if_id);
         if (vlanIfs == null) {
           this.errorMessage(NO_DELETE_TARGET, VLAN_IFS, null);
-        }
+        } 
         query = session.getNamedQuery("deleteVlanIfs");
         query.setString("key2", vlan_if_id);
       } else {
         List<VlanIfs> vlanIfsList = this.getList(node_id);
         if (vlanIfsList == null) {
-          if (check) {
+          if (check) { 
             return;
           }
           this.errorMessage(NO_DELETE_TARGET, VLAN_IFS, null);
@@ -240,7 +234,7 @@ public class VlanIfsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("vlanIfs select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, VLAN_IFS, e1);
+      this.errorMessage(SEARCH_FAILURE, VLAN_IFS, e1);
     }
     return vlanIfsList;
   }
@@ -272,7 +266,7 @@ public class VlanIfsDAO extends BaseDAO {
       }
     } catch (Throwable e1) {
       logger.debug("vlanIfs select failed.", e1);
-      this.errorMessage(SERCH_FAILURE, VLAN_IFS, e1);
+      this.errorMessage(SEARCH_FAILURE, VLAN_IFS, e1);
     }
     return vlanIfs;
 

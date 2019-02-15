@@ -10,11 +10,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import msf.ecmm.common.CommonDefinitions;
-import msf.ecmm.config.EcConfiguration;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.config.EcConfiguration;
 
 /**
  * Number of REST Transmission Management Class Definition. Managing the number of transmissions on REST communication.

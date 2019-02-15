@@ -9,22 +9,22 @@ package msf.ecmm.devctrl.pojo;
  */
 public class SnmpIfOperStatus {
 
-  /** ifOperStatus : 1 - Up. */
+  /** ifOperStatus : 1 - Up */
   public static final int IF_OPER_STATUS_UP = 1;
 
-  /** ifOperStatus : 2 - Down. */
+  /** ifOperStatus : 2 - Down */
   public static final int IF_OPER_STATUS_DOWN = 2;
 
-  /** ifOperStatus : 3 - Testing. */
+  /** ifOperStatus : 3 - Testing */
   public static final int IF_OPER_STATUS_TESTING = 3;
 
-  /** ifOperStatus : 7 - LowerLayerDown. */
+  /** ifOperStatus : 7 - LowerLayerDown */
   public static final int IF_OPER_STATUS_LOWER_LAYER_DOWN = 7;
 
-  /** IF Name. */
+  /** IF Name */
   private String ifName;
 
-  /** ifOperStatus. */
+  /** ifOperStatus */
   private int ifOperStatus;
 
   /**

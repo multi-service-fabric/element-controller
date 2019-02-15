@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Device Information Class.
+ * Device information class.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "device")

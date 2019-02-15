@@ -14,10 +14,13 @@ import msf.ecmm.ope.receiver.pojo.CheckDataException;
  */
 public class Ztp {
 
-  /** dhcp.conf Template File Path. */
+  /** Replaced device initial injection configuration file layout directory separator. */
+  public static final String INITIAL_DIR_DELIMITER = ":";
+
+  /** dhcp.conf template file layout directory list. */
   private String dhcpTemplate;
 
-  /** Device Initail Injection Configuration Template File Path. */
+  /** Device Initail Injection Configuration Template File Layout Directory List. */
   private String configTemplate;
 
   /** Device Initial Injection Configuration File. */
@@ -49,38 +52,38 @@ public class Ztp {
   }
 
   /**
-   * Getting device initial injection configuration template file path.
+   * Getting device initial injection configuration template file layout directory list.
    *
-   * @return device initial injection configuration template file path
+   * @return device initial injection configuration template file directory list
    */
   public String getConfigTemplate() {
     return configTemplate;
   }
 
   /**
-   * Setting device initial injection configuration template file path.
+   * Setting device initial injection configuration template file layout directry list.
    *
    * @param configTemplate
-   *          device initial injection configuration template file path
+   *          Setting device initial injection configuration template file layout directory list
    */
   public void setConfigTemplate(String configTemplate) {
     this.configTemplate = configTemplate;
   }
 
   /**
-   * Getting device initial injection configuration file.
+   * Getting device initial injection configuration template file directory list.
    *
-   * @return device initial injection configuration file
+   * @return device initial injection configuration template file directory list
    */
   public String getInitialConfig() {
     return initialConfig;
   }
 
   /**
-   * Setting device initial injection configuration file.
+   * Setting device initial injection configuration template file directory list.
    *
    * @param initialConfig
-   *          device initial injection configuration file
+   *          device initial injection configuration template file directory list
    */
   public void setInitialConfig(String initialConfig) {
     this.initialConfig = initialConfig;
@@ -154,6 +157,9 @@ public class Ztp {
       throw new CheckDataException();
     }
     if (bootCompleteMsg == null) {
+      throw new CheckDataException();
+    }
+    if (configTemplate.split(INITIAL_DIR_DELIMITER).length != initialConfig.split(INITIAL_DIR_DELIMITER).length) {
       throw new CheckDataException();
     }
   }

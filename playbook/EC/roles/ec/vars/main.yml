@@ -1,8 +1,6 @@
 folder_name_lib: 'lib'
 folder_name_conf: 'conf'
 folder_name_bin: 'bin'
-#folder_name_src: 'src'
-folder_name_src: ''
 
 file_list:
   - file_name: 'antlr-2.7.7.jar'
@@ -92,7 +90,7 @@ file_list:
   - file_name: 'slf4j-simple-1.7.21.jar'
     url: 'http://central.maven.org/maven2/org/slf4j/slf4j-simple/1.7.21/slf4j-simple-1.7.21.jar'
   - file_name: 'NetConf.jar'
-    url: 'https://github.com/multi-service-fabric/element-controller/raw/master/Netconf.jar'
+    url: 'https://github.com/multi-service-fabric/element-controller/raw/master/NetConf.jar'
 
 script_list:
   - file_name: 'ec_ctl.sh'
@@ -103,8 +101,11 @@ script_list:
     url: 'https://github.com/multi-service-fabric/element-controller/raw/master/script/SnmptrapdShell/linkdown.sh'
   - file_name: 'linkup.sh'
     url: 'https://github.com/multi-service-fabric/element-controller/raw/master/script/SnmptrapdShell/linkup.sh'
-  - file_name: 'controller_status.sh '
+  - file_name: 'controller_status.sh'
     url: 'https://github.com/multi-service-fabric/element-controller/raw/master/script/ControllerStatusShell/controller_status.sh'
+  - file_name: 'CumulusVlanTraffic.sh'
+    url: 'https://github.com/multi-service-fabric/element-controller/raw/master/script/VlanTrafficShell/CumulusVlanTraffic.sh'
+
 
 conf_list:
   - file_name: 'ec_main.conf '
@@ -113,9 +114,12 @@ conf_list:
     url: 'https://github.com/multi-service-fabric/element-controller/raw/master/EcMainModule/conf/log4j2.xml'
   - file_name: 'hibernate.cfg.xml'
     url: 'https://github.com/multi-service-fabric/element-controller/raw/master/EcMainModule/conf/hibernate.cfg.xml'
+  - file_name: 'extend_operation.conf'
+    url: 'https://github.com/multi-service-fabric/element-controller/raw/master/EcMainModule/conf/extend_operation.conf'
+
 
 src_list:
-  - file_name: 'msf'
+  - file_name: 'master.tar.gz'
     url: 'https://github.com/multi-service-fabric/element-controller/archive/master.tar.gz'
   - file_name: 'jar_create.sh'
     url: 'https://github.com/multi-service-fabric/element-controller/raw/master/jar_create.sh'

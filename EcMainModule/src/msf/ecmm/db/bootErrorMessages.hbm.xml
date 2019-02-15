@@ -3,7 +3,7 @@
     "-//Hibernate/Hibernate Configuration DTD//EN"
     "hibernate-core-5.0.10.Final.jar">
 
-    <!-- Start-up Failure Determination Message Information Class -->
+    <!-- Start-up Failure Judgment Message Information Class -->
 
 <hibernate-mapping>
     <class name="msf.ecmm.db.pojo.BootErrorMessages" table="boot_error_msgs" lazy="true">

@@ -21,6 +21,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.input.ReversedLinesFileReader;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
@@ -37,11 +42,6 @@ import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.GetControllerLog;
-
-import org.apache.commons.io.input.ReversedLinesFileReader;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 /**
  * Controller Log Acquisition.
@@ -274,10 +274,10 @@ public class ECMainLogAcquisition extends Operation {
 
     boolean result = true;
 
-    if (!getUriKeyMap().containsKey(KEY_CONTROLLER)) {
+    if (!getUriKeyMap().containsKey(KEY_CONTROLLER)) { 
       result = false;
     }
-    if (result && !getUriKeyMap().containsKey(KEY_START_DATE)) {
+    if (result && !getUriKeyMap().containsKey(KEY_START_DATE)) { 
       result = false;
     } else {
       String keyStartDate = getUriKeyMap().get(KEY_START_DATE);
@@ -287,7 +287,7 @@ public class ECMainLogAcquisition extends Operation {
         result = false;
       }
     }
-    if (result && !getUriKeyMap().containsKey(KEY_END_DATE)) {
+    if (result && !getUriKeyMap().containsKey(KEY_END_DATE)) { 
       result = false;
     } else {
       String keyEndDate = getUriKeyMap().get(KEY_END_DATE);
@@ -297,7 +297,7 @@ public class ECMainLogAcquisition extends Operation {
         result = false;
       }
     }
-    if (result && !getUriKeyMap().containsKey(KEY_LIMIT_NUMBER)) {
+    if (result && !getUriKeyMap().containsKey(KEY_LIMIT_NUMBER)) { 
       result = false;
     } else {
       String limitNumber = getUriKeyMap().get(KEY_LIMIT_NUMBER);

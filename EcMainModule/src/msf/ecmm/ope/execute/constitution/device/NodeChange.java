@@ -19,6 +19,7 @@ import msf.ecmm.emctrl.EmctrlException;
 import msf.ecmm.emctrl.pojo.AbstractMessage;
 import msf.ecmm.emctrl.pojo.BLeafAddDelete;
 import msf.ecmm.ope.execute.Operation;
+import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.ChangeNode;
@@ -113,7 +114,7 @@ public abstract class NodeChange extends Operation {
 
     ChangeNode changeNode = (ChangeNode) getInData();
     try {
-      changeNode.check(getOperationType());
+      changeNode.check(new OperationType(getOperationType()));
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);
       checkResult = false;

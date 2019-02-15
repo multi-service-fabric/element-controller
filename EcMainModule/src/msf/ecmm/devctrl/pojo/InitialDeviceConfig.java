@@ -10,7 +10,7 @@ package msf.ecmm.devctrl.pojo;
 public class InitialDeviceConfig {
 
   /** Device initial config file template path */
-  private String configTemplete;
+  private String configTemplate;
 
   /** Initial config file path for Zero touch config */
   private String initialConfig;
@@ -31,12 +31,10 @@ public class InitialDeviceConfig {
   private String belongingSideMembers;
 
   /**
-   * Constructor.
+   * Setting initial device configrations.
    *
-   * @param configTemplete
+   * @param configTemplate
    *          Device initial config file template path
-   * @param initialConfig
-   *          Initial config file path for Zero touch config
    * @param deviceManagementAddress
    *          device management IF address
    * @param ntpServerAddress
@@ -48,11 +46,11 @@ public class InitialDeviceConfig {
    * @param devicemanagementCidraddress
    *          management IF prefix
    */
-  public InitialDeviceConfig(String configTemplete, String initialConfig, String deviceManagementAddress,
+  public InitialDeviceConfig(String configTemplate, String initialConfig, String deviceManagementAddress,
       String ntpServerAddress, String commmunityMembers, String belongingSideMembers,
       Integer devicemanagementCidraddress) {
     super();
-    this.configTemplete = configTemplete;
+    this.configTemplate = configTemplate;
     this.initialConfig = initialConfig;
     this.deviceManagementAddress = deviceManagementAddress;
     this.devicemanagementCidraddress = devicemanagementCidraddress;
@@ -66,24 +64,23 @@ public class InitialDeviceConfig {
    *
    * @return Device initial config file template path
    */
-  public String getConfigTemplete() {
-    return configTemplete;
+  public String getConfigTemplate() {
+    return configTemplate;
   }
 
   /**
    * Setting Device initial config file template path.
    *
-   * @param configTemplete
-   *                Device initial config file template path
+   * @param configTemplate
    */
-  public void setConfigTemplete(String configTemplete) {
-    this.configTemplete = configTemplete;
+  public void setConfigTemplate(String configTemplate) {
+    this.configTemplate = configTemplate;
   }
 
   /**
    * Getting Initial config file path for Zero touch config.
    *
-   * @return Initial config file path for Zero touch config
+   * @return
    */
   public String getInitialConfig() {
     return initialConfig;
@@ -93,7 +90,6 @@ public class InitialDeviceConfig {
    * Setting Initial config file path for Zero touch config.
    *
    * @param initialConfig
-   *                Initial config file path for Zero touch config
    */
   public void setInitialConfig(String initialConfig) {
     this.initialConfig = initialConfig;
@@ -112,7 +108,7 @@ public class InitialDeviceConfig {
    * Setting device management IF address..
    *
    * @param deviceManagementAddress
-   *          device management IF address
+   *          Device management IF
    */
   public void setDeviceManagementAddress(String deviceManagementAddress) {
     this.deviceManagementAddress = deviceManagementAddress;
@@ -201,7 +197,7 @@ public class InitialDeviceConfig {
    */
   @Override
   public String toString() {
-    return "InitialDeviceConfig [configTemplete=" + configTemplete + ", deviceManagementAddress="
+    return "InitialDeviceConfig [configTemplate=" + configTemplate + ", deviceManagementAddress="
         + deviceManagementAddress + ", devicemanagementCidraddress=" + devicemanagementCidraddress
         + ", ntpServerAddress=" + ntpServerAddress + ", commmunitymembers=" + commmunityMembers
         + ", belongingsidemembers=" + belongingSideMembers + "]";

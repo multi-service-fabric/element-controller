@@ -1,5 +1,5 @@
-﻿/**
- * EC Inter-Device IF Control Functional Part (POJO)
+/**
+ * EC-Device IF Control Function Part(POJO)
  */
 
 package msf.ecmm.devctrl.pojo;

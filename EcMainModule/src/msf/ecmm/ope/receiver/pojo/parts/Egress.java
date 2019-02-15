@@ -13,7 +13,7 @@ import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.CheckDataException;
 
 /**
- * Egress Queue Menu Configuration Rest Class.
+ * Egress Queue Menu Configuration Rest POJO Class.
  */
 public class Egress {
 

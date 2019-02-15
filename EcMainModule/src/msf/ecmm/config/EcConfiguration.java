@@ -98,6 +98,8 @@ public class EcConfiguration {
   public static final String EM_REST_PORT = "em_rest_port";
   /** Log File Path. */
   public static final String LOG_FILE_PATH = "log_file_path";
+  /** Internal Link VLANID. */
+  public static final String INTERNAL_LINK_VLANID = "internal_link_vlanid";
 
   /** Own Class Instance. */
   private static EcConfiguration me = new EcConfiguration();
@@ -139,8 +141,8 @@ public class EcConfiguration {
     properties = new Properties();
     try (FileInputStream fis = new FileInputStream(filename)) {
       properties.load(new InputStreamReader(fis, "utf8"));
-    } catch (IOException e) {
-      throw new Exception("config file not found", e);
+    } catch (IOException ioe) {
+      throw new Exception("config file not found", ioe);
     }
 
     boolean ret = this.validate();
@@ -202,6 +204,7 @@ public class EcConfiguration {
     requiredParameterMap.put(EM_REST_ADDRESS, new InnerConfigCheck());
     requiredParameterMap.put(EM_REST_PORT, new InnerConfigCheck());
     requiredParameterMap.put(LOG_FILE_PATH, new InnerConfigCheck());
+    requiredParameterMap.put(INTERNAL_LINK_VLANID, new InnerConfigCheck());
 
     for (Object key : properties.keySet()) {
 
@@ -463,6 +466,12 @@ public class EcConfiguration {
           requiredParameterMap.get(LOG_FILE_PATH).checkRet = true;
         }
       }
+      else if (key.equals(INTERNAL_LINK_VLANID)) {
+        requiredParameterMap.get(INTERNAL_LINK_VLANID).checkExec = true;
+        if (checkInteger((String) key, 0, Integer.MAX_VALUE, true)) {
+          requiredParameterMap.get(INTERNAL_LINK_VLANID).checkRet = true;
+        }
+      }
     }
 
     for (Map.Entry<String, InnerConfigCheck> keyValue : requiredParameterMap.entrySet()) {
@@ -512,8 +521,8 @@ public class EcConfiguration {
           value = (T) new Integer(Integer.parseInt(tmp));
         }
       }
-    } catch (NumberFormatException e) {
-      logger.error(LogFormatter.out.format(LogFormatter.MSG_508032, key, tmp), e);
+    } catch (NumberFormatException nfe) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_508032, key, tmp), nfe);
     }
     return value;
   }
@@ -573,9 +582,9 @@ public class EcConfiguration {
           }
           ret = false;
         }
-      } catch (NumberFormatException | SecurityException | ClassCastException e) {
+      } catch (NumberFormatException | SecurityException | ClassCastException exp) {
         if (msg) {
-          logger.error(LogFormatter.out.format(LogFormatter.MSG_508032, key, val), e);
+          logger.error(LogFormatter.out.format(LogFormatter.MSG_508032, key, val), exp);
         }
         ret = false;
       }
@@ -587,9 +596,13 @@ public class EcConfiguration {
    * Inner Class for Configuration Data Check.
    */
   protected class InnerConfigCheck {
+    /** Check for mandatory/optional。ァMandatory (true)/ Optional(false). */
     private Boolean requiredCheck = true;
+    /** Checked/ Not checked。ァChecked(true)/ Not checked(false). */
     private Boolean checkExec = false;
+    /** Check results。ァNormal(true)/ Abnormal(false). */
     private Boolean checkRet = false;
+    /** Default value. */
     private String defaultValue = "";
 
     /**

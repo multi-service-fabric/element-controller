@@ -5,15 +5,15 @@
 package msf.ecmm.devctrl;
 
 /**
- * Device Operation Related Error Occurs.
+ * Abnormality occurs at device operation relations
  */
 public class DevctrlException extends Exception {
 
   /**
-   * Constructor.
+   * Cobstructor
    *
    * @param string
-   *          error contents
+   *          Error contents
    */
   public DevctrlException(String string) {
     super(string);

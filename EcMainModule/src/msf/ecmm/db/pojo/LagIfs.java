@@ -91,7 +91,7 @@ public class LagIfs implements Serializable {
    * Setting LagIF ID.
    *
    * @param fc_lag_if_id
-   *          FC LagIF ID
+   *          fc_lag_if_id to be set
    */
   public void setFc_lag_if_id(String fc_lag_if_id) {
     this.fc_lag_if_id = fc_lag_if_id;
@@ -130,6 +130,8 @@ public class LagIfs implements Serializable {
    *
    * @param minimum_link_num the min. number of link
    *
+   * @param minimum_link_num
+   *          Min. number of links
    */
   public void setMinimum_link_num(int minimum_link_num) {
     this.minimum_link_num = minimum_link_num;
@@ -229,6 +231,7 @@ public class LagIfs implements Serializable {
   public void setLagMembersList(Set<LagMembers> lagMembersList) {
     this.lagMembersList = lagMembersList;
   }
+
   /*
    * (Non-Javadoc)
    *
@@ -274,7 +277,7 @@ public class LagIfs implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   * Stringizing instance
    *
    * @see java.lang.Object#toString()
    */

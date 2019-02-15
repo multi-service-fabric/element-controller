@@ -17,5 +17,5 @@
     shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/net-snmp-agent-libs-5.7.2-24.el7_2.1.x86_64.rpm
   - name: net-snmp install 8
     shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/net-snmp-5.7.2-24.el7_2.1.x86_64.rpm
-  - name: replace net-snmp setting
+  - name: replace net-snmp setting 1
     replace: dest=/usr/lib/systemd/system/snmptrapd.service regexp='ExecStart=/usr/sbin/snmptrapd \$OPTIONS -f' replace='ExecStart=/usr/sbin/snmptrapd -On $OPTIONS -f'

@@ -14,6 +14,8 @@ import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.DummyVlanIfs;
+import msf.ecmm.db.pojo.IRBInstanceInfo;
 import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.VlanIfs;
 import msf.ecmm.ope.execute.Operation;
@@ -66,9 +68,17 @@ public class VlanIfInfoAcquisition extends Operation {
     try (DBAccessManager session = new DBAccessManager()) {
 
       VlanIfs vlanIfsDb = session.searchVlanIfs(nodeId, vlanIfId);
+      DummyVlanIfs dummyVlanIfsDb = session.searchDummyVlanIfsInfo(nodeId, vlanIfId);
+      IRBInstanceInfo irbInstance = null;
+      if (null != vlanIfsDb) {
+        irbInstance = session.searchIrbInstanceInfo(nodeId, vlanIfsDb.getVlan_id());
+      } else if (null != dummyVlanIfsDb) {
+        irbInstance = session.searchIrbInstanceInfo(nodeId, dummyVlanIfsDb.getVlan_id());
+      }
+
       Nodes nodes = session.searchNodes(nodeId, null);
 
-      if (vlanIfsDb == null) {
+      if (vlanIfsDb == null && dummyVlanIfsDb == null) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [VlanIfs]"));
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_400201);
       }
@@ -77,7 +87,11 @@ public class VlanIfInfoAcquisition extends Operation {
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_400201);
       }
 
-      getVlanIf = RestMapper.toVlanIfsInfo(vlanIfsDb, nodes);
+      if (null != vlanIfsDb) {
+        getVlanIf = RestMapper.toVlanIfsInfo(vlanIfsDb, nodes, irbInstance);
+      } else if (null != dummyVlanIfsDb) {
+        getVlanIf = RestMapper.toVlanIfsInfoFromDummyIfs(dummyVlanIfsDb, nodes, irbInstance);
+      }
 
       response = makeSuccessResponse(RESP_OK_200, getVlanIf);
 

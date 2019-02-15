@@ -31,9 +31,7 @@ public class Qos {
   private XmlStringElement egressMenu = null;
 
   /**
-   * Getting attribute data of ospf.
-   *
-   * @return attribute data of device.
+   * Generating new instance.
    */
   public Qos() {
     super();

@@ -18,11 +18,26 @@ public class UpdateVlanIfs {
   /** Device ID. */
   private String nodeId = null;
 
-  /** ESI Value. */
+  /** IF information to which VLAN IF is created */
+  private BaseIfCreateVlanIf baseIf = null;
+
+  /** ESI value. */
   private String esi = null;
 
   /** LACP system-id. */
   private String lacpSystemId = null;
+
+  /** clag-id value to be configured. */
+  private Integer clagId = null;
+
+  /** VLAN port mode. */
+  private String portMode = null;
+
+  /** QOS configuration get set. */
+  private QosValues qos = null;
+
+  /** IRB instance configuration. */
+  private IrbUpdateValue irb = null;
 
   /**
    * Getting the ID of VLAN IF to be controlled.
@@ -60,6 +75,25 @@ public class UpdateVlanIfs {
    */
   public void setNodeId(String nodeId) {
     this.nodeId = nodeId;
+  }
+
+  /**
+   * Getting IF information to which VLAN IF is created.
+   *
+   * @return baseIf
+   */
+  public BaseIfCreateVlanIf getBaseIf() {
+    return baseIf;
+  }
+
+  /**
+   * Setting IF information to which VLAN IF is created.
+   *
+   * @param baseIf
+   *          Setting baseIf
+   */
+  public void setBaseIf(BaseIfCreateVlanIf baseIf) {
+    this.baseIf = baseIf;
   }
 
   /**
@@ -101,22 +135,98 @@ public class UpdateVlanIfs {
   }
 
   /**
-   * Stringizing Instance.
+   * Getting clag-id value.
    *
+   * @return clagId
    */
-  @Override
-  public String toString() {
-    return "UpdateVlanIfs [vlanIfId=" + vlanIfId + ", nodeId=" + nodeId + ", esi=" + esi + ", lacpSystemId="
-        + lacpSystemId + "]";
+  public Integer getClagId() {
+    return clagId;
   }
 
   /**
-   * Input Parameter Check.
+   * Setting clag-id value.
+   *
+   * @param clagId
+   *          Setting clagId
+   */
+  public void setClagId(Integer clagId) {
+    this.clagId = clagId;
+  }
+
+  /**
+   * Getting portMode.
+   *
+   * @return portMode
+   */
+  public String getPortMode() {
+    return portMode;
+  }
+
+  /**
+   * Setting portMode.
+   *
+   * @param portMode
+   *          Setting portMode
+   */
+  public void setPortMode(String portMode) {
+    this.portMode = portMode;
+  }
+
+  /**
+   * Getting QOS configuration.
+   *
+   * @return qos
+   */
+  public QosValues getQos() {
+    return qos;
+  }
+
+  /**
+   * Setting QOS configuration.
+   *
+   * @param qos
+   *          Setting qos
+   */
+  public void setQos(QosValues qos) {
+    this.qos = qos;
+  }
+
+  /**
+   * Getting IRB instance information.
+   *
+   * @return irb
+   */
+  public IrbUpdateValue getIrbValue() {
+    return irb;
+  }
+
+  /**
+   * Setting IRB instance information.
+   *
+   * @param irb
+   *          Setting irb
+   */
+  public void setIrbValue(IrbUpdateValue irb) {
+    this.irb = irb;
+  }
+
+  /* (Non Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "UpdateVlanIfs [vlanIfId=" + vlanIfId + ", nodeId=" + nodeId + ", baseIf=" + baseIf + ", esi=" + esi
+        + ", lacpSystemId=" + lacpSystemId + ", clagId=" + clagId + ", portMode=" + portMode + ", qos=" + qos
+        + ", irb=" + irb + "]";
+  }
+
+  /**
+   * Input parameter check.
    *
    * @param ope
-   *          operation type
+   *          Operation type
    * @throws CheckDataException
-   *           input check error
+   *           Input check error
    */
   public void check(OperationType ope) throws CheckDataException {
     if (vlanIfId == null) {
@@ -125,11 +235,11 @@ public class UpdateVlanIfs {
     if (nodeId == null) {
       throw new CheckDataException();
     }
-    if (esi == null) {
-      throw new CheckDataException();
+    if (baseIf != null) {
+      baseIf.check(ope);
     }
-    if (lacpSystemId == null) {
-      throw new CheckDataException();
+    if (irb != null) {
+      irb.check(ope);
     }
   }
 

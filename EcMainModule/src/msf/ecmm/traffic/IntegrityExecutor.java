@@ -130,7 +130,7 @@ public class IntegrityExecutor extends Thread {
             if (check.getIfs() != null) {
               try (DBAccessManager updateSession = new DBAccessManager()) {
                 for (IfsLogical ifs : check.getIfs()) {
-                  logger.trace("IF status_DB update process START");
+                  logger.trace("IF status DB update START");
                   session.startTransaction();
                   PhysicalIfs physicalIfs = new PhysicalIfs();
                   LagIfs lagIfs = new LagIfs();
@@ -179,11 +179,11 @@ public class IntegrityExecutor extends Thread {
                   }
                   session.commit();
                 }
-                logger.trace("IF status_DB update process END");
+                logger.trace("IF Status DB update END");
               } catch (DBAccessException db) {
-                logger.debug("DB access error when IF status_DB update process", db);
+                logger.debug("IF Status DB update DB ERROR", db);
               } catch (Exception db) {
-                logger.debug("Other error when IF status_DB update process", db);
+                logger.debug("IF Status DB update other ERROR", db);
               }
             }
             RestClient resultFc = new RestClient();
@@ -195,7 +195,7 @@ public class IntegrityExecutor extends Thread {
       } else {
       }
     } catch (Exception e1) {
-      logger.trace("error contents", e1);
+      logger.trace("Error Contents", e1);
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_407043));
     }
 
@@ -277,7 +277,7 @@ public class IntegrityExecutor extends Thread {
               ret.getNodes().add(tmpstate);
             }
           } catch (DevctrlException e1) {
-            logger.trace("node failure occurred");
+            logger.trace("Node Failure");
             if (NODE_STATE_OPERATION == node.getEquipmentsData().getNode_state()) {
               String nodeid = node.getEquipmentsData().getNode_id();
               int nodestate = NODE_STATE_MALFUNCTION;
@@ -290,7 +290,7 @@ public class IntegrityExecutor extends Thread {
               ret.getNodes().add(tmpstate);
             }
           }
-        } else {
+        } else { 
           ifStateFromDevice.put(node, ifStateFromDevice.get(tmpNode));
         }
         if (node.getEquipmentsType().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {

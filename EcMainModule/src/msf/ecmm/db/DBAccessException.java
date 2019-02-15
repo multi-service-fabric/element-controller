@@ -4,11 +4,11 @@
 
 package msf.ecmm.db;
 
-import msf.ecmm.common.CommonDefinitions;
-import msf.ecmm.common.LogFormatter;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.LogFormatter;
 
 /**
  * DB Exception Class.
@@ -36,7 +36,7 @@ public class DBAccessException extends Exception {
   /** No deletion target. */
   public static final int NO_DELETE_TARGET = 3;
   /** DB search failed. */
-  public static final int SERCH_FAILURE = 4;
+  public static final int SEARCH_FAILURE = 4;
   /** DB registration failed. */
   public static final int INSERT_FAILURE = 5;
   /** DB update failed. */

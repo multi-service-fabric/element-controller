@@ -46,7 +46,9 @@ public class Nodes implements Serializable {
   private String host_name = null;
   /** MAC Address. */
   private String mac_addr = null;
-  /** Model Information Table. */
+  /** IRB configuration type. */
+  private String irb_type = null;
+  /** Model information table. */
   private Equipments equipments;
   /** Device Start-up Notification Information Table. */
   private Set<NodesStartupNotification> nodesStartupNotificationList;
@@ -141,7 +143,7 @@ public class Nodes implements Serializable {
   /**
    * Getting management IF address prefix.
    *
-   * @return management IF address prefix
+   * @return mng_if_addr_prefix
    */
   public int getMng_if_addr_prefix() {
     return mng_if_addr_prefix;
@@ -151,7 +153,7 @@ public class Nodes implements Serializable {
    * Setting management IF address prefix.
    *
    * @param mng_if_addr_prefix
-   *          management IF address prefix
+   *          mng_if_addr_prefix to be set
    */
   public void setMng_if_addr_prefix(int mng_if_addr_prefix) {
     this.mng_if_addr_prefix = mng_if_addr_prefix;
@@ -252,11 +254,10 @@ public class Nodes implements Serializable {
     this.vpn_type = vpn_type;
   }
 
-
   /**
    * Getting AS number.
    *
-   * @return AS number
+   * @return as_number
    */
   public String getAs_number() {
     return as_number;
@@ -266,7 +267,7 @@ public class Nodes implements Serializable {
    * Setting AS number.
    *
    * @param as_number
-   *          AS number
+   *          Set as_number
    */
   public void setAs_number(String as_number) {
     this.as_number = as_number;
@@ -387,7 +388,26 @@ public class Nodes implements Serializable {
   }
 
   /**
-   * Getting model information.
+   * Getting IRB configuration type.
+   *
+   * @return IRB configuration type
+   */
+  public String getIrb_type() {
+    return irb_type;
+  }
+
+  /**
+   * Set IRB configuration type.
+   *
+   * @param irb_type
+   *          IRB configuration type
+   */
+  public void setIrb_type(String irb_type) {
+    this.irb_type = irb_type;
+  }
+
+  /**
+   * Acquire model information.
    *
    * @return model information
    */
@@ -396,7 +416,7 @@ public class Nodes implements Serializable {
   }
 
   /**
-   * Setting model information.
+   * Set model information.
    *
    * @param equipments
    *          model information
@@ -503,7 +523,7 @@ public class Nodes implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   * Stringize instance
    *
    * @see java.lang.Object#toString()
    */
@@ -514,9 +534,9 @@ public class Nodes implements Serializable {
         + ", snmp_community=" + snmp_community + ", node_state=" + node_state + ", provisioning=" + provisioning
         + ", plane=" + plane + ", vpn_type=" + vpn_type + ", as_number=" + as_number + ", loopback_if_address="
         + loopback_if_address + ", username=" + username + ", password=" + password + ", ntp_server_address="
-        + ntp_server_address + ", host_name=" + host_name + ", mac_addr=" + mac_addr + ", equipments=" + equipments
-        + ", nodesStartupNotificationList=" + nodesStartupNotificationList + ", physicalIfsList=" + physicalIfsList
-        + ", lagIfsList=" + lagIfsList + "]";
+        + ntp_server_address + ", host_name=" + host_name + ", mac_addr=" + mac_addr + ", irb_type=" + irb_type
+        + ", equipments=" + equipments + ", nodesStartupNotificationList=" + nodesStartupNotificationList
+        + ", physicalIfsList=" + physicalIfsList + ", lagIfsList=" + lagIfsList + "]";
   }
 
 }

@@ -9,9 +9,7 @@ package msf.ecmm.fcctrl.pojo.parts;
  */
 public class Controller {
 
-  /**
-   * Server Machine Resource Information
-   */
+  /** Controller Type. */
   private String controller_type;
 
   /** Occurred Event. */

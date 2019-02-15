@@ -1,28 +1,35 @@
 CREATE TABLE equipments (
-    equipment_type_id                    text         NOT NULL,
-    lag_prefix                           text         NOT NULL,
-    unit_connector                       varchar(2)   NOT NULL,
-    if_name_oid                          text         NOT NULL,
-    snmptrap_if_name_oid                 text,
-    max_repetitions                      integer      NOT NULL,
-    platform_name                        text         NOT NULL,
-    os_name                              text         NOT NULL,
-    firmware_version                     text         NOT NULL,
-    router_type                          integer      NOT NULL,
-    core_router_physical_if_name_format  text,
-    breakout_if_name_syntax              text,
-    breakout_if_name_suffix_list         text,
-    dhcp_template                        text         NOT NULL,
-    config_template                      text         NOT NULL,
-    initial_config                       text         NOT NULL,
-    boot_complete_msg                    text         NOT NULL,
-    evpn_capability                      boolean      NOT NULL,
-    l2vpn_capability                     boolean      NOT NULL,
-    l3vpn_capability                     boolean      NOT NULL,
-    qos_shaping_flg                      boolean      NOT NULL,
-    qos_remark_flg                       boolean      NOT NULL,
-    default_remark_menu                  text,
-    default_egress_queue_menu            text,
+    equipment_type_id                            text         NOT NULL,
+    lag_prefix                                   text         NOT NULL,
+    unit_connector                               varchar(2)   NOT NULL,
+    if_name_oid                                  text         NOT NULL,
+    snmptrap_if_name_oid                         text,
+    max_repetitions                              integer      NOT NULL,
+    platform_name                                text         NOT NULL,
+    os_name                                      text         NOT NULL,
+    firmware_version                             text         NOT NULL,
+    router_type                                  integer      NOT NULL,
+    core_router_physical_if_name_format          text,
+    breakout_if_name_syntax                      text,
+    breakout_if_name_suffix_list                 text,
+    dhcp_template                                text         NOT NULL,
+    config_template                              text         NOT NULL,
+    initial_config                               text         NOT NULL,
+    boot_complete_msg                            text         NOT NULL,
+    evpn_capability                              boolean      NOT NULL,
+    l2vpn_capability                             boolean      NOT NULL,
+    l3vpn_capability                             boolean      NOT NULL,
+    qos_shaping_flg                              boolean      NOT NULL,
+    qos_remark_flg                               boolean      NOT NULL,
+    default_remark_menu                          text,
+    default_egress_queue_menu                    text,
+    same_vlan_number_traffic_total_value_flag    text,
+    vlan_traffic_capability                      text,
+    vlan_traffic_counter_name_mib_oid            text,
+    vlan_traffic_counter_value_mib_oid           text,
+    cli_exec_path                                text,
+    irb_asymmetric_capability                    boolean,
+    irb_symmetric_capability                     boolean,
     PRIMARY KEY(equipment_type_id)
 );
 
@@ -79,6 +86,7 @@ CREATE TABLE nodes (
     ntp_server_address                   text         NOT NULL,
     host_name                            text         NOT NULL,
     mac_addr                             varchar(17)  NOT NULL,
+    irb_type                             text,
     PRIMARY KEY(node_id),
     UNIQUE (mac_addr),
     FOREIGN KEY(equipment_type_id) REFERENCES equipments(equipment_type_id)
@@ -161,6 +169,7 @@ CREATE TABLE vlan_ifs (
     outflow_shaping_rate                 float,
     remark_menu                          text,
     egress_queue_menu                    text,
+    irb_instance_id                      text,
     PRIMARY KEY(node_id, vlan_if_id),
     FOREIGN KEY(node_id, physical_if_id) REFERENCES physical_ifs(node_id, physical_if_id),
     FOREIGN KEY(node_id, lag_if_id)      REFERENCES lag_ifs(node_id, lag_if_id),
@@ -206,3 +215,61 @@ CREATE TABLE system_status (
     service_status                       integer      NOT NULL
 );
 
+--CREATE TABLE operation_phase (
+--    node_name                            text         NOT NULL,
+--    phase                                Integer      NOT NULL
+--);
+
+CREATE TABLE dummy_vlan_ifs_info (
+    node_id                              text         NOT NULL,
+    vlan_if_id                           text         NOT NULL,
+    vlan_id                              text         NOT NULL,
+    irb_instance_id                      text         NOT NULL,
+    PRIMARY KEY(node_id,vlan_if_id),
+    FOREIGN KEY(node_id) REFERENCES nodes(node_id)
+);
+
+CREATE TABLE irb_instance_info (
+    node_id                              text         NOT NULL,
+    vlan_id                              text         NOT NULL,
+    irb_instance_id                      text         NOT NULL,
+    irb_vni                              text         NOT NULL,
+    irb_ipv4_address                     text         NOT NULL,
+    irb_ipv4_prefix                      integer      NOT NULL,
+    virtual_gateway_address              text,
+    PRIMARY KEY(node_id,vlan_id,irb_instance_id),
+    FOREIGN KEY(node_id) REFERENCES nodes(node_id)
+);
+
+CREATE TABLE acl_info (
+    node_id                              text,
+    acl_id                               text         NOT NULL,
+    physical_if_id                       text,
+    lag_if_id                            text,
+    breakout_if_id                       text,
+    vlan_if_id                           text,
+    PRIMARY KEY(node_id,acl_id),
+    FOREIGN KEY(node_id,physical_if_id) REFERENCES physical_ifs(node_id,physical_if_id),
+    FOREIGN KEY(node_id,lag_if_id) REFERENCES lag_ifs(node_id,lag_if_id),
+    FOREIGN KEY(node_id,breakout_if_id) REFERENCES breakout_ifs(node_id,breakout_if_id),
+    FOREIGN KEY(node_id,vlan_if_id) REFERENCES vlan_ifs(node_id,vlan_if_id)
+
+);
+
+CREATE TABLE acl_detail_info (
+    node_id                              text,
+    acl_id                               text,
+    term_name                            text         NOT NULL,
+    action                               text         NOT NULL,
+    direction                            text         NOT NULL,
+    source_mac_address                   text,
+    destination_mac_address              text,
+    source_ip_address                    text,
+    destination_ip_address               text,
+    source_port                          integer,
+    destination_port                     integer,
+    protocol                             text,
+    acl_priority                         integer,
+    PRIMARY KEY(node_id,acl_id,term_name),
+    FOREIGN KEY(node_id,acl_id) REFERENCES acl_info(node_id,acl_id)
+);

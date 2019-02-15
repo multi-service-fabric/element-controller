@@ -18,6 +18,9 @@ public class Capabilities {
   /** EVPN Configurability. */
   private Boolean evpn = null;
 
+  /** IRB Configurability. */
+  private IrbCapabilities irb = null;
+
   /**
    * Getting L2VPN configurability.
    *
@@ -78,10 +81,31 @@ public class Capabilities {
   /**
    * Stringizing Instance.
    *
-   * @return instance string
+   * @return IRB Configurability
+   */
+  public IrbCapabilities getIrb() {
+    return irb;
+  }
+
+
+  /**
+   * Setting IRB configurability.
+   *
+   * @param irb
+   *          IRB configurability
+   */
+  public void setIrb(IrbCapabilities irb) {
+    this.irb = irb;
+  }
+
+
+  /**
+   * Stringizing instance.
+   *
+   * @return Stringizing instance
    */
   @Override
   public String toString() {
-    return "Capabilities [l2vpn=" + l2vpn + ", l3vpn=" + l3vpn + ", evpn=" + evpn + "]";
+    return "Capabilities [l2vpn=" + l2vpn + ", l3vpn=" + l3vpn + ", evpn=" + evpn + ", irb=" + irb + "]";
   }
 }

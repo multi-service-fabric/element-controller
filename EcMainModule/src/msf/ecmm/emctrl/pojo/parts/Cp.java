@@ -56,10 +56,20 @@ public class Cp {
   @XmlElement(name = "ce-interface")
   private CeInterface ceInterface = null;
 
-  /** QoS configuration. */
+  /** clag-id used in EVPN. */
+  @XmlElement(name = "clag-id")
+  private Long clagId = null;
+
+  /** Speed of base physical IF（including IF after breakout). */
+  private String speed = null;
+
+  /** QoS setting. */
   private Qos qos = null;
 
-  /** VRRP Configuration Information (only for L3VLAN IF Batch Generation). */
+  /** IRB setting. */
+  private Irb irb = null;
+
+  /** VRRP setting information (used only for L3VLAN IF batch generaiton). */
   private Vrrp vrrp = null;
 
   /** BGP Connection Information (only for L3VLAN IF Batch Generation). */
@@ -303,14 +313,14 @@ public class Cp {
    * Setting ESI value.
    *
    * @param esi
-   *          set esi
+   *          Setting esi
    */
   public void setEsi(String esi) {
     this.esi = esi;
   }
 
   /**
-   * Getting the vallue of "operation" attribute of &ltesi&gt tag.
+   * Getting the value of "operation" attribute of &ltesi&gt tag.
    *
    * @return esiAttr
    */
@@ -319,10 +329,10 @@ public class Cp {
   }
 
   /**
-   * Setting the vallue of "operation" attribute of &ltesi&gt tag.
+   * Setting the value of "operation" attribute of &ltesi&gt tag.
    *
    * @param esiAttr
-   *          set esiAttr
+   *          Setting esiAttr
    */
   public void setEsiAttr(AttributeOperation esiAttr) {
     this.esiAttr = esiAttr;
@@ -341,10 +351,48 @@ public class Cp {
    * Setting SystemID.
    *
    * @param systemId
-   *          set systemId
+   *          Setting systemId
    */
   public void setSystemId(String systemId) {
     this.systemId = systemId;
+  }
+
+  /**
+   * Getting CLAG-ID.
+   *
+   * @return clagId
+   */
+  public Long getClagId() {
+    return clagId;
+  }
+
+  /**
+   * Setting CLAG-ID.
+   *
+   * @param clagId
+   *          Setting clagId
+   */
+  public void setClagId(Long clagId) {
+    this.clagId = clagId;
+  }
+
+  /**
+   * Getting speed of Base Physical IF.
+   *
+   * @return speed
+   */
+  public String getSpeed() {
+    return speed;
+  }
+
+  /**
+   * Setting speed of base physical IF.
+   *
+   * @param speed
+   *          Setting speed
+   */
+  public void setSpeed(String speed) {
+    this.speed = speed;
   }
 
   /**
@@ -356,11 +404,11 @@ public class Cp {
     return sysIdAttr;
   }
 
- /**
-   * Setting the value of "operation" attribute of &ltsystem-id&gt tag
+  /**
+   * Setting the value of "operation" attribute of &ltsystem-id&gt tag.
    *
    * @param sysIdAttr
-   *          set sysIdAttr
+   *          Setting sysIdAttr
    */
   public void setSysIdAttr(AttributeOperation sysIdAttr) {
     this.sysIdAttr = sysIdAttr;
@@ -379,23 +427,38 @@ public class Cp {
    * Setting QoS configuration.
    *
    * @param qos
-   *          set qos
+   *          Setting qos
    */
   public void setQos(Qos qos) {
     this.qos = qos;
   }
 
-  /*
-   * Stringizing Instance.
+  /**
+   * Setting IRB configuration.
    *
-   * @see java.lang.Object#toString()
+   * @param irb
+   *          Setting irb
    */
+  public void setIrb(Irb irb) {
+    this.irb = irb;
+  }
+
+  /**
+   * Getting IRB configuration.
+   *
+   * @return irb
+   */
+  public Irb getIrb() {
+    return irb;
+  }
+
   @Override
   public String toString() {
     return "Cp [operation=" + operation + ", name=" + name + ", vlanId=" + vlanId + ", portMode=" + portMode + ", vni="
-        + vni + ", multicastGroup=" + multicastGroup + ", ceInterface=" + ceInterface + ", vrrp=" + vrrp
-        + ", l3SliceBgp=" + l3SliceBgp + ", l3SliceStatic=" + l3SliceStatic + ", l3SliceOspf=" + l3SliceOspf + ", esi="
-        + esi + ", esiAttr=" + esiAttr + ", systemId=" + systemId + ", sysIdAttr=" + sysIdAttr + ", qos=" + qos + "]";
+        + vni + ", multicastGroup=" + multicastGroup + ", esi=" + esi + ", esiAttr=" + esiAttr + ", systemId="
+        + systemId + ", sysIdAttr=" + sysIdAttr + ", ceInterface=" + ceInterface + ", clagId=" + clagId + ", speed="
+        + speed + ", qos=" + qos + ", irb=" + irb + ", vrrp=" + vrrp + ", l3SliceBgp=" + l3SliceBgp + ", l3SliceStatic="
+        + l3SliceStatic + ", l3SliceOspf=" + l3SliceOspf + "]";
   }
 
 }

@@ -69,10 +69,14 @@ public class AcceptNodeRecover extends Operation {
    */
   public AcceptNodeRecover(AbstractRestMessage idt, HashMap<String, String> ukm) {
     super(idt, ukm);
-    super.setOperationType(OperationType.NodeRecover);
+    super.setOperationType(OperationType.AcceptNodeRecover);
   }
 
-
+  /**
+   * Executing recovery expansion request reception processing.
+   *
+   * @see msf.ecmm.ope.execute.Operation#execute()
+   */
   @Override
   public AbstractResponseMessage execute() {
 
@@ -82,7 +86,7 @@ public class AcceptNodeRecover extends Operation {
     boolean dhcpOkFlag = false;
     boolean syslogOkFlag = false;
     boolean xinetdOkFlag = false;
-    boolean needCleanUpFlag = true;
+    boolean needCleanUpFlag = true; 
 
     if (!checkInData()) {
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Input data wrong."));
@@ -184,6 +188,11 @@ public class AcceptNodeRecover extends Operation {
     return response;
   }
 
+  /**
+   * Input data check.
+   *
+   * @see msf.ecmm.ope.execute.Operation#checkInData()
+   */
   @Override
   protected boolean checkInData() {
     logger.trace(CommonDefinitions.START);
@@ -200,7 +209,7 @@ public class AcceptNodeRecover extends Operation {
 
     RecoverNodeService inputData = (RecoverNodeService) getInData();
     try {
-      inputData.check(getOperationType());
+      inputData.check(new OperationType(getOperationType()));
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);
       checkResult = false;
@@ -395,7 +404,7 @@ public class AcceptNodeRecover extends Operation {
    *          model information
    * @return Initial config setting
    * @throws DevctrlException
-   *           Initial config setting creation failed
+   *           DevctrlException
    */
   private InitialDeviceConfig createInitialDeviceConfig(Nodes nodes, Equipments equipments) throws DevctrlException {
     logger.trace(CommonDefinitions.START);

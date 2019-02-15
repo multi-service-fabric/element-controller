@@ -4,6 +4,9 @@
 
 package msf.ecmm.ope.receiver.pojo.parts;
 
+import msf.ecmm.ope.execute.OperationType;
+import msf.ecmm.ope.receiver.pojo.CheckDataException;
+
 /**
  * breakoutIF Information.
  */
@@ -15,25 +18,25 @@ public class BreakoutIf {
   /** Physical IF ID. */
   private String basePhysicalIfId;
 
-  /** Speed After Division. */
+  /** Speed after partition. */
   private String linkSpeed;
 
-  /** IF Name. */
+  /** IF name. */
   private String ifName;
 
-  /** IF Status. */
+  /** IF status. */
   private String ifState;
 
-  /** IPv4 Address. */
+  /** IPv4 address. */
   private String ipv4Address;
 
-  /** IPv4 Prefix. */
+  /** IPv4 prefix. */
   private String ipv4Prefix;
 
   /** QoS capability. */
   private QosCapabilities qos;
 
-/**
+  /**
    * Getting breakoutIF ID.
    *
    * @return breakoutIF ID
@@ -65,26 +68,26 @@ public class BreakoutIf {
    * Setting physical IF ID.
    *
    * @param basePhysicalIfId
-   *          physical IF ID
+   *          Physical IF ID
    */
   public void setPhysicalIfId(String basePhysicalIfId) {
     this.basePhysicalIfId = basePhysicalIfId;
   }
 
   /**
-   * Getting speed after division.
+   * Getting speed after partition.
    *
-   * @return speed after division
+   * @return speed after partition
    */
   public String getLinkSpeed() {
     return linkSpeed;
   }
 
   /**
-   * Setting speed after division.
+   * Setting speed after partition.
    *
    * @param linkSpeed
-   *          speed after division
+   *          Speed after partition
    */
   public void setLinkSpeed(String linkSpeed) {
     this.linkSpeed = linkSpeed;
@@ -110,19 +113,19 @@ public class BreakoutIf {
   }
 
   /**
-   * Getting IF status.
+   * Getting IF state.
    *
-   * @return IF status
+   * @return IF state
    */
   public String getIfState() {
     return ifState;
   }
 
   /**
-   * Setting IF status.
+   * Setting IF state.
    *
    * @param ifState
-   *          IF status
+   *          IF state
    */
   public void setIfState(String ifState) {
     this.ifState = ifState;
@@ -179,14 +182,14 @@ public class BreakoutIf {
    * Setting QoS capability.
    *
    * @param qos
-   *          setting qos
+   *          Setting qos
    */
   public void setQos(QosCapabilities qos) {
     this.qos = qos;
   }
 
   /*
-   *   Stringizing Instance.
+   * Stringizing instance.
    *
    * @see java.lang.Object#toString()
    */
@@ -195,5 +198,22 @@ public class BreakoutIf {
     return "BreakoutIf [breakoutIfId=" + breakoutIfId + ", basePhysicalIfId=" + basePhysicalIfId + ", linkSpeed="
         + linkSpeed + ", ifName=" + ifName + ", ifState=" + ifState + ", ipv4Address=" + ipv4Address + ", ipv4Prefix="
         + ipv4Prefix + ", qos=" + qos + "]";
+  }
+
+  /**
+   * Input parameter check.
+   *
+   * @param ope
+   *          Oeration type
+   * @throws CheckDataException
+   *           Input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+    if (basePhysicalIfId == null) {
+      throw new CheckDataException();
+    }
+    if (breakoutIfId == null) {
+      throw new CheckDataException();
+    }
   }
 }

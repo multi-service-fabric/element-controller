@@ -208,7 +208,7 @@ public class SNMPTrapSignalRecieveNotification extends Operation {
       session.startTransaction();
 
       if ((nodesDb.getNode_state() != NODE_STATE_MALFUNCTION && snmpflg)
-          || ((nodesDb.getNode_state() == NODE_STATE_MALFUNCTION) && !snmpflg)) {
+          || ((nodesDb.getNode_state() == NODE_STATE_MALFUNCTION) && !snmpflg) && null != ifType) {
         String nodeid = nodesDb.getNode_id();
         int nodestate = nodesDb.getNode_state();
         if (nodesDb.getNode_state() != NODE_STATE_MALFUNCTION && snmpflg) {
@@ -219,7 +219,7 @@ public class SNMPTrapSignalRecieveNotification extends Operation {
         session.updateNodeState(nodeid, nodestate);
 
       }
-      if (!snmpflg) {
+      if (!snmpflg &&  null != ifType) {
         session.updateNodeIfState(physicalIfs, lagIfs, null, breakoutIfs);
         for (VlanIfs elem : vlanIfsList) {
           session.updateNodeIfState(null, null, elem, null);
@@ -228,7 +228,7 @@ public class SNMPTrapSignalRecieveNotification extends Operation {
 
       session.commit();
 
-      if (ifType != null || snmpflg == true) {
+      if (ifType != null) {
         Operations snmpTrapData = RestMapper.toSnmpTrapNotificationInfo(nodesDb.getNode_id(), ifType, ifId, vlanIfsList,
             statusStr, snmpflg);
 
@@ -272,7 +272,7 @@ public class SNMPTrapSignalRecieveNotification extends Operation {
       checkResult = false;
     } else {
       try {
-        notifyRecieveSnmpTrapRest.check(getOperationType());
+        notifyRecieveSnmpTrapRest.check(new OperationType(getOperationType()));
       } catch (CheckDataException cde) {
         logger.warn("check error :", cde);
         checkResult = false;

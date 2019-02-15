@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+<!-- IRB Instance Information Class -->
+
+<hibernate-mapping>
+  <class name="msf.ecmm.db.pojo.IRBInstanceInfo" table="irb_instance_info"
+    lazy="true">
+    <composite-id>
+      <key-property name="node_id" type="text">
+        <column name="node_id" not-null="true" />
+      </key-property>
+      <key-property name="vlan_id" type="text">
+        <column name="vlan_id" not-null="true" />
+      </key-property>
+      <generator class="assigned" />
+    </composite-id>
+    <property name="irb_instance_id" type="text" not-null="true" />
+    <property name="irb_vni" type="text" not-null="true" />
+    <property name="irb_ipv4_address" type="text" not-null="true" />
+    <property name="irb_ipv4_prefix" type="int" not-null="true" />
+    <property name="virtual_gateway_address" type="text"
+      not-null="true" />
+  </class>
+  <query name="updateIRBInstanceInfoState">
+            <![CDATA[
+                update msf.ecmm.db.pojo.IRBInstanceInfo as irb_instance_info set irb_vni = :key2, irb_ipv4_address = :key3, irb_ipv4_prefix = :key4, virtual_gateway_address = :key5 where node_id = :key1 and vlan_id = :key6
+             ]]>
+  </query>
+  <query name="deleteIRBInstanceInfo">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.IRBInstanceInfo as irb_instance_info where node_id = :key1 and vlan_id = :key2
+             ]]>
+  </query>
+  <query name="selectIRBInstanceId">
+            <![CDATA[
+                from msf.ecmm.db.pojo.IRBInstanceInfo as irb_instance_info
+             ]]>
+  </query>
+  <query name="selectIRBInstanceInfo">
+            <![CDATA[
+                from msf.ecmm.db.pojo.IRBInstanceInfo as irb_instance_info where node_id = :key1 and vlan_id = :key2
+             ]]>
+  </query>
+</hibernate-mapping>

@@ -7,16 +7,25 @@ package msf.ecmm.db;
 import static msf.ecmm.common.LogFormatter.*;
 import static msf.ecmm.db.DBAccessException.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.db.dao.AclConfDAO;
 import msf.ecmm.db.dao.BGPOptionsDAO;
 import msf.ecmm.db.dao.BaseDAO;
 import msf.ecmm.db.dao.BootErrorMessagesDAO;
 import msf.ecmm.db.dao.BreakoutIfsDAO;
+import msf.ecmm.db.dao.DummyVlanIfsDAO;
 import msf.ecmm.db.dao.EgressQueueMenusDAO;
 import msf.ecmm.db.dao.EquipmentIfsDAO;
 import msf.ecmm.db.dao.EquipmentsDAO;
+import msf.ecmm.db.dao.IRBInstanceInfoDAO;
 import msf.ecmm.db.dao.IfNameRulesDAO;
 import msf.ecmm.db.dao.LagIfsDAO;
 import msf.ecmm.db.dao.LagMembersDAO;
@@ -28,10 +37,14 @@ import msf.ecmm.db.dao.StaticRouteOptionsDAO;
 import msf.ecmm.db.dao.SystemStatusDAO;
 import msf.ecmm.db.dao.VRRPOptionsDAO;
 import msf.ecmm.db.dao.VlanIfsDAO;
+import msf.ecmm.db.pojo.AclConf;
 import msf.ecmm.db.pojo.BreakoutIfs;
+import msf.ecmm.db.pojo.DummyVlanIfs;
 import msf.ecmm.db.pojo.Equipments;
+import msf.ecmm.db.pojo.IRBInstanceInfo;
 import msf.ecmm.db.pojo.InterfacesList;
 import msf.ecmm.db.pojo.LagIfs;
+import msf.ecmm.db.pojo.LagMembers;
 import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.NodesStartupNotification;
 import msf.ecmm.db.pojo.PhysicalIfs;
@@ -39,25 +52,20 @@ import msf.ecmm.db.pojo.StaticRouteOptions;
 import msf.ecmm.db.pojo.SystemStatus;
 import msf.ecmm.db.pojo.VlanIfs;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-
 /**
- * DB Access Management Class.
+ * DB access management class.
  */
 public class DBAccessManager implements AutoCloseable {
 
-  /** Logger Instance. */
+  /** logger instance. */
   private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
-  /** Session Instance. */
+  /** session instance. */
   protected Session session;
-  /** Transaction Instance. */
+  /** transaction instance. */
   protected Transaction tr;
 
   /**
-   * Constructor.
+   * constructor.
    *
    * @throws DBAccessException
    *           session acquisition exception
@@ -71,7 +79,7 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Transaction Start.
+   * start transaction.
    *
    * @throws DBAccessException
    *           DBAccessException transaction start exception
@@ -87,10 +95,10 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Commitment.
+   * commit.
    *
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void commit() throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -103,10 +111,10 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Roll Back.
+   * roll back.
    *
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void rollback() throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -119,10 +127,10 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Transaction End.
+   * transaction finish.
    *
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @Override
   public void close() throws DBAccessException {
@@ -136,12 +144,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Model Information Registration.
+   * model information registration.
    *
    * @param equipments
-   *          model information to be registered
+   *          Model information to be registered
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addEquipments(Equipments equipments) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -154,11 +162,11 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Model List Information Acquisition.
+   * Model list information acquisition.
    *
-   * @return model information table all data
+   * @return model information table entire data
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public List<Equipments> getEquipmentsList() throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -173,13 +181,13 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Model Information Acquisition.
+   * model information acquisition.
    *
    * @param equipment_type_id
    *          model ID
-   * @return model information correlated to the entered device ID
+   * @return model information which is associated with the input model ID
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public Equipments searchEquipments(String equipment_type_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -195,12 +203,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Model Information Deletion.
+   * model information deletion.
    *
    * @param equipment_type_id
    *          model ID
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void deleteEquipments(String equipment_type_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -230,12 +238,12 @@ public class DBAccessManager implements AutoCloseable {
 
 
   /**
-   * Device Information Registration.
+   * device information registration.
    *
    * @param nodes
    *          device information to be registered
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addNodes(Nodes nodes) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -248,11 +256,11 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device Information List Acquisition.
+   * Device information list acquisition.
    *
-   * @return device information list
+   * @return Device information list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public List<Nodes> getNodesList() throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -267,15 +275,15 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device Information Acquisition.
+   * Device information Acquisition.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @param management_if_address
-   *          management IF address (NULL is permitted)
-   * @return device information
+   *          Management IF address (NULL permitted)
+   * @return Device information 
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public Nodes searchNodes(String node_id, String management_if_address) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -291,13 +299,13 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device Information Acquisition (Model ID).
+   * Device information Acquisition (Model ID).
    *
    * @param equipment_type_id
-   *          model ID
-   * @return device information list
+   *          Model ID
+   * @return Device information list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public List<Nodes> searchNodesByEquipmentId(String equipment_type_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -312,16 +320,16 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device Related Information Registration. Register the BreakoutIfList of physicalIfs.Update the phtsical IF.Register the LagIF. Register the start-up notification.
+   * Device-related information registration. Registering the BreakoutIf List of physicalIfs. Updating Physical IF. Register LagIF. Registering start-up notification.
    *
    * @param physicalIfsList
-   *          physical IF information to be registred
+   *          Physical IF information to be registered
    * @param lagIfsList
    *          LAG information to be registered
    * @param nodesStartUpNotify
-   *          device notification information to be registered
+   *          Device notification that you want to register
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addNodesRelation(List<PhysicalIfs> physicalIfsList, List<LagIfs> lagIfsList,
       NodesStartupNotification nodesStartUpNotify) throws DBAccessException {
@@ -354,12 +362,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device Information/Device Related Information Deletion.
+   * Device information / Device-related information Deletion.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void deleteNodesRelation(String node_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -400,12 +408,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Opposing Device Removal Information Deletion/Update.
+   * Opposing device removal information Deletion/ update.
    *
    * @param nodesList
-   *          model information list
+   *          Model information list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void deleteUpdateOppositeNodes(List<Nodes> nodesList) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -438,13 +446,13 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Interface List Information.
+   * Interface list information.
    *
    * @param node_id
-   *          model ID
+   *          Model ID
    * @return search result
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public InterfacesList getInterfaceList(String node_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -467,13 +475,13 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Physical IF Information List Acquisition.
+   * Physical IF Informaiton List Acquisition.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @return IF related information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public List<PhysicalIfs> getPhysicalIfsList(String node_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -489,15 +497,15 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Physical IF Information Acquisition.
+   * Physical IF information Acquisition.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @param physical_if_id
-   *          physical IF ID
-   * @return physical IF information
+   *          Physical IFID
+   * @return Physical IF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public PhysicalIfs searchPhysicalIfs(String node_id, String physical_if_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -513,12 +521,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Physical IF Information Change.
+   * Physical IF information Change.
    *
    * @param physicalIfs
-   *          physical IF information
+   *          Physical IF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updatePhysicalIfs(PhysicalIfs physicalIfs) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -531,12 +539,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * LagIF Registration.
+   * LagIF registration.
    *
    * @param lagIfs
    *          LAG information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addLagIfs(LagIfs lagIfs) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -549,13 +557,13 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * LagIF Information List Acquisition.
+   * LagIF Informaiton List Acquisition.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @return LAG information list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public List<LagIfs> getLagIfsList(String node_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -571,15 +579,15 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * LagIF Information Acquisition.
+   * LagIFinformationAcquisition.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @param lag_if_id
    *          LAGIF ID
-   * @return LAG information
+   * @return LAGinformation
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public LagIfs searchLagIfs(String node_id, String lag_if_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -595,14 +603,14 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * LagIF Information Deletion.
+   * LagIFinformation Deletion.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @param lag_if_id
    *          LAGIF ID
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void deleteLagIfs(String node_id, String lag_if_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -618,12 +626,33 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * L2VLAN IF Registration.
+   * LAG member information acquisition
+   *
+   * @param node_id
+   *          Device ID
+   * @param lag_if_id
+   *          LAG IF ID
+   * @throws DBAccessException
+   *           database exception
+   */
+  public LagMembers searchLagMember(String node_id, String lag_if_id) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("node_id:" + node_id + ", lag_if_id:" + lag_if_id);
+    LagMembersDAO lagMembersDAO = new LagMembersDAO(session);
+    LagMembers lagMembers = lagMembersDAO.search(node_id, lag_if_id, null, null);
+
+    logger.trace(CommonDefinitions.END);
+
+    return lagMembers;
+  }
+
+  /**
+   * L2VLAN IF registration.
    *
    * @param vlan_ifs
    *          VLAN IF
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addL2VlanIf(VlanIfs vlan_ifs) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -636,12 +665,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * L3VLAN IF Registration.
+   * L3VLAN IF registration.
    *
    * @param vlan_ifs
    *          VLAN IF
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addL3VlanIf(VlanIfs vlan_ifs) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -655,15 +684,15 @@ public class DBAccessManager implements AutoCloseable {
 
 
   /**
-   * VLAN IF Information Acquisition.
+   * VLAN IF information Acquisition.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @param vlan_if_id
    *          VLAN ID
    * @return vlanifs VLAN IF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public VlanIfs searchVlanIfs(String node_id, String vlan_if_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -679,13 +708,13 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * VLAN IF Information List Acquisition.
+   * VLAN IF information list acquisition.
    *
    * @param node_id
-   *          device ID
-   * @return list VLANIF information list
+   *          Device ID
+   * @return list VLANIFinformation list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public List<VlanIfs> getVlanIfsList(String node_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -704,11 +733,11 @@ public class DBAccessManager implements AutoCloseable {
    * VLAN IF Deletion.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @param vlan_if_id
    *          VLAN IF ID
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void deleteVlanIfs(String node_id, String vlan_if_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -737,12 +766,12 @@ public class DBAccessManager implements AutoCloseable {
 
 
   /**
-   * breakoutIf Registration.
+   * breakoutIf registration.
    *
    * @param breakoutIfs
    *          breakoutIf
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addBreakoutIfs(BreakoutIfs breakoutIfs) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -755,13 +784,13 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * breakoutIf Information List Acquisition.
+   * breakoutIf information list acquisition.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @return list breakoutIf information list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public List<BreakoutIfs> getBreakoutIfsList(String node_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -777,15 +806,15 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * breakoutIf Information Acquisition.
+   * breakoutIf information acquisition.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @param breakout_if_id
-   *          breakoutIfID
+   *          breakoutIf ID
    * @return breakoutIfs breakoutIf
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public BreakoutIfs searchBreakoutIf(String node_id, String breakout_if_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -804,11 +833,11 @@ public class DBAccessManager implements AutoCloseable {
    * breakoutIf Deletion.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @param breakout_if_id
    *          breakoutIf ID
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void deletebreakoutIfs(String node_id, String breakout_if_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -822,12 +851,12 @@ public class DBAccessManager implements AutoCloseable {
 
 
   /**
-   * Syste Status Information Registration.
+   * System status information registration.
    *
    * @param systemStatus
-   *          system status information registration
+   *          System status information registration
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addSystemStatus(SystemStatus systemStatus) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -840,11 +869,11 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * System Status Information Acquisition.
+   * System status information acquisition.
    *
    * @return system status information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public SystemStatus getSystemStatus() throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -859,14 +888,14 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * System Status Information Change.
+   * System status information change.
    *
    * @param service_status
-   *          service start-up status
+   *          Service start-up status
    * @param blockade_status
-   *          maintenance blockage status
+   *          Maintenance blockage status
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateSystemStatus(int service_status, int blockade_status) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -880,12 +909,12 @@ public class DBAccessManager implements AutoCloseable {
 
 
   /**
-   * Device Start-up Notification Information Registration.
+   * Device start-up notification registration.
    *
    * @param nodeInfo
-   *          Device Start-up Notification Information
+   *          Device start-up notification
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addNodesStartupNotification(NodesStartupNotification nodeInfo) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -898,11 +927,11 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device Start-up Notification Information List Acquisition.
+   * Device start-up notification list acquisition.
    *
-   * @return device start-up notification information list
+   * @return Device start-up notification list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public List<NodesStartupNotification> getNodesStartupNotificationList() throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -917,12 +946,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device Start-up Notification Information Change.
+   * Device start-up notification Change.
    *
    * @param nodesStartupNotification
-   *          device start-up notification information
+   *          Device start-up notification
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateNodesStartupNotification(NodesStartupNotification nodesStartupNotification)
       throws DBAccessException {
@@ -936,12 +965,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device Start-up Notification Information Deletion.
+   * Device start-up notification Deletion.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void deleteNodesStartupNotification(String node_id) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -959,14 +988,14 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device Status Information Update.
+   * Device status information update.
    *
    * @param node_id
-   *          device ID
+   *          Device ID
    * @param node_state
-   *          device status
+   *          Device status 
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateNodeState(String node_id, int node_state) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -979,10 +1008,10 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device IF Status Change.
+   * Device IF status change.
    *
    * @param physicalIfs
-   *          physical If
+   *          Physical If
    * @param lagIfs
    *          LagIf
    * @param vlanIfs
@@ -990,12 +1019,13 @@ public class DBAccessManager implements AutoCloseable {
    * @param breakoutIfs
    *          breakoutIF
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateNodeIfState(PhysicalIfs physicalIfs, LagIfs lagIfs, VlanIfs vlanIfs, BreakoutIfs breakoutIfs)
       throws DBAccessException {
     logger.trace(CommonDefinitions.START);
-    logger.debug("physicalIfs:" + physicalIfs + "lagIfs:" + lagIfs + "vlanIfs" + vlanIfs + "breakoutIfs" + breakoutIfs);
+    logger.debug(
+        "physicalIfs:" + physicalIfs + ", lagIfs:" + lagIfs + ", vlanIfs:" + vlanIfs + "breakoutIfs" + breakoutIfs);
 
     if (physicalIfs != null) {
       PhysicalIfsDAO physicalIfsDao = new PhysicalIfsDAO(session);
@@ -1021,23 +1051,21 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Device IF IP Address Change.
+   * Device IF IP address change.
    *
    * @param physicalIfs
-   *          physical If
+   *          Physical If
    * @param lagIfs
    *          LagIf
    * @param vlanIfs
    *          VLANIf
-   * @param breakoutIfs
-   *          breakoutIF
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateNodeIfIpAddress(PhysicalIfs physicalIfs, LagIfs lagIfs, VlanIfs vlanIfs, BreakoutIfs breakoutIfs)
       throws DBAccessException {
     logger.trace(CommonDefinitions.START);
-    logger.debug("physicalIfs:" + physicalIfs + "lagIfs:" + lagIfs + "vlanIfs:" + vlanIfs);
+    logger.debug("physicalIfs:" + physicalIfs + ", lagIfs:" + lagIfs + ", vlanIfs:" + vlanIfs);
 
     if (physicalIfs != null) {
       PhysicalIfsDAO physicalIfsDao = new PhysicalIfsDAO(session);
@@ -1063,11 +1091,11 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Acquiring the Number of Registered Devices.
+   * Acquire the no. of the registered devices.
    *
-   * @return size the number of registered devices
+   * @return size the no. of the registered devices
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public int getNodesNum() throws DBAccessException {
     int size = 0;
@@ -1084,11 +1112,11 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * Cluster Type Information.
+   * Cluster Type Informaiton.
    *
    * @return search result
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public int checkClusterType() throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -1107,9 +1135,9 @@ public class DBAccessManager implements AutoCloseable {
    * breakoutIF Change.
    *
    * @param breakoutIfs
-   *          breakoutIF information
+   *          breakoutIFinformation
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateBreakoutIfs(BreakoutIfs breakoutIfs) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -1123,12 +1151,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * static Route Option Information Registration.
+   * Static route option information registration.
    *
    * @param staticRouteOptions
    *          static route option information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void addStaticRouteOptions(StaticRouteOptions staticRouteOptions) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -1141,12 +1169,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * static Route Option Information Deletion.
+   * static route option information deletion.
    *
    * @param staticRouteOptions
    *          static route option information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void deleteStaticRouteOptions(StaticRouteOptions staticRouteOptions) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -1159,12 +1187,12 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * VLAN QoS Information Update.
+   * VLAN IF information。ハQoS。ヒupdate.
    *
    * @param vlanIfs
-   *          VLANIf
+   *          VLAN IFinformation
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateVlanIfs(VlanIfs vlanIfs) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -1176,20 +1204,19 @@ public class DBAccessManager implements AutoCloseable {
     logger.trace(CommonDefinitions.END);
   }
 
-
   /**
-   * Change in Additional Service Recovery device information.
+   * Device information change at the time of recovery expansion.
    *
    * @param nodes
-   *          Device information after recovery
+   *           Device information after change 
    * @param addPhysiIfsList
-   *          Physical IF information list to be added
+   *          Addition target physical IF information
    * @param delPhysiIfsList
-   *          Physical IF information list to be deleted
+   *           Deletion target physical IF information
    * @param vlanIfsList
-   *          VLAN IF Information list after recovery
+   *           VLAN IF information list after change
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateForRecover(Nodes nodes, List<PhysicalIfs> addPhysiIfsList, List<PhysicalIfs> delPhysiIfsList,
       List<VlanIfs> vlanIfsList) throws DBAccessException {
@@ -1235,4 +1262,295 @@ public class DBAccessManager implements AutoCloseable {
     logger.trace(CommonDefinitions.END);
   }
 
+  /**
+   * Device information change at the time of recovery expansion.
+   *
+   * @param nodes
+   *          Device information after change
+   * @param addPhysiIfsList
+   *          The physical IF information to be deleted
+   * @param delPhysiIfsList
+   *          The physical IF informaition to be deleted
+   * @param vlanIfsList
+   *          VLAN IF information list after change
+   * @throws DBAccessException
+   *           database exception
+   */
+
+
+  /**
+   * IRB instance information registration.
+   *
+   * @param irbInstanceInfo
+   *          IRB instance information
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void addIrbInstanceInfo(IRBInstanceInfo irbInstanceInfo) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("irbInstanceInfo:" + irbInstanceInfo.toString());
+
+    IRBInstanceInfoDAO irbInstanceInfoDAO = new IRBInstanceInfoDAO(session);
+    irbInstanceInfoDAO.save(irbInstanceInfo);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * IRB instance information acquisition.
+   *
+   * @param node_id
+   *          Device ID
+   * @param vlan_id
+   *          VLAN ID
+   * @return irbInstanceInfo IRB instance information
+   * @throws DBAccessException
+   *           database exception
+   */
+  public IRBInstanceInfo searchIrbInstanceInfo(String node_id, String vlan_id) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("node_id:" + node_id + ", vlan_id:" + vlan_id);
+
+    IRBInstanceInfoDAO irbInstanceInfoDAO = new IRBInstanceInfoDAO(session);
+
+    IRBInstanceInfo irbInstanceInfo = irbInstanceInfoDAO.search(node_id, vlan_id);
+
+    logger.trace(CommonDefinitions.END);
+
+    return irbInstanceInfo;
+  }
+
+  /**
+   * IRB instance information ID list acquisition.
+   *
+   * @return irbInstanceIdList IRB instance ID list
+   * @throws DBAccessException
+   *           database exception
+   */
+  public List<String> getIrbInstanceInfoIdList() throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+
+    IRBInstanceInfoDAO irbInstanceInfoDAO = new IRBInstanceInfoDAO(session);
+    List<String> irbInstanceInfoIdList = irbInstanceInfoDAO.getList();
+
+    return irbInstanceInfoIdList;
+  }
+
+  /**
+   * IRB instance information Change.
+   *
+   * @param irbInstanceInfo
+   *          IRB instance information
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void updateIrbInstanceInfo(IRBInstanceInfo irbInstanceInfo) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("irbInstanceInfo:" + irbInstanceInfo.toString());
+
+    IRBInstanceInfoDAO irbInstanceInfoDAO = new IRBInstanceInfoDAO(session);
+
+    irbInstanceInfoDAO.updateState(irbInstanceInfo);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * IRB instance information Deletion.
+   *
+   * @param node_id
+   *          Device ID
+   * @param vlan_id
+   *          VLAN ID
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void deleteIrbInstanceInfo(String node_id, String vlan_id) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("node_id:" + node_id + ", vlan_id:" + vlan_id);
+
+    IRBInstanceInfoDAO irbInstanceInfoDAO = new IRBInstanceInfoDAO(session);
+
+    irbInstanceInfoDAO.delete(node_id, vlan_id);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Dummy VLAN IF information registration.
+   *
+   * @param dummyVlanIfs
+   *          Dummy VLAN IF information
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void addDummyVlanIfsInfo(DummyVlanIfs dummyVlanIfs) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("dummyVlanIfs:" + dummyVlanIfs.toString());
+
+    DummyVlanIfsDAO dummyVlanIfsDAO = new DummyVlanIfsDAO(session);
+
+    dummyVlanIfsDAO.save(dummyVlanIfs);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Dummy VLAN IFinformationlist acquisition.
+   *
+   * @param node_id
+   *          Device ID
+   * @return dummy VlanIfsList Dummy VLAN IF information list
+   * @throws DBAccessException
+   *           database exception
+   *
+   */
+  public List<DummyVlanIfs> getDummyVlanIfsInfoList(String node_id) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("node_id:" + node_id);
+
+    DummyVlanIfsDAO dummyVlanIfsDAO = new DummyVlanIfsDAO(session);
+    List<DummyVlanIfs> dummyVlanIfsList = new ArrayList<DummyVlanIfs>();
+
+    dummyVlanIfsList = dummyVlanIfsDAO.getList(node_id);
+
+    logger.trace(CommonDefinitions.END);
+    return dummyVlanIfsList;
+  }
+
+  /**
+   * Dummy VLAN IF information acquisition.
+   *
+   * @param node_id
+   *          Device ID
+   * @param vlan_if_id
+   *          VLAN IF ID
+   * @return dummy VlanIfsInfo Dummy VLAN IF information
+   * @throws DBAccessException
+   *           database exception
+   */
+  public DummyVlanIfs searchDummyVlanIfsInfo(String node_id, String vlan_if_id) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("node_id:" + node_id + ", vlan_if_id:" + vlan_if_id);
+
+    DummyVlanIfsDAO dummyVlanIfsDAO = new DummyVlanIfsDAO(session);
+    DummyVlanIfs dummyVlanIfs = dummyVlanIfsDAO.search(node_id, vlan_if_id);
+
+    logger.trace(CommonDefinitions.END);
+    return dummyVlanIfs;
+  }
+
+  /**
+   * Dummy VLAN IF information change.
+   *
+   * @param dummy VlanIfs
+   *          Dummy VLAN IF information
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void updateDummyVlanIfsInfo(DummyVlanIfs dummyVlanIfs) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("dummyVlanIfs:" + dummyVlanIfs.toString());
+
+    DummyVlanIfsDAO dummyVlanIfsDAO = new DummyVlanIfsDAO(session);
+    dummyVlanIfsDAO.updateState(dummyVlanIfs);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Dummy VLAN IFinformation Deletion.
+   *
+   * @param node_id
+   *          Device ID
+   * @param vlan_if_id
+   *          VLAN IF ID
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void deleteDummyVlanIfsInfo(String node_id, String vlan_if_id) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("node_id:" + node_id + ", vlan_if_id:" + vlan_if_id);
+
+    DummyVlanIfsDAO dummyVlanIfsDAO = new DummyVlanIfsDAO(session);
+    dummyVlanIfsDAO.delete(node_id, vlan_if_id);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * ACL configuration information list acquisition.
+   *
+   * @param node_id
+   *          Device ID
+   * @return aclConfList ACL configuration information list
+   * @throws DBAccessException
+   *           database exception
+   */
+  public List<AclConf> getAclConfList(String node_id) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("node_id:" + node_id);
+
+    AclConfDAO aclConfDAO = new AclConfDAO(session);
+    List<AclConf> aclConfList = aclConfDAO.getList(node_id);
+    return aclConfList;
+  }
+
+  /**
+   * Acquire ACL configuration information.
+   *
+   * @param node_id
+   *          Device ID
+   * @param if_id
+   *          IF ID
+   * @param if_type
+   *          IF Type
+   * @return aclConf ACL configuration information
+   * @throws DBAccessException
+   *           database exception
+   */
+  public AclConf getAclConf(String node_id, String if_id, String if_type) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("node_id:" + node_id + ", if_id:" + if_id + ", if_type:" + if_type);
+
+    AclConfDAO aclConfDAO = new AclConfDAO(session);
+    AclConf aclConf = aclConfDAO.search(node_id, if_id, if_type);
+    return aclConf;
+  }
+
+  /**
+   * ACL configuration information/ACL configuration details information registration.
+   *
+   * @param aclConf
+   *          ACL configuration information
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void addAclConf(AclConf aclConf) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("aclConf:" + aclConf.toString());
+    AclConfDAO aclConfDAO = new AclConfDAO(session);
+    aclConfDAO.save(aclConf);
+  }
+
+  /**
+   * ACL configuration information/ACL configuration details information deletion.
+   *
+   * @param nodeId
+   *          Device ID
+   * @param ifId
+   *          IF ID
+   * @param ifType
+   *          IF Type
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void deleteAclConf(String nodeId, String ifId, String ifType, List<String> termNameList)
+      throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug(
+        "node_id:" + nodeId + ", if_id:" + ifId + ", if_type:" + ifType + ", termNameList" + termNameList.toString());
+    AclConfDAO aclConfDAO = new AclConfDAO(session);
+    aclConfDAO.delete(nodeId, ifId, ifType, termNameList);
+  }
 }

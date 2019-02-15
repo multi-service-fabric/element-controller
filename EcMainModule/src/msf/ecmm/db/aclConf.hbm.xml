@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "hibernate-core-5.0.10.Final.jar">
+
+<!-- ACL Configuration Information Class -->
+
+<hibernate-mapping>
+  <class name="msf.ecmm.db.pojo.AclConf" table="acl_info" lazy="true">
+    <composite-id>
+      <key-property name="node_id" type="text">
+        <column name="node_id" not-null="true" />
+      </key-property>
+      <key-property name="acl_id" type="text">
+        <column name="acl_id" not-null="true" />
+      </key-property>
+      <generator class="assigned" />
+    </composite-id>
+    <property name="physical_if_id" type="text" />
+    <property name="lag_if_id" type="text" />
+    <property name="breakout_if_id" type="text" />
+    <property name="vlan_if_id" type="text" />
+
+    <set name="aclConfDetailList" table="acl_detail_info" lazy="true"
+      inverse="true" cascade="all-delete-orphan">
+      <key>
+        <column name="node_id" />
+        <column name="acl_id" />
+      </key>
+      <one-to-many class="msf.ecmm.db.pojo.AclConfDetail" />
+    </set>
+  </class>
+  <query name="deleteConectAclConfDetail">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1 and  acl_id = :key2
+             ]]>
+  </query>
+  <query name="deletePhysicalAclConf">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1 and  physical_if_id = :key2
+             ]]>
+  </query>
+    <query name="deleteLagAclConf">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1 and  lag_if_id = :key2
+             ]]>
+  </query>
+    <query name="deleteVlanAclConf">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1 and  vlan_if_id = :key2
+             ]]>
+  </query>
+      <query name="deleteBreakoutAclConf">
+            <![CDATA[
+                delete from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1 and  breakout_if_id = :key2
+             ]]>
+  </query>
+  <query name="selectAclConfAll">
+            <![CDATA[
+                from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1
+             ]]>
+  </query>
+  <query name="selectPhysicalAclConf">
+            <![CDATA[
+                from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1 and  physical_if_id = :key2
+             ]]>
+  </query>
+  <query name="selectLagAclConf">
+            <![CDATA[
+                from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1 and  lag_if_id = :key2
+             ]]>
+  </query>
+  <query name="selectVlanAclConf">
+            <![CDATA[
+                from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1 and  vlan_if_id = :key2
+             ]]>
+  </query>
+  <query name="selectBreakoutAclConf">
+            <![CDATA[
+                from msf.ecmm.db.pojo.AclConf as acl_info where node_id = :key1 and  breakout_if_id = :key2
+             ]]>
+  </query>
+
+</hibernate-mapping>

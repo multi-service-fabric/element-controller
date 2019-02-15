@@ -182,7 +182,7 @@ public class LagCreate extends Operation {
 
       CreateLagInterface inputData = (CreateLagInterface) getInData();
 
-      inputData.check(OperationType.LagCreate);
+      inputData.check(new OperationType(OperationType.LagCreate));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);

@@ -6,6 +6,9 @@ package msf.ecmm.ope.receiver.pojo.parts;
 
 import java.util.ArrayList;
 
+import msf.ecmm.ope.execute.OperationType;
+import msf.ecmm.ope.receiver.pojo.CheckDataException;
+
 /**
  * Physical IF Information List.
  */
@@ -199,4 +202,17 @@ public class PhysicalIf {
         + ipv4Prefix + ", qos=" + qos + "]";
   }
 
+  /**
+   * Input parameter check.
+   *
+   * @param ope
+   *          operation type
+   * @throws CheckDataException
+   *           input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+    if (physicalIfId == null) {
+      throw new CheckDataException();
+    }
+  }
 }

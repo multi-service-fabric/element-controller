@@ -1,5 +1,5 @@
 /**
- * Operation Request Reception Functional Part (POJO)
+ * Operation Request Receptiong Function Part (POJO)
  */
 
 package msf.ecmm.ope.receiver.pojo;

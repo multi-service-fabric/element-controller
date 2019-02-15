@@ -50,13 +50,13 @@ public class XmlFloatElement {
 
   /**
    * Setting value.
-   * @param value set value
+   * @param value Setting value
    */
   public void setValue(Float value) {
     this.value = value;
   }
 
-  /* (non-Javadoc)
+  /* (Non Javadoc)
    * @see java.lang.Object#toString()
    */
   @Override

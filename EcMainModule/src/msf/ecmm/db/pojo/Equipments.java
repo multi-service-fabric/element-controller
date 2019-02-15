@@ -60,7 +60,21 @@ public class Equipments implements Serializable {
   private String default_remark_menu = null;
   /** Egress queue menu default menu. */
   private String default_egress_queue_menu = null;
-  /** Model IF Information List. */
+  /** Identical VLAN number traffic aquisition total value existence flag. */
+  private Boolean same_vlan_number_traffic_total_value_flag;
+  /** VLAN traffic information acquisition method. */
+  private String vlan_traffic_capability = null;
+  /** VLAN traffic counter name acquisition extension MIB information. */
+  private String vlan_traffic_counter_name_mib_oid = null;
+  /** VLAN traffic counter value acquisition extension MIB information. */
+  private String vlan_traffic_counter_value_mib_oid = null;
+  /** CLI command execution and result analysis shell script path. */
+  private String cli_exec_path = null;
+  /** IRB Asymmetric setting feasibility. */
+  private Boolean irb_asymmetric_capability;
+  /** IRB Symmetric setting feasibility. */
+  private Boolean irb_symmetric_capability;
+  /** Model IF information list. */
   private Set<EquipmentIfs> equipmentIfsList;
   /** Physical IF Naming Convention Information. */
   private Set<IfNameRules> ifNameRulesList;
@@ -98,7 +112,7 @@ public class Equipments implements Serializable {
   }
 
   /**
-   * Acquring LagIF name prefix.
+   * Getting LagIF name prefix.
    *
    * @return LagIF name prefix
    */
@@ -538,7 +552,140 @@ public class Equipments implements Serializable {
   /**
    * Getting model IF information list.
    *
-   * @return model IF information list
+   * @return same_vlan_number_traffic_total_value_flag
+   */
+  public Boolean getSame_vlan_number_traffic_total_value_flag() {
+    return same_vlan_number_traffic_total_value_flag;
+  }
+
+  /**
+   * Setting the same VLAN number traffic acquisition sum value existence flag.
+   *
+   * @param same_vlan_number_traffic_total_value_flag
+   *          Setting same_vlan_number_traffic_total_value_flag
+   */
+  public void setSame_vlan_number_traffic_total_value_flag(Boolean same_vlan_number_traffic_total_value_flag) {
+    this.same_vlan_number_traffic_total_value_flag = same_vlan_number_traffic_total_value_flag;
+  }
+
+  /**
+   * Getting VLAN traffic information acquisition method.
+   *
+   * @return vlan_traffic_capability
+   */
+  public String getVlan_traffic_capability() {
+    return vlan_traffic_capability;
+  }
+
+  /**
+   * Setting VLAN traffic information acquisitioin method.
+   *
+   * @param vlan_traffic_capability
+   *          Setting vlan_traffic_capability
+   */
+  public void setVlan_traffic_capability(String vlan_traffic_capability) {
+    this.vlan_traffic_capability = vlan_traffic_capability;
+  }
+
+  /**
+   * Getting VLAN traffic counter name acquisition extension MIB information.
+   *
+   * @return vlan_traffic_counter_name_mib_oid
+   */
+  public String getVlan_traffic_counter_name_mib_oid() {
+    return vlan_traffic_counter_name_mib_oid;
+  }
+
+  /**
+   * Setting VLAN traffic counter name acquisitioin extension information.
+   *
+   * @param vlan_traffic_counter_name_mib_oid
+   *          Setting vlan_traffic_counter_name_mib_oid
+   */
+  public void setVlan_traffic_counter_name_mib_oid(String vlan_traffic_counter_name_mib_oid) {
+    this.vlan_traffic_counter_name_mib_oid = vlan_traffic_counter_name_mib_oid;
+  }
+
+  /**
+   * Getting VLAN traffic counter value acquisition extension MIB information.
+   *
+   * @return vlan_traffic_counter_value_mib_oid
+   */
+  public String getVlan_traffic_counter_value_mib_oid() {
+    return vlan_traffic_counter_value_mib_oid;
+  }
+
+  /**
+   * Setting VLAN traffic counter value acquisition extension MIB information.
+   *
+   * @param vlan_traffic_counter_value_mib_oid
+   *          Setting vlan_traffic_counter_value_mib_oid
+   */
+  public void setVlan_traffic_counter_value_mib_oid(String vlan_traffic_counter_value_mib_oid) {
+    this.vlan_traffic_counter_value_mib_oid = vlan_traffic_counter_value_mib_oid;
+  }
+
+  /**
+   * Getting CLI command execution and result analysis shell script path.
+   *
+   * @return cli_exec_path
+   */
+  public String getCli_exec_path() {
+    return cli_exec_path;
+  }
+
+  /**
+   * Setting CLI command execution and result analysis shell script path.
+   *
+   * @param cli_exec_path
+   *          Setting cli_exec_path
+   */
+  public void setCli_exec_path(String cli_exec_path) {
+    this.cli_exec_path = cli_exec_path;
+  }
+
+  /**
+   * Getting IRB Asymmetric configurability.
+   *
+   * @return irb_asymmetric_capability
+   */
+  public Boolean getIrb_asymmetric_capability() {
+    return irb_asymmetric_capability;
+  }
+
+  /**
+   * Setting IRB Asymmetric configurability.
+   *
+   * @param irb_asymmetric_capability
+   *          Setting irb_asymmetric_capability
+   */
+  public void setIrb_asymmetric_capability(Boolean irb_asymmetric_capability) {
+    this.irb_asymmetric_capability = irb_asymmetric_capability;
+  }
+
+  /**
+   * Getting IRB Symmetric configurabillity.
+   *
+   * @return irb_symmetric_capability
+   */
+  public Boolean getIrb_symmetric_capability() {
+    return irb_symmetric_capability;
+  }
+
+  /**
+   * Setting IRB Symmetric configurability.
+   *
+   * @param irb_symmetric_capability
+   *          Setting irb_symmetric_capability
+   */
+  public void setIrb_symmetric_capability(Boolean irb_symmetric_capability) {
+    this.irb_symmetric_capability = irb_symmetric_capability;
+  }
+
+  /**
+   * Getting model IF information list.
+   *
+   * @return Model IF information list
    */
   public Set<EquipmentIfs> getEquipmentIfsList() {
     return equipmentIfsList;
@@ -548,7 +695,7 @@ public class Equipments implements Serializable {
    * Setting model IF information list.
    *
    * @param equipmentIfsList
-   *          model IF information list
+   *          Model IF information list
    */
   public void setEquipmentIfsList(Set<EquipmentIfs> equipmentIfsList) {
     this.equipmentIfsList = equipmentIfsList;
@@ -595,7 +742,7 @@ public class Equipments implements Serializable {
   /**
    * Getting Remark menu Information.
    *
-   * @return Remark menu Information
+   * @return remarkMenusList
    */
   public Set<RemarkMenus> getRemarkMenusList() {
     return remarkMenusList;
@@ -605,7 +752,7 @@ public class Equipments implements Serializable {
    * Setting Remark menu Information.
    *
    * @param remarkMenusList
-   *          Remark menu Information
+   *          Setting remarkMenusList
    */
   public void setRemarkMenusList(Set<RemarkMenus> remarkMenusList) {
     this.remarkMenusList = remarkMenusList;
@@ -614,7 +761,7 @@ public class Equipments implements Serializable {
   /**
    * Getting Egress queue menu Information.
    *
-   * @return Egress queue menu Information
+   * @return egressQueueMenusList
    */
   public Set<EgressQueueMenus> getEgressQueueMenusList() {
     return egressQueueMenusList;
@@ -688,9 +835,13 @@ public class Equipments implements Serializable {
         + initial_config + ", boot_complete_msg=" + boot_complete_msg + ", evpn_capability=" + evpn_capability
         + ", l2vpn_capability=" + l2vpn_capability + ", l3vpn_capability=" + l3vpn_capability + ", qos_shaping_flg="
         + qos_shaping_flg + ", qos_remark_flg=" + qos_remark_flg + ", default_remark_menu=" + default_remark_menu
-        + ", default_egress_queue_menu=" + default_egress_queue_menu + ", equipmentIfsList=" + equipmentIfsList
-        + ", ifNameRulesList=" + ifNameRulesList + ", bootErrorMessagesList=" + bootErrorMessagesList
-        + ", remarkMenusList=" + remarkMenusList + ", egressQueueMenusList=" + egressQueueMenusList + "]";
+        + ", default_egress_queue_menu=" + default_egress_queue_menu + ", same_vlan_number_traffic_total_value_flag="
+        + same_vlan_number_traffic_total_value_flag + ", vlan_traffic_capability=" + vlan_traffic_capability
+        + ", vlan_traffic_counter_name_mib_oid=" + vlan_traffic_counter_name_mib_oid
+        + ", vlan_traffic_counter_value_mib_oid=" + vlan_traffic_counter_value_mib_oid + ", cli_exec_path="
+        + cli_exec_path + ", irb_asymmetric_capability=" + irb_asymmetric_capability + ", irb_symmetric_capability="
+        + irb_symmetric_capability + ", equipmentIfsList=" + equipmentIfsList + ", ifNameRulesList=" + ifNameRulesList
+        + ", bootErrorMessagesList=" + bootErrorMessagesList + ", remarkMenusList=" + remarkMenusList
+        + ", egressQueueMenusList=" + egressQueueMenusList + "]";
   }
-
 }

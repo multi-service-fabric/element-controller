@@ -7,7 +7,7 @@ package msf.ecmm.ope.receiver.pojo.parts;
 import java.util.ArrayList;
 
 /**
- * VlanIF Information.
+ * VlanIF information.
  */
 public class VlanIf {
 
@@ -17,37 +17,37 @@ public class VlanIf {
   /** VLAN ID. */
   private String vlanId;
 
-  /** IF Name. */
+  /** IF name. */
   private String ifName;
 
-  /** IF Status. */
+  /** IF state. */
   private String ifState;
 
-  /** MTU Value. */
+  /** MTU value. */
   private Integer mtu;
 
-  /** Accommodated Device IF Address (IPv4). */
+  /** Accommodated device IF address(IPv4). */
   private String ipv4Address;
 
-  /** Accommodate Device IF Address (IPv6). */
+  /** Accommodated device IF address(IPv6). */
   private String ipv6Address;
 
-  /** Accommodated Device IF Prefix (IPv4). */
+  /** Accomodated device IF prefix(IPv4). */
   private String ipv4Prefix;
 
-  /** Accommodated Device IF Prefix (IPv6). */
+  /** Accomodated device IF prefix(IPv6). */
   private String ipv6Prefix;
 
-  /** Port Mode. */
+  /** Port mode. */
   private String portMode;
 
-  /** Base IF Information. */
+  /** Base IF information. */
   private BaseIf baseIf;
 
   /** Information for BGP. */
   private Bgp bgp;
 
-  /** Static Route Information List. */
+  /** Static route information list. */
   private ArrayList<StaticRoute> staticRoutes = new ArrayList<StaticRoute>();
 
   /** Information for VRRP. */
@@ -55,6 +55,9 @@ public class VlanIf {
 
   /** QoS capability. */
   private QosGetVlanIfs qos;
+
+  /** IRB instance configuration. */
+  private IrbUpdateValue irb = null;
 
   /**
    * Getting VLANIF ID.
@@ -114,19 +117,19 @@ public class VlanIf {
   }
 
   /**
-   * Getting IF status.
+   * Getting IF state.
    *
-   * @return IF status
+   * @return IF state
    */
   public String getIfState() {
     return ifState;
   }
 
   /**
-   * Setting IF status.
+   * Setting IF state.
    *
    * @param ifState
-   *          IF status
+   *          IF state
    */
   public void setIfState(String ifState) {
     this.ifState = ifState;
@@ -142,7 +145,7 @@ public class VlanIf {
   }
 
   /**
-   * Getting MTU value.
+   * Setting MTU value.
    *
    * @param mtu
    *          MTU value
@@ -152,76 +155,76 @@ public class VlanIf {
   }
 
   /**
-   * Getting accommodated device IF address (IPv4).
+   * Getting accomodated device IF address(IPv4).
    *
-   * @return accommodated device IF address (IPv4)
+   * @return accomodated device IF address(IPv4)
    */
   public String getIpv4Address() {
     return ipv4Address;
   }
 
   /**
-   * Setting accommodated device IF address (IPv4).
+   * Setting accomodated device IF address(IPv4).
    *
    * @param ipv4Address
-   *          accommodated device IF address (IPv4)
+   *          accomodated device IF address(IPv4)
    */
   public void setIpv4Address(String ipv4Address) {
     this.ipv4Address = ipv4Address;
   }
 
   /**
-   * Getting accommodated device IF address (IPv6).
+   * Getting accomodated device IF address(IPv6).
    *
-   * @return accommodated device IF address (IPv6)
+   * @return accomodated device IF address(IPv6)
    */
   public String getIpv6Address() {
     return ipv6Address;
   }
 
   /**
-   * Setting accommodated device IF address (IPv6).
+   * Setting accomodated device IF address(IPv6).
    *
    * @param ipv6Address
-   *          accommodated device IF address (IPv6)
+   *          accomodated device IF address(IPv6)
    */
   public void setIpv6Address(String ipv6Address) {
     this.ipv6Address = ipv6Address;
   }
 
   /**
-   * Getting accommodated device IF prefix (IPv4).
+   * Getting accomodated device IF address(IPv4).
    *
-   * @return accommodated device IF prefix (IPv4)
+   * @return Accomodated device IF prefix(IPv4)
    */
   public String getIpv4Prefix() {
     return ipv4Prefix;
   }
 
   /**
-   * Setting accommodated device IF prefix (IPv4).
+   * Setting accomodated device IF prefix(IPv4).
    *
    * @param ipv4Prefix
-   *          accommodated device IF prefix (IPv4)
+   *          accomodated device IF prefix(IPv4)
    */
   public void setIpv4Prefix(String ipv4Prefix) {
     this.ipv4Prefix = ipv4Prefix;
   }
 
   /**
-   * Getting accommodated device IF prefix (IPv6).
+   * Getting accomodated device IF prefix(IPv6).
    *
-   * @return accommodated device IF prefix (IPv6)
+   * @return Accomodated device IF prefix(IPv6)
    */
   public String getIpv6Prefix() {
     return ipv6Prefix;
   }
 
   /**
-   * Setting accommodated device IF prefix (IPv6).
+   * Setting accomodated device IF prefix(IPv6).
    *
    * @param ipv6Prefix
-   *          accommodated device IF prefix (IPv6)
+   *          Accomodated device IF prefix(IPv6)
    */
   public void setIpv6Prefix(String ipv6Prefix) {
     this.ipv6Prefix = ipv6Prefix;
@@ -247,19 +250,19 @@ public class VlanIf {
   }
 
   /**
-   * Getting base IF information.
+   * Getting Base IF Information.
    *
-   * @return base IF
+   * @return Base IF
    */
   public BaseIf getBaseIf() {
     return baseIf;
   }
 
   /**
-   * Setting base IF information.
+   * Setting Base IF Information.
    *
    * @param baseIf
-   *          base IF
+   *          Base IF
    */
   public void setBaseIf(BaseIf baseIf) {
     this.baseIf = baseIf;
@@ -268,7 +271,7 @@ public class VlanIf {
   /**
    * Getting information for BGP.
    *
-   * @return information for BGP
+   * @return Information for BGP
    */
   public Bgp getBgp() {
     return bgp;
@@ -278,7 +281,7 @@ public class VlanIf {
    * Setting information for BGP.
    *
    * @param bgp
-   *          information for BGP
+   *          Information for BGP
    */
   public void setBgp(Bgp bgp) {
     this.bgp = bgp;
@@ -287,7 +290,7 @@ public class VlanIf {
   /**
    * Getting static route information list.
    *
-   * @return static route information list
+   * @return Static route information list
    */
   public ArrayList<StaticRoute> getStaticRoutes() {
     return staticRoutes;
@@ -297,7 +300,7 @@ public class VlanIf {
    * Setting static route information list.
    *
    * @param staticRoutes
-   *          static route information list
+   *          Static route information list
    */
   public void setStaticRoutes(ArrayList<StaticRoute> staticRoutes) {
     this.staticRoutes = staticRoutes;
@@ -306,7 +309,7 @@ public class VlanIf {
   /**
    * Getting information for VRRP.
    *
-   * @return information for VRRP
+   * @return Information for VRRP
    */
   public Vrrp getVrrp() {
     return vrrp;
@@ -316,7 +319,7 @@ public class VlanIf {
    * Setting information for VRRP.
    *
    * @param vrrp
-   *          information for VRRP
+   *          Information for VRRP
    */
   public void setVrrp(Vrrp vrrp) {
     this.vrrp = vrrp;
@@ -342,7 +345,25 @@ public class VlanIf {
   }
 
   /**
-   * Stringizing Instance
+   * Getting IRB instance information.
+   *
+   * @return irb
+   */
+  public IrbUpdateValue getIrbValue() {
+    return irb;
+  }
+
+  /**
+   * Setting IRB instance information.
+   *
+   * @param irb
+   *          Setting irb
+   */
+  public void setIrbValue(IrbUpdateValue irb) {
+    this.irb = irb;
+  }
+
+  /* (Non Javadoc)
    * @see java.lang.Object#toString()
    */
   @Override
@@ -350,6 +371,6 @@ public class VlanIf {
     return "VlanIf [vlanIfId=" + vlanIfId + ", vlanId=" + vlanId + ", ifName=" + ifName + ", ifState=" + ifState
         + ", mtu=" + mtu + ", ipv4Address=" + ipv4Address + ", ipv6Address=" + ipv6Address + ", ipv4Prefix="
         + ipv4Prefix + ", ipv6Prefix=" + ipv6Prefix + ", portMode=" + portMode + ", baseIf=" + baseIf + ", bgp=" + bgp
-        + ", staticRoutes=" + staticRoutes + ", vrrp=" + vrrp + ", qos=" + qos + "]";
+        + ", staticRoutes=" + staticRoutes + ", vrrp=" + vrrp + ", qos=" + qos + ", irb=" + irb + "]";
   }
 }

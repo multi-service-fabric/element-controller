@@ -15,7 +15,7 @@ public class LogData {
   private String message;
 
   /**
-   * Getting log mesage.
+   * Getting log message.
    * @return log message
    */
   public String getMessage() {

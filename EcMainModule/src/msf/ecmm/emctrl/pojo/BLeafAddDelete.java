@@ -111,7 +111,7 @@ public class BLeafAddDelete extends AbstractMessage {
 
   @Override
   public String toString() {
-    return "BLeafAddDelete [xmlns=" + xmlns + ", name=" + name + ", pareDevice=" + pairDevice + ", device=" + device
+    return "BLeafAddDelete [xmlns=" + xmlns + ", name=" + name + ", pairDevice=" + pairDevice + ", device=" + device
         + "]";
   }
 }

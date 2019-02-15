@@ -3,10 +3,10 @@
     when: download_flag
   - name: RA data set 1
     lineinfile: >-
-      dest='{{ installing_ec_path }}/{{ folder_name }}/ec'
+      dest='{{ rpm_path }}/{{ folder_name }}/ec'
       state=present
       backrefs=yes
       regexp='EC_CONTROL_SHELL_PATH=.*'
       line='EC_CONTROL_SHELL_PATH="{{ ec_path }}/bin/ec_ctl.sh"'
-  - shell: cp -f {{ installing_ec_path }}/{{ folder_name }}/* /lib/ocf/resource.d/heartbeat/
+  - shell: cp -f {{ rpm_path }}/{{ folder_name }}/* /lib/ocf/resource.d/heartbeat/
   - shell: chmod 755 /lib/ocf/resource.d/heartbeat/*

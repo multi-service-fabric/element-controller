@@ -13,13 +13,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.db.pojo.BGPOptions;
 import msf.ecmm.db.pojo.BootErrorMessages;
 import msf.ecmm.db.pojo.BreakoutIfs;
+import msf.ecmm.db.pojo.DummyVlanIfs;
 import msf.ecmm.db.pojo.EgressQueueMenus;
 import msf.ecmm.db.pojo.EquipmentIfs;
 import msf.ecmm.db.pojo.Equipments;
+import msf.ecmm.db.pojo.IRBInstanceInfo;
 import msf.ecmm.db.pojo.IfNameRules;
 import msf.ecmm.db.pojo.LagIfs;
 import msf.ecmm.db.pojo.LagMembers;
@@ -74,6 +82,8 @@ import msf.ecmm.ope.receiver.pojo.parts.IfNameRule;
 import msf.ecmm.ope.receiver.pojo.parts.IfSearchIf;
 import msf.ecmm.ope.receiver.pojo.parts.Informations;
 import msf.ecmm.ope.receiver.pojo.parts.InterfaceInfoTraffic;
+import msf.ecmm.ope.receiver.pojo.parts.IrbCapabilities;
+import msf.ecmm.ope.receiver.pojo.parts.IrbUpdateValue;
 import msf.ecmm.ope.receiver.pojo.parts.LagIf;
 import msf.ecmm.ope.receiver.pojo.parts.LagMember;
 import msf.ecmm.ope.receiver.pojo.parts.LagMembersBreakoutIfs;
@@ -100,12 +110,6 @@ import msf.ecmm.ope.receiver.pojo.parts.Vrrp;
 import msf.ecmm.ope.receiver.pojo.parts.Ztp;
 import msf.ecmm.traffic.pojo.NodeKeySet;
 import msf.ecmm.traffic.pojo.TrafficData;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 /**
  * REST Data Mapping.
@@ -355,14 +359,40 @@ public class RestMapper {
    *          VLAN IF information
    * @param nodes
    *          device information
+   * @param irbInstance
+   *          IRB instance information
    * @return VLAN IF information (for sending to REST)
    */
-  public static GetVlanInterface toVlanIfsInfo(VlanIfs vlanIfsDb, Nodes nodes) {
+  public static GetVlanInterface toVlanIfsInfo(VlanIfs vlanIfsDb, Nodes nodes, IRBInstanceInfo irbInstance) {
     logger.trace(CommonDefinitions.START);
     logger.debug(vlanIfsDb);
 
     GetVlanInterface ret = new GetVlanInterface();
-    ret.setVlanIf(getVlanIf(vlanIfsDb, nodes));
+    ret.setVlanIf(getVlanIf(vlanIfsDb, nodes, irbInstance));
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * REST data mapping_dummy VLAN IF information acquisition.
+   *
+   * @param dummyIfsDb
+   *          dummy VLAN IF information
+   * @param nodes
+   *          device information
+   * @param irbInstance
+   *          IRB instance information
+   * @return VLAN IF information (for sending to REST)
+   */
+  public static GetVlanInterface toVlanIfsInfoFromDummyIfs(DummyVlanIfs dummyIfsDb, Nodes nodes,
+      IRBInstanceInfo irbInstance) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug(dummyIfsDb);
+
+    GetVlanInterface ret = new GetVlanInterface();
+    ret.setVlanIf(getVlanIfFromDummy(dummyIfsDb, nodes, irbInstance));
 
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
@@ -376,17 +406,62 @@ public class RestMapper {
    *          VALNIF information list
    * @param nodes
    *          device information
-   * @return VLANIF information list (for sending to REST)
+   * @param irbList
+   *          IRB instance information list
+   * @return VLANIF information (for sending to REST)
    */
-  public static GetVlanInterfaceList toVlanIfsInfoList(List<VlanIfs> vlanIfsList, Nodes nodes) {
+  public static GetVlanInterfaceList toVlanIfsInfoList(List<VlanIfs> vlanIfsList, Nodes nodes,
+      List<IRBInstanceInfo> irbList) {
     logger.trace(CommonDefinitions.START);
     logger.debug(vlanIfsList);
 
     GetVlanInterfaceList ret = new GetVlanInterfaceList();
     ret.setVlanIf(new ArrayList<VlanIf>());
 
+    IRBInstanceInfo irbInfo = null;
     for (VlanIfs vlanIfs : vlanIfsList) {
-      ret.getVlanIfs().add(getVlanIf(vlanIfs, nodes));
+      for (IRBInstanceInfo checIrb : irbList) {
+        if (checIrb.getIrb_instance_id().equals(vlanIfs.getIrb_instance_id())) {
+          irbInfo = checIrb;
+          break;
+        }
+      }
+      ret.getVlanIfs().add(getVlanIf(vlanIfs, nodes, irbInfo));
+    }
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * REST data mapping_dummy VLANIF information list.
+   *
+   * @param vlanIfsList
+   *          VALNIF information list
+   * @param nodes
+   *          device information
+   * @param irbList
+   *          IRB instance information list
+   * @return VLANIF information (for sending to REST)
+   */
+  public static GetVlanInterfaceList toVlanIfsInfoListFromDummyIfs(List<DummyVlanIfs> vlanIfsList, Nodes nodes,
+      List<IRBInstanceInfo> irbList) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug(vlanIfsList);
+
+    GetVlanInterfaceList ret = new GetVlanInterfaceList();
+    ret.setVlanIf(new ArrayList<VlanIf>());
+
+    IRBInstanceInfo irbInfo = null;
+    for (DummyVlanIfs vlanIfs : vlanIfsList) {
+      for (IRBInstanceInfo checIrb : irbList) {
+        if (checIrb.getIrb_instance_id().equals(vlanIfs.getIrb_instance_id())) {
+          irbInfo = checIrb;
+          break;
+        }
+      }
+      ret.getVlanIfs().add(getVlanIfFromDummy(vlanIfs, nodes, irbInfo));
     }
 
     logger.debug(ret);
@@ -538,7 +613,14 @@ public class RestMapper {
     } else {
       ret.getQos().setEgress(null);
     }
-
+    ret.getCapabilities().setIrb(new IrbCapabilities());
+    ret.getCapabilities().getIrb().setAsymmetric(equipmentsDb.getIrb_asymmetric_capability());
+    ret.getCapabilities().getIrb().setSymmetric(equipmentsDb.getIrb_symmetric_capability());
+    ret.setSameVlanNumberTrafficTotalValueFlag(equipmentsDb.getSame_vlan_number_traffic_total_value_flag());
+    ret.setVlanTrafficCapability(equipmentsDb.getVlan_traffic_capability());
+    ret.setVlanTrafficCounterNameMibOid(equipmentsDb.getVlan_traffic_counter_name_mib_oid());
+    ret.setVlanTrafficCounterValueMibOid(equipmentsDb.getVlan_traffic_counter_value_mib_oid());
+    ret.setCliExecPath(equipmentsDb.getCli_exec_path());
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
     return ret;
@@ -571,20 +653,20 @@ public class RestMapper {
     if (nodesDb.getNode_state() == NODE_STATE_NODE_RESETTING_COMPLETE) {
       ret.setNodeState(NODE_STATE_NODE_RESETTING_COMPLETE_STRING);
     }
-    if (nodesDb.getNode_state() == NODE_STATE_FAILER_SETTING) {
-      ret.setNodeState(NODE_STATE_FAILER_SETTING_STRING);
+    if (nodesDb.getNode_state() == NODE_STATE_FAILURE_SETTING) {
+      ret.setNodeState(NODE_STATE_FAILURE_SETTING_STRING);
     }
-    if (nodesDb.getNode_state() == NODE_STATE_FAILER_NODE_RESETTING) {
-      ret.setNodeState(NODE_STATE_FAILER_NODE_RESETTING_STRING);
+    if (nodesDb.getNode_state() == NODE_STATE_FAILURE_NODE_RESETTING) {
+      ret.setNodeState(NODE_STATE_FAILURE_NODE_RESETTING_STRING);
     }
-    if (nodesDb.getNode_state() == NODE_STATE_FAILER_SERVICE_SETTING) {
-      ret.setNodeState(NODE_STATE_FAILER_SERVICE_SETTING_STRING);
+    if (nodesDb.getNode_state() == NODE_STATE_FAILURE_SERVICE_SETTING) {
+      ret.setNodeState(NODE_STATE_FAILURE_SERVICE_SETTING_STRING);
     }
-    if (nodesDb.getNode_state() == NODE_STATE_FAILER_OTHER) {
-      ret.setNodeState(NODE_STATE_FAILER_OTHER_STRING);
+    if (nodesDb.getNode_state() == NODE_STATE_FAILURE_OTHER) {
+      ret.setNodeState(NODE_STATE_FAILURE_OTHER_STRING);
     }
-    if (nodesDb.getNode_state() == NODE_STATE_FAILER_RECOVER_NODE) {
-      ret.setNodeState(NODE_STATE_FAILER_RECOVER_NODE_STRING);
+    if (nodesDb.getNode_state() == NODE_STATE_FAILURE_RECOVER_NODE) {
+      ret.setNodeState(NODE_STATE_FAILURE_RECOVER_NODE_STRING);
     }
     ret.setManagementIfAddress(nodesDb.getManagement_if_address());
     ret.setLoopbackIfAddress(nodesDb.getLoopback_if_address());
@@ -599,6 +681,7 @@ public class RestMapper {
     if (nodesDb.getPlane() != null && (nodesDb.getPlane() == NODE_PLANE_A || nodesDb.getPlane() == NODE_PLANE_B)) {
       ret.setPlane(Integer.toString(nodesDb.getPlane()));
     }
+    ret.setIrbType(nodesDb.getIrb_type());
 
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
@@ -663,7 +746,7 @@ public class RestMapper {
    *          breakoutIF information list
    * @param equipments
    *          model information
-   * @return LagIF informatio (for sending to REST)
+   * @return LagIF information (for sending to REST)
    */
   private static LagIf getLagIf(LagIfs lagIfs, List<BreakoutIfs> breakoutIfsList, Equipments equipments) {
 
@@ -758,9 +841,11 @@ public class RestMapper {
    *          VLAN IF information
    * @param nodes
    *          device information
+   * @param irbInstance
+   *          IRB instance information
    * @return VLAN IF information (for sending to REST)
    */
-  private static VlanIf getVlanIf(VlanIfs vlanIfsDb, Nodes nodes) {
+  private static VlanIf getVlanIf(VlanIfs vlanIfsDb, Nodes nodes, IRBInstanceInfo irbInstance) {
     logger.trace(CommonDefinitions.START);
     logger.debug(vlanIfsDb);
 
@@ -880,12 +965,16 @@ public class RestMapper {
       }
       ret.getQos().getSetValue().setRemarkMenu(vlanIfsDb.getRemark_menu());
     }
-    if (ret.getQos().getSetValue() != null
-        && ret.getQos().getSetValue().getInflowShapingRate() == null
+    if (ret.getQos().getSetValue() != null && ret.getQos().getSetValue().getInflowShapingRate() == null
         && ret.getQos().getSetValue().getOutflowShapingRate() == null
-        && ret.getQos().getSetValue().getRemarkMenu() == null
-        && ret.getQos().getSetValue().getEgressMenu() == null) {
+        && ret.getQos().getSetValue().getRemarkMenu() == null && ret.getQos().getSetValue().getEgressMenu() == null) {
       ret.getQos().setSetValue(null);
+    }
+    if (null != irbInstance) {
+      ret.setIrbValue(new IrbUpdateValue());
+      ret.getIrbValue().setIpv4Address(irbInstance.getIrb_ipv4_address());
+      ret.getIrbValue().setIpv4Prefix(irbInstance.getIrb_ipv4_prefix());
+      ret.getIrbValue().setVirtualGatewayAddress(irbInstance.getVirtual_gateway_address());
     }
 
     logger.debug(ret);
@@ -895,7 +984,42 @@ public class RestMapper {
   }
 
   /**
-   * QoS setting capabilities Information Acquisition.
+   * Dummy VLAN IF information acquisition.
+   *
+   * @param vlanIfsDb
+   *          VLAN IF information
+   * @param nodes
+   *          device information
+   * @return VLAN IF information (for sending to REST)
+   */
+  private static VlanIf getVlanIfFromDummy(DummyVlanIfs vlanIfsDb, Nodes nodes, IRBInstanceInfo irbInstance) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug(vlanIfsDb);
+
+    VlanIf ret = new VlanIf();
+
+    ret.setVlanIfId(vlanIfsDb.getVlan_if_id());
+    if (vlanIfsDb.getVlan_id() != null && !vlanIfsDb.getVlan_id().equals("0")) {
+      ret.setVlanId(vlanIfsDb.getVlan_id());
+    } else {
+      ret.setVlanId(null);
+    }
+
+    if (null != irbInstance) {
+      ret.setIrbValue(new IrbUpdateValue());
+      ret.getIrbValue().setIpv4Address(irbInstance.getIrb_ipv4_address());
+      ret.getIrbValue().setIpv4Prefix(irbInstance.getIrb_ipv4_prefix());
+      ret.getIrbValue().setVirtualGatewayAddress(null);
+    }
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
+
+  }
+
+  /**
+   * Getting QoS setting capabilities information (for sending to REST).
    *
    * @param equipments
    *          model information
@@ -1083,10 +1207,16 @@ public class RestMapper {
               if (vpnType.equals(CommonDefinitions.VPNTYPE_L3) && !vlanIfs.getVlan_id().equals("0")) {
                 ifNameTmp = vlanIfs.getIf_name() + key.getEquipmentsType().getUnit_connector() + vlanIfs.getVlan_id();
               } else {
-                ifNameTmp = vlanIfs.getIf_name();
+                if ((null != key.getEquipmentsType().getVlan_traffic_capability() && null != vlanIfs.getPort_mode())
+                    && ((VLAN_PORTMODE_TRUNK == vlanIfs.getPort_mode()
+                      && ((key.getEquipmentsType().getVlan_traffic_capability().equals(VLAN_TRAFFIC_TYPE_CLI)
+                      || (key.getEquipmentsType().getVlan_traffic_capability().equals(VLAN_TRAFFIC_TYPE_MIB))))))) {
+                  ifNameTmp = vlanIfs.getIf_name() + key.getEquipmentsType().getUnit_connector() + vlanIfs.getVlan_id();
+                } else {
+                  ifNameTmp = vlanIfs.getIf_name();
+                }
               }
             }
-
             if (td.getIfname().equals(ifNameTmp)) {
               for (PhysicalIfs ifs : key.getEquipmentsData().getPhysicalIfsList()) {
                 if ((vlanIfs.getPhysical_if_id() != null)
@@ -1140,6 +1270,9 @@ public class RestMapper {
     }
 
     if (!(tmpNode.getTrafficValue() == null)) {
+      if (0 == tmpNode.getTrafficValue().size()) {
+        tmpNode.setTrafficValue(null);
+      }
       ret.setSwitchTraffic(tmpNode);
     }
 
@@ -1250,7 +1383,15 @@ public class RestMapper {
                 if (vpnType.equals(CommonDefinitions.VPNTYPE_L3) && !vlanIfs.getVlan_id().equals("0")) {
                   ifNameTmp = vlanIfs.getIf_name() + key.getEquipmentsType().getUnit_connector() + vlanIfs.getVlan_id();
                 } else {
-                  ifNameTmp = vlanIfs.getIf_name();
+                  if ((null != key.getEquipmentsType().getVlan_traffic_capability() && null != vlanIfs.getPort_mode())
+                      && ((VLAN_PORTMODE_TRUNK == vlanIfs.getPort_mode()
+                        && ((key.getEquipmentsType().getVlan_traffic_capability().equals(VLAN_TRAFFIC_TYPE_CLI)
+                        || (key.getEquipmentsType().getVlan_traffic_capability().equals(VLAN_TRAFFIC_TYPE_MIB))))))) {
+                    ifNameTmp = vlanIfs.getIf_name() + key.getEquipmentsType().getUnit_connector()
+                        + vlanIfs.getVlan_id();
+                  } else {
+                    ifNameTmp = vlanIfs.getIf_name();
+                  }
                 }
               }
 
@@ -1307,6 +1448,9 @@ public class RestMapper {
       }
 
       if (!(tmpNode.getTrafficValue() == null)) {
+        if (0 == tmpNode.getTrafficValue().size()) {
+          tmpNode.setTrafficValue(null);
+        }
         ret.getSwitchTraffics().add(tmpNode);
       }
     }
@@ -1454,10 +1598,10 @@ public class RestMapper {
       String os = String.valueOf(scriptResultList.get("top"));
       String[] osList = os.split(",");
       Float id = (float) 0.0;
-      Float free = (float) 0;
-      Float used = (float) 0;
-      Float buffers = (float) 0;
-      Float swapUsed = (float) 0;
+      int free = 0;
+      int used = 0;
+      int buffers = 0;
+      int swapUsed = 0;
       int res = 0;
       int nproc = 0;
       Float cpu = (float) 0;
@@ -1474,24 +1618,24 @@ public class RestMapper {
             id = (float) -1;
           }
           try {
-            free = Float.valueOf(osList[1].split("=")[1]);
+            free = (int)(float)Float.valueOf(osList[1].split("=")[1]);
           } catch (NumberFormatException nfe) {
-            free = (float) -1;
+            free = -1;
           }
           try {
-            used = Float.valueOf(osList[2].split("=")[1]);
+            used = (int)(float)Float.valueOf(osList[2].split("=")[1]);
           } catch (NumberFormatException nfe) {
-            used = (float) -1;
+            used = -1;
           }
           try {
-            buffers = Float.valueOf(osList[3].split("=")[1]);
+            buffers = (int)(float)Float.valueOf(osList[3].split("=")[1]);
           } catch (NumberFormatException nfe) {
-            buffers = (float) -1;
+            buffers = -1;
           }
           try {
-            swapUsed = Float.valueOf(osList[4].split("=")[1]);
+            swapUsed = (int)(float)Float.valueOf(osList[4].split("=")[1]);
           } catch (NumberFormatException nfe) {
-            swapUsed = (float) -1;
+            swapUsed = -1;
           }
           try {
             res = Math.round(Float.valueOf(osList[5].split("=")[1]));
@@ -1506,10 +1650,10 @@ public class RestMapper {
 
         } catch (ArrayIndexOutOfBoundsException ae) {
           id = (float) -1;
-          free = (float) -1;
-          used = (float) -1;
-          buffers = (float) -1;
-          swapUsed = (float) -1;
+          free = -1;
+          used = -1;
+          buffers = -1;
+          swapUsed = -1;
           res = -1;
           cpu = (float) -1;
         }
@@ -1652,6 +1796,5 @@ public class RestMapper {
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
     return ret;
-
   }
 }

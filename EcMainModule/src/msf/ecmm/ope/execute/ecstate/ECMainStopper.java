@@ -9,6 +9,8 @@ import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
 import java.util.HashMap;
 
+import org.hibernate.HibernateException;
+
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
@@ -28,8 +30,6 @@ import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
 import msf.ecmm.traffic.InterfaceIntegrityValidationManager;
 import msf.ecmm.traffic.TrafficDataGatheringManager;
-
-import org.hibernate.HibernateException;
 
 /**
  * EC Termination Class Definition. Terminate EC.

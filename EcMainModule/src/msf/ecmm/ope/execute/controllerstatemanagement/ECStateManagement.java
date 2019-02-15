@@ -31,43 +31,43 @@ import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.CheckEcMainModuleStatus;
 
 /**
- * Controller Status Acquisition.
+ * Getting controller status.
  */
 public class ECStateManagement extends Operation {
 
-  /** In case input data check result is NG. */
+  /** In case input data check is NG. */
   private static final String ERROR_CODE_310101 = "310101";
   /** Linux command execution failed. */
   private static final String ERROR_CODE_310304 = "310304";
-  /** Error has occurred from EM while requesting controller status acquisition to EM (error response received). */
+  /** Error occurred from EM while requesting controller status acquisition to EM (Error response reception). */
   private static final String ERROR_CODE_310302 = "310302";
-  /** Disconnection or connection timeout has occurred with EM while requesting controller status acquisition to EM. */
+  /** Disconnection with EM or timeout has occurred while requesting controller status acquisition to EM. */
   private static final String ERROR_CODE_310303 = "310303";
-  /** Other exceptions. */
+  /** Other exception. */
   private static final String ERROR_CODE_310399 = "310399";
 
-  /** Linux Command Execution Variable (top). */
+  /** Linux command execution variable（top）. */
   private static final String LINUX_COMMAND_TOP = "1";
 
-  /** Linux Command Execution Variable (nproc). */
+  /** Linux command execution variable（nproc）. */
   private static final String LINUX_COMMAND_NPROC = "1";
 
-  /** Linux Command Execution Variable (df). */
+  /** Linux command execution variable（df）. */
   private static final String LINUX_COMMAND_DF = "1";
 
-  /** Linux Command Execution Variable (sar). */
+  /** Linux command execution variable（sar）. */
   private static final String LINUX_COMMAND_SAR = "1";
 
-  /** Linux Command Execution Variable (hostname). */
+  /** Linux command execution variable（hostname）. */
   private static final String LINUX_COMMAND_HOSTNAME = "1";
 
-  /** Request Counter Transmission Type: Send. */
+  /** Request counter sending/reception type: Send. */
   private static final int REST_TRANSMISSION = 0;
 
-  /** Request Counter Transmission Type: Receive. */
+  /** Request counter sending/reception type: Receive. */
   private static final int REST_RECEPTION = 1;
 
-  /** Controller Status Acquisition Shell Script Name. */
+  /** Controller status acquisition shell script name. */
   private static final String CONTROLLER_STATUS = "controller_status.sh";
 
   /**

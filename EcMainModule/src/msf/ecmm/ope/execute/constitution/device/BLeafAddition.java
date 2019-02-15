@@ -39,20 +39,20 @@ public class BLeafAddition extends NodeAddition {
   }
 
   @Override
-  protected boolean executeAddNode(String ecmainIpaddr, List<Nodes> nodesListDbMapper)
+  protected boolean executeAddNode(String ecmainIpaddr, List<Nodes> nodesListDbMapper, int internallinkVlanId)
       throws EmctrlException, IllegalArgumentException {
     logger.trace(CommonDefinitions.START);
 
     AbstractMessage ret = null;
 
     try (DBAccessManager session = new DBAccessManager()) {
-      Nodes pareNodes = null;
+      Nodes pairNodes = null;
       if (((AddNode) getInData()).getUpdateNode() != null) {
-        pareNodes = session.searchNodes(((AddNode) getInData()).getUpdateNode().getNodeId(), null);
+        pairNodes = session.searchNodes(((AddNode) getInData()).getUpdateNode().getNodeId(), null);
       }
 
       BLeafAddDelete bleafAddEm = EmMapper.toBLeafInfoNodeCreate((AddNode) getInData(), ecmainIpaddr, nodesListDbMapper,
-          pareNodes);
+          pairNodes, internallinkVlanId);
 
       EmController emController = EmController.getInstance();
       ret = emController.request(bleafAddEm, false);

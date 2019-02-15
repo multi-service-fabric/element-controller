@@ -17,6 +17,8 @@ public class BulkUpdateL2VlanIf extends AbstractRestMessage {
   /** Unique parameter for each slice ID. */
   private String vrfId = null;
 
+  private String vni = null;
+
   /** List information of the VLAN IF is to be controlled. */
   private ArrayList<VlanIfsBulkUpdate> vlanIfs = null;
 
@@ -43,9 +45,28 @@ public class BulkUpdateL2VlanIf extends AbstractRestMessage {
   }
 
   /**
-   * Getting List information of the VLAN IF is to be controlled.
+   * Getting parameter in case of IRB not supported.
    *
-   * @return List information of the VLAN IF is to be controlled
+   * @return Unique parameter for each slide ID
+   */
+  public String getVni() {
+    return vni;
+  }
+
+  /**
+   * Setting parameter in case of IRB not supported.
+   *
+   * @param vni
+   *          Unique parameter for each slide ID
+   */
+  public void setVni(String vni) {
+    this.vni = vni;
+  }
+
+  /**
+   * Getting list information of VLANIF to be controlled.
+   *
+   * @return List information of VLAN IF of which batch generation is to be controlled.
    */
   public ArrayList<VlanIfsBulkUpdate> getVlanIfs() {
     return vlanIfs;
@@ -71,23 +92,19 @@ public class BulkUpdateL2VlanIf extends AbstractRestMessage {
   }
 
   /**
-   * Setting Remark Menu.
+   * Setting remark's menu.
    *
    * @param remarkMenu
-   *          setting remarkMenu
+   *          Setting remarkMenu
    */
   public void setRemarkMenu(String remarkMenu) {
     this.remarkMenu = remarkMenu;
   }
 
-  /**
-   * Stringizing Instance.
-   *
-   * @return instance string
-   */
   @Override
   public String toString() {
-    return "BulkCreateL2VlanIf [vlanIfs=" + vlanIfs + ", vrfId=" + vrfId + ", remarkMenu=" + remarkMenu + "]";
+    return "BulkUpdateL2VlanIf [vrfId=" + vrfId + ", vni=" + vni + ", vlanIfs=" + vlanIfs + ", remarkMenu=" + remarkMenu
+        + "]";
   }
 
  /**
@@ -100,7 +117,11 @@ public class BulkUpdateL2VlanIf extends AbstractRestMessage {
    */
   public void check(OperationType ope) throws CheckDataException {
 
-    if (vrfId == null) {
+    if (vrfId == null && vni == null) {
+      throw new CheckDataException();
+    }
+
+    if (vrfId != null && vni != null) {
       throw new CheckDataException();
     }
 

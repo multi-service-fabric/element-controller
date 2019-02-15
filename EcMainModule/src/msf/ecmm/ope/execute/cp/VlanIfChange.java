@@ -228,7 +228,7 @@ public class VlanIfChange extends Operation {
 
       UpdateVlanIf inputData = (UpdateVlanIf) getInData();
 
-      inputData.check(OperationType.VlanIfChange);
+      inputData.check(new OperationType(OperationType.VlanIfChange));
 
     } catch (CheckDataException cde) {
       logger.warn("check error :", cde);

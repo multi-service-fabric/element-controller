@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.traffic;
@@ -9,11 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.convert.LogicalPhysicalConverter;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
@@ -44,7 +42,7 @@ public class IntegrityExecutor extends Thread {
   /**
    * Logger
    */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
   /** IF Information (Device Origin) */
   private HashMap<NodeKeySet, ArrayList<SnmpIfOperStatus>> ifStateFromDevice;
@@ -68,7 +66,7 @@ public class IntegrityExecutor extends Thread {
   }
 
   /**
-   * IF Status Integrit.
+   * IF Status Integrity.
    */
   public void run() {
 
@@ -199,7 +197,9 @@ public class IntegrityExecutor extends Thread {
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_407043));
     }
 
-    OperationControlManager.getInstance().recieveEndIfIntegrity();
+    if (startResult) {
+      OperationControlManager.getInstance().recieveEndIfIntegrity();
+    }
 
     synchronized (InterfaceIntegrityValidationManager.getInstance().getExecuteThreadHolder()) {
       InterfaceIntegrityValidationManager.getInstance().getExecuteThreadHolder()
@@ -290,7 +290,7 @@ public class IntegrityExecutor extends Thread {
               ret.getNodes().add(tmpstate);
             }
           }
-        } else { 
+        } else {
           ifStateFromDevice.put(node, ifStateFromDevice.get(tmpNode));
         }
         if (node.getEquipmentsType().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {

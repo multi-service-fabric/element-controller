@@ -1,0 +1,56 @@
+############################################
+# The common paramters setting
+############################################
+
+# The flag of the redundant DB status(redundant DB:1, non-redundant DB:0)
+REP_STATE=1
+
+# The backup DB name
+DB_NAME=msf_em_2018
+
+# The directory name for storing the DB backup file in the DB server
+BACKUP_PATH=/home/msf
+
+# The restore DB name
+RESTORE_DB_NAME="msf_em_808"
+
+#  The scrpipt path for updating the DB schema defined by each resource
+DB_SCHEMA_UPDATE_SCRIPT="./MSF2018A_MSF2018B.sh"
+
+# IP address with replication IF in the Master server
+REP_MASTER_IP=172.16.0.190
+
+############################################
+# If the DB is redunadant,  The information on the ACT DB is set
+# If the DB is not redunadant, the information on the ACT DB is set
+############################################
+
+# User name for the ACT DB login
+ACT_USER=root
+
+# Password for the  ACT DB login
+ACT_PASS=admin123
+
+# IP address of the ACT DB 
+ACT_SERVER=192.168.0.190
+
+# Host Name of the ACT DB 
+ACT_SERVER_NAME="emdb_pacemaker_1"
+
+############################################
+# If the DB is redunadant,  The information on the STBY DB is set
+# If the DB is not redunadant, the server information is set
+############################################
+
+# User name for the STBY DB login
+SBY_USER=root
+
+# Password for the STBY DB login
+SBY_PASS=admin123 
+
+# IP address of the STBY DB
+SBY_SERVER=192.168.0.191
+
+# Host Name of the STBY DB 
+SBY_SERVER_NAME="emdb_pacemaker_2"
+

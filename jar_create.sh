@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+# Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
 
 ## create EcMainModule.jar from src/ and lib/
 

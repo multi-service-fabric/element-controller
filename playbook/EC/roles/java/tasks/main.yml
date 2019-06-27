@@ -2,7 +2,7 @@
   - include: getrpm.yml
     when: download_flag
   - name: java install
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/jdk-8u92-linux-x64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/jdk-8u92-linux-x64.rpm
   - name: check before add setting
     find: paths=/etc/profile
           patterns='JRE_HOME=/usr/java/jdk1.8.0_92/'

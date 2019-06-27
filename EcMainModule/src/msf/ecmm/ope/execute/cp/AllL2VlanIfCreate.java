@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.cp;
@@ -36,7 +36,7 @@ import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.BulkCreateL2VlanIf;
 import msf.ecmm.ope.receiver.pojo.CheckDataException;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
-import msf.ecmm.ope.receiver.pojo.parts.BaseIfCreateVlanIf;
+import msf.ecmm.ope.receiver.pojo.parts.BaseIfInfo;
 import msf.ecmm.ope.receiver.pojo.parts.CreateVlanIfs;
 import msf.ecmm.ope.receiver.pojo.parts.IrbUpdateValue;
 import msf.ecmm.ope.receiver.pojo.parts.IrbValue;
@@ -76,6 +76,9 @@ public class AllL2VlanIfCreate extends Operation {
 
   /** IRB capability check error. */
   private static final String ERROR_CODE_010104 = "010104";
+
+  /** QinQ check error */
+  private static final String ERROR_CODE_010105 = "010105";
 
   /** In case materialization target dummy VLAN does not exist. */
   private static final String ERROR_CODE_010203 = "010203";
@@ -205,16 +208,28 @@ public class AllL2VlanIfCreate extends Operation {
             return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010104);
           }
           if (null != inputData.getVrfId() && null != nodesDb.getIrb_type()) {
-            if (null == inputData.getL3Vni()
-                && nodesDb.getIrb_type().equals(CommonDefinitions.IRB_TYPE_SYMMETRIC)) {
-              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041,"This node is SYMMETRIC."));
+            if (null == inputData.getL3Vni() && nodesDb.getIrb_type().equals(CommonDefinitions.IRB_TYPE_SYMMETRIC)) {
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "This node is SYMMETRIC."));
               return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010104);
             } else if (null == inputData.getLoopBackInterface()
                 && nodesDb.getIrb_type().equals(CommonDefinitions.IRB_TYPE_ASYMMETRIC)) {
-              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041,"This node is ASYMMETRIC."));
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "This node is ASYMMETRIC."));
               return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010104);
             }
           }
+          if (inputData.getqInQ() == null || !inputData.getqInQ()) {
+            if (nodesDb.getQ_in_q_type() != null && nodesDb.getQ_in_q_type().equals(CommonDefinitions.Q_IN_Q_ONLY)) {
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "This node is Q in Q only."));
+              return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010105);
+            }
+          } else {
+            if (inputData.getqInQ() && (nodesDb.getQ_in_q_type() == null
+                || nodesDb.getQ_in_q_type().equals(CommonDefinitions.Q_IN_Q_UNSUPPORT))) {
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "This node is Q in Q unsupport."));
+              return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010105);
+            }
+          }
+
           IRBInstanceInfo irbDb = session.searchIrbInstanceInfo(creVlanIfs.getNodeId(),
               creVlanIfs.getVlanId().toString());
           String instanceId = null;
@@ -243,12 +258,12 @@ public class AllL2VlanIfCreate extends Operation {
           }
 
           if (null == creVlanIfs.getIsDummy() || false == creVlanIfs.getIsDummy()) {
-            VlanIfs vlanIfsDb = DbMapper.toL2VlanIfCreate(creVlanIfs, nodesDb, instanceId);
+            VlanIfs vlanIfsDb = DbMapper.toL2VlanIfCreate(creVlanIfs, nodesDb, instanceId, inputData.getqInQ());
             session.addL2VlanIf(vlanIfsDb);
           } else {
             if (null == nodesDb.getIrb_type() || nodesDb.getIrb_type().equals(CommonDefinitions.IRB_TYPE_SYMMETRIC)) {
-              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041,
-                  "Symmetric node can not be created dummu vlan."));
+              logger.warn(
+                  LogFormatter.out.format(LogFormatter.MSG_403041, "Symmetric node can not be created dummu vlan."));
               return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010104);
             }
             DummyVlanIfs dummyVlanIfsDb = DbMapper.toDummyVlanIfCreate(creVlanIfs, nodesDb, instanceId);
@@ -261,7 +276,7 @@ public class AllL2VlanIfCreate extends Operation {
       if (inputData.getUpdateVlanIfs() != null) {
         for (UpdateVlanIfs upVlanIfs : inputData.getUpdateVlanIfs()) {
 
-          BaseIfCreateVlanIf baseIf = upVlanIfs.getBaseIf();
+          BaseIfInfo baseIf = upVlanIfs.getBaseIf();
           Nodes nodesDb = null;
           if (null != baseIf) {
             for (Nodes listElem : nodesDbList) {
@@ -271,8 +286,7 @@ public class AllL2VlanIfCreate extends Operation {
               }
             }
             if (null == nodesDb.getIrb_type() || nodesDb.getIrb_type().equals(CommonDefinitions.IRB_TYPE_SYMMETRIC)) {
-              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041,
-                  "Dummy VLAN not supported."));
+              logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Dummy VLAN not supported."));
               return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_010104);
             }
             DummyVlanIfs dummy = searchDeleteDummyIfsFromList(upVlanIfs.getVlanIfId(),
@@ -282,8 +296,7 @@ public class AllL2VlanIfCreate extends Operation {
             } else {
               session.deleteDummyVlanIfsInfo(upVlanIfs.getNodeId(), upVlanIfs.getVlanIfId());
             }
-            IRBInstanceInfo irbDb = session.searchIrbInstanceInfo(upVlanIfs.getNodeId(),
-                dummy.getVlan_id().toString());
+            IRBInstanceInfo irbDb = session.searchIrbInstanceInfo(upVlanIfs.getNodeId(), dummy.getVlan_id().toString());
             if (irbDb == null && upVlanIfs.getIrbValue() == null) {
               return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_010204);
             }
@@ -309,8 +322,7 @@ public class AllL2VlanIfCreate extends Operation {
           if (null != irbUpdate) {
             String nodeId = null;
             String vlanId = null;
-            VlanIfs vlanifs = searchVlanIfsFromList(upVlanIfs.getVlanIfId(),
-                allVlanIfsMap.get(upVlanIfs.getNodeId()));
+            VlanIfs vlanifs = searchVlanIfsFromList(upVlanIfs.getVlanIfId(), allVlanIfsMap.get(upVlanIfs.getNodeId()));
             if (null != vlanifs) {
               nodeId = vlanifs.getNode_id();
               vlanId = vlanifs.getVlan_id();
@@ -406,7 +418,6 @@ public class AllL2VlanIfCreate extends Operation {
    */
   private boolean checkDuplicateRegisteration(List<VlanIfs> dbVlanList, CreateVlanIfs creVlanIfs) {
     logger.trace(CommonDefinitions.START);
-    logger.debug(dbVlanList);
 
     String ifType = creVlanIfs.getBaseIf().getIfType();
     String ifId = creVlanIfs.getBaseIf().getIfId();

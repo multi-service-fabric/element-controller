@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -7,11 +7,9 @@ package msf.ecmm.db.dao;
 import static msf.ecmm.common.LogFormatter.*;
 import static msf.ecmm.db.DBAccessException.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 
-import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.db.DBAccessException;
 
 /**
@@ -20,7 +18,7 @@ import msf.ecmm.db.DBAccessException;
 public class BaseDAO {
 
   /** Logger Instance. */
-  protected final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  protected final MsfLogger logger = new MsfLogger();
 
   /** Session Instance. */
   protected Session session;

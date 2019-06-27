@@ -2,19 +2,19 @@
   - include: getrpm.yml
     when: download_flag
   - name: PostgreSQL install 1
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libxslt-1.1.28-5.el7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/libxslt-1.1.28-5.el7.x86_64.rpm
   - name: PostgreSQL install 2
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/uuid-1.6.2-26.el7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/uuid-1.6.2-26.el7.x86_64.rpm
   - name: PostgreSQL install 3
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-libs-9.3.13-1PGDG.rhel7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/postgresql93-libs-9.3.13-1PGDG.rhel7.x86_64.rpm
   - name: PostgreSQL install 4
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-9.3.13-1PGDG.rhel7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/postgresql93-9.3.13-1PGDG.rhel7.x86_64.rpm
   - name: PostgreSQL install 5
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-server-9.3.13-1PGDG.rhel7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/postgresql93-server-9.3.13-1PGDG.rhel7.x86_64.rpm
   - name: PostgreSQL install 6
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-devel-9.3.13-1PGDG.rhel7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/postgresql93-devel-9.3.13-1PGDG.rhel7.x86_64.rpm
   - name: PostgreSQL install 7
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/postgresql93-contrib-9.3.13-1PGDG.rhel7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/postgresql93-contrib-9.3.13-1PGDG.rhel7.x86_64.rpm
   - name: check before add setting
     find: paths=/var/lib/pgsql/.bash_profile
           patterns='PGDATA=/usr/local/pgsql/9.3/data'

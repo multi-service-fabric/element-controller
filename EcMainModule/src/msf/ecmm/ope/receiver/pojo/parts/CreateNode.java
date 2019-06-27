@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -68,6 +68,9 @@ public class CreateNode {
 
   /** IRB type. */
   private String irbType;
+
+  /** Q-in-Q type. */
+  private String qInQType;
 
   /** OSPF Area at the tine of multicluster. */
   private String clusterArea;
@@ -383,6 +386,25 @@ public class CreateNode {
   }
 
   /**
+   * Getting Q-in-Q type.
+   *
+   * @return Q-in-Q type
+   */
+  public String getqInQType() {
+    return qInQType;
+  }
+
+  /**
+   * Setting Q-in-Q type.
+   *
+   * @param qInQType
+   *          Q-in-Q type
+   */
+  public void setqInQType(String qInQType) {
+    this.qInQType = qInQType;
+  }
+
+  /**
    * Getting OSPF Area at multicluster.
    *
    * @return OSPF Area at multicluster
@@ -519,6 +541,12 @@ public class CreateNode {
         throw new CheckDataException();
       }
     }
+    if (qInQType != null) {
+      if (!qInQType.equals(CommonDefinitions.Q_IN_Q_ONLY) && !qInQType.equals(CommonDefinitions.Q_IN_Q_SUPPORT)
+          && !qInQType.equals(CommonDefinitions.Q_IN_Q_UNSUPPORT)) {
+        throw new CheckDataException();
+      }
+    }
   }
 
   /*
@@ -532,8 +560,9 @@ public class CreateNode {
         + username + ", password=" + password + ", macAddress=" + macAddress + ", provisioning=" + provisioning
         + ", ntpServerAddress=" + ntpServerAddress + ", managementInterface=" + managementInterface
         + ", loopbackInterface=" + loopbackInterface + ", plane=" + plane + ", snmpCommunity=" + snmpCommunity
-        + ", ifInfo=" + ifInfo + ", oppositeNodes=" + oppositeNodes + ", vpn=" + vpn + ", irbType=" + irbType
-        + ", clusterArea=" + clusterArea + ", virtualLink=" + virtualLink + ", range=" + range + "]";
+        + ", ifInfo=" + ifInfo + ", oppositeNodes=" + oppositeNodes + ", vpn=" + vpn + ", irbType=" + irbType        
+        + ", qInQType=" + qInQType + ", clusterArea=" + clusterArea + ", virtualLink=" + virtualLink + ", range="
+        + range + "]";
   }
 
 }

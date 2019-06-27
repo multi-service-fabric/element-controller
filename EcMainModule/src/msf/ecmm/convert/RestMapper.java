@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.convert;
@@ -13,13 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.db.pojo.BGPOptions;
 import msf.ecmm.db.pojo.BootErrorMessages;
 import msf.ecmm.db.pojo.BreakoutIfs;
@@ -38,18 +36,32 @@ import msf.ecmm.db.pojo.StaticRouteOptions;
 import msf.ecmm.db.pojo.VRRPOptions;
 import msf.ecmm.db.pojo.VlanIfs;
 import msf.ecmm.emctrl.restpojo.ControllerLog;
-import msf.ecmm.emctrl.restpojo.ControllerStatusFromEm;
+import msf.ecmm.fcctrl.pojo.ConfigAuditNotification;
 import msf.ecmm.fcctrl.pojo.ControllerStatusToFc;
+import msf.ecmm.fcctrl.pojo.LogNotificationToFc;
 import msf.ecmm.fcctrl.pojo.Operations;
+import msf.ecmm.fcctrl.pojo.ServerNotificationToFc;
 import msf.ecmm.fcctrl.pojo.UpdateLogicalIfStatus;
 import msf.ecmm.fcctrl.pojo.parts.Controller;
+import msf.ecmm.fcctrl.pojo.parts.ControllerLogToFc;
+import msf.ecmm.fcctrl.pojo.parts.ControllerServerToFc;
+import msf.ecmm.fcctrl.pojo.parts.CpuToFc;
+import msf.ecmm.fcctrl.pojo.parts.DevicesToFc;
+import msf.ecmm.fcctrl.pojo.parts.DiffToFc;
+import msf.ecmm.fcctrl.pojo.parts.DiskToFc;
+import msf.ecmm.fcctrl.pojo.parts.FailureInfoToFc;
 import msf.ecmm.fcctrl.pojo.parts.IfsLogical;
+import msf.ecmm.fcctrl.pojo.parts.LatestEmConfigToFc;
+import msf.ecmm.fcctrl.pojo.parts.MemoryToFc;
+import msf.ecmm.fcctrl.pojo.parts.NeConfigToFc;
+import msf.ecmm.fcctrl.pojo.parts.NodeConfigToFc;
 import msf.ecmm.fcctrl.pojo.parts.NodeLogical;
 import msf.ecmm.ope.receiver.pojo.CheckEcMainModuleStatus;
 import msf.ecmm.ope.receiver.pojo.EmControllerReceiveStatus;
 import msf.ecmm.ope.receiver.pojo.GetAllNodeTraffic;
 import msf.ecmm.ope.receiver.pojo.GetBreakoutInterface;
 import msf.ecmm.ope.receiver.pojo.GetBreakoutInterfaceList;
+import msf.ecmm.ope.receiver.pojo.GetConfigAuditList;
 import msf.ecmm.ope.receiver.pojo.GetControllerLog;
 import msf.ecmm.ope.receiver.pojo.GetEquipmentType;
 import msf.ecmm.ope.receiver.pojo.GetEquipmentTypeList;
@@ -63,6 +75,8 @@ import msf.ecmm.ope.receiver.pojo.GetPhysicalInterface;
 import msf.ecmm.ope.receiver.pojo.GetPhysicalInterfaceList;
 import msf.ecmm.ope.receiver.pojo.GetVlanInterface;
 import msf.ecmm.ope.receiver.pojo.GetVlanInterfaceList;
+import msf.ecmm.ope.receiver.pojo.NotifyEmStatusLog;
+import msf.ecmm.ope.receiver.pojo.NotifyEmStatusServer;
 import msf.ecmm.ope.receiver.pojo.parts.BaseIf;
 import msf.ecmm.ope.receiver.pojo.parts.Bgp;
 import msf.ecmm.ope.receiver.pojo.parts.BreakoutIf;
@@ -93,8 +107,10 @@ import msf.ecmm.ope.receiver.pojo.parts.LogData;
 import msf.ecmm.ope.receiver.pojo.parts.LogInformation;
 import msf.ecmm.ope.receiver.pojo.parts.Memory;
 import msf.ecmm.ope.receiver.pojo.parts.Node;
+import msf.ecmm.ope.receiver.pojo.parts.NodeConfigAll;
 import msf.ecmm.ope.receiver.pojo.parts.OsInfo;
 import msf.ecmm.ope.receiver.pojo.parts.PhysicalIf;
+import msf.ecmm.ope.receiver.pojo.parts.QInQCapabilities;
 import msf.ecmm.ope.receiver.pojo.parts.QosCapabilities;
 import msf.ecmm.ope.receiver.pojo.parts.QosConfigValues;
 import msf.ecmm.ope.receiver.pojo.parts.QosGetVlanIfs;
@@ -116,8 +132,8 @@ import msf.ecmm.traffic.pojo.TrafficData;
  */
 public class RestMapper {
 
-  /** Logger. */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  /** logger. */
+  private static final MsfLogger logger = new MsfLogger();
 
   /**
    * REST Data Mapping_Model Information Acquisition.
@@ -140,11 +156,11 @@ public class RestMapper {
   }
 
   /**
-   * REST Data Mapping_Model List Information Acquisition.
+   * REST Data Mapping_Device List Information Acquisition.
    *
-   * @param equipmentsList
-   *          model list information
-   * @return model list informaition (for sending to REST)
+   * @param nodesList
+   *          Device List Information
+   * @return Device List Information (for sending to REST)
    */
   public static GetEquipmentTypeList toEquipmentList(List<Equipments> equipmentsList) {
 
@@ -165,11 +181,11 @@ public class RestMapper {
   }
 
   /**
-   * REST Data Mapping_Device Information.
+   * REST Data Mapping_Device List Information Acquisition.
    *
-   * @param nodesDb
-   *          device information
-   * @return device information (for sending to REST)
+   * @param nodesList
+   *          Device list information
+   * @return Device list information (for sending to REST)
    */
   public static GetNode toNodeInfo(Nodes nodesDb) {
     logger.trace(CommonDefinitions.START);
@@ -184,11 +200,11 @@ public class RestMapper {
   }
 
   /**
-   * REST Data Mapping_Device List Information Acquisition.
+   * REST Data Mapping_Model List Information Acquisition.
    *
-   * @param nodesList
-   *          Device List Information
-   * @return Device List Information (for sending to REST)
+   * @param equipmentsList
+   *          device list information
+   * @return device list informaition (for sending to REST)
    */
   public static GetNodeList toNodeInfoList(List<Nodes> nodesList) {
     logger.trace(CommonDefinitions.START);
@@ -207,7 +223,7 @@ public class RestMapper {
   }
 
   /**
-   * REST Data Mapping_Physical IF Informtion Acquisition.
+   * REST Data Mapping_Physical IF Information Acquisition.
    *
    * @param physicalIfs
    *          physical IF information
@@ -276,6 +292,7 @@ public class RestMapper {
     logger.trace(CommonDefinitions.END);
     return ret;
   }
+
 
   /**
    * REST Data Mapping_LagIF Information List Acquisition.
@@ -438,7 +455,7 @@ public class RestMapper {
    * REST data mapping_dummy VLANIF information list.
    *
    * @param vlanIfsList
-   *          VALNIF information list
+   *          VLANIF information list
    * @param nodes
    *          device information
    * @param irbList
@@ -621,6 +638,10 @@ public class RestMapper {
     ret.setVlanTrafficCounterNameMibOid(equipmentsDb.getVlan_traffic_counter_name_mib_oid());
     ret.setVlanTrafficCounterValueMibOid(equipmentsDb.getVlan_traffic_counter_value_mib_oid());
     ret.setCliExecPath(equipmentsDb.getCli_exec_path());
+    ret.getCapabilities().setqInQ(new QInQCapabilities());
+    ret.getCapabilities().getqInQ().setSelectableByNode(equipmentsDb.getQ_in_q_selectable_by_node_capability());
+    ret.getCapabilities().getqInQ().setSelectableByVlanIf(equipmentsDb.getQ_in_q_selectable_by_vlan_if_capability());
+
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
     return ret;
@@ -682,6 +703,7 @@ public class RestMapper {
       ret.setPlane(Integer.toString(nodesDb.getPlane()));
     }
     ret.setIrbType(nodesDb.getIrb_type());
+    ret.setqInQType(nodesDb.getQ_in_q_type());
 
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
@@ -691,11 +713,11 @@ public class RestMapper {
   /**
    * Physical IF Information Acquisition.
    *
-   * @param physicalIfsDb
-   *          physical IF information
+   * @param lagIfs
+   *          Physical IF information
    * @param equipments
    *          model information
-   * @return physical IF information (for sending to REST)
+   * @return LagIF information (for sending to REST)
    */
   private static PhysicalIf getPhysicalIf(PhysicalIfs physicalIfsDb, Equipments equipments) {
     logger.trace(CommonDefinitions.START);
@@ -742,7 +764,7 @@ public class RestMapper {
    *
    * @param lagIfs
    *          LagIF information
-   * @param breakoutIfsList
+   * @param breakoutIfs
    *          breakoutIF information list
    * @param equipments
    *          model information
@@ -797,13 +819,13 @@ public class RestMapper {
   }
 
   /**
-   * breakoutIF Information Acquisition.
+   * BreakoutIF Information Acquisition.
    *
    * @param breakoutIfs
    *          breakoutIF information
    * @param equipments
    *          model information
-   * @return breakoutIF information (for sending to REST)
+   * @return breakoutIF information(for sending REST)
    */
   private static BreakoutIf getBreakoutIf(BreakoutIfs breakoutIfsDb, Equipments equipments) {
     logger.trace(CommonDefinitions.START);
@@ -843,7 +865,7 @@ public class RestMapper {
    *          device information
    * @param irbInstance
    *          IRB instance information
-   * @return VLAN IF information (for sending to REST)
+   * @return VLAN IF information(for sending REST)
    */
   private static VlanIf getVlanIf(VlanIfs vlanIfsDb, Nodes nodes, IRBInstanceInfo irbInstance) {
     logger.trace(CommonDefinitions.START);
@@ -976,6 +998,7 @@ public class RestMapper {
       ret.getIrbValue().setIpv4Prefix(irbInstance.getIrb_ipv4_prefix());
       ret.getIrbValue().setVirtualGatewayAddress(irbInstance.getVirtual_gateway_address());
     }
+    ret.setqInQ(vlanIfsDb.getQ_in_q());
 
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
@@ -1019,11 +1042,11 @@ public class RestMapper {
   }
 
   /**
-   * Getting QoS setting capabilities information (for sending to REST).
+   * QoS configuration capabilities information Acquisition(for sending to REST).
    *
    * @param equipments
    *          model information
-   * @return  QoS setting capabilities Information(for sending to REST)
+   * @return  QoS configuration capabilities Information(for sending to REST)
    */
   private static QosCapabilities getQosCapabilities(Equipments equipments) {
     QosCapabilities ret = new QosCapabilities();
@@ -1128,7 +1151,7 @@ public class RestMapper {
    * @return traffic information (for response)
    */
   public static GetNodeTraffic toNodeTrafficData(NodeKeySet nodeKey, List<List<VlanIfs>> vlanIfsTable,
-      HashMap<NodeKeySet, ArrayList<TrafficData>> trafficData, Timestamp time, int gatheringCycle,
+      HashMap<NodeKeySet, HashMap<String, TrafficData>> trafficData, Timestamp time, int gatheringCycle,
       List<BreakoutIfs> breakoutIfsDbList) {
 
     logger.trace(CommonDefinitions.START);
@@ -1141,133 +1164,7 @@ public class RestMapper {
     ret.setInterval(gatheringCycle * 60);
 
     NodeKeySet key = nodeKey;
-    SwitchTraffic tmpNode = new SwitchTraffic();
-    tmpNode.setNodeId(key.getEquipmentsData().getNode_id());
-    TrafficValue tmpTrfValue = null;
-    TrafficValue tmpTrfValueVlan = null;
-
-    if (trafficData.get(key) != null) {
-      for (TrafficData td : trafficData.get(key)) {
-        tmpTrfValue = new TrafficValue();
-        tmpTrfValueVlan = new TrafficValue();
-        boolean nextCheckFlug = false;
-
-        for (PhysicalIfs ifs : key.getEquipmentsData().getPhysicalIfsList()) {
-          if ((td.getIfname() != null) && td.getIfname().equals(ifs.getIf_name())) {
-            tmpTrfValue.setIfType(CommonDefinitions.IF_TYPE_PHYSICAL_IF);
-            tmpTrfValue.setIfId(ifs.getPhysical_if_id());
-            tmpTrfValue.setReceiveRate(td.getIfHclnOctets());
-            tmpTrfValue.setSendRate(td.getIfHcOutOctets());
-            nextCheckFlug = true;
-            break;
-          }
-        }
-
-        if (!nextCheckFlug) {
-          for (LagIfs ifs : key.getEquipmentsData().getLagIfsList()) {
-            if ((td.getIfname() != null) && td.getIfname().equals(ifs.getIf_name())) {
-              tmpTrfValue.setIfType(CommonDefinitions.IF_TYPE_LAG_IF);
-              tmpTrfValue.setIfId(ifs.getFc_lag_if_id());
-              tmpTrfValue.setReceiveRate(td.getIfHclnOctets());
-              tmpTrfValue.setSendRate(td.getIfHcOutOctets());
-              nextCheckFlug = true;
-              break;
-            }
-          }
-        }
-
-        if (!nextCheckFlug) {
-          for (BreakoutIfs boIfs : breakoutIfsDbList) {
-            if ((td.getIfname() != null) && td.getIfname().equals(boIfs.getIf_name())) {
-              tmpTrfValue.setIfType(CommonDefinitions.IF_TYPE_BREAKOUT_IF);
-              tmpTrfValue.setIfId(boIfs.getBreakout_if_id());
-              tmpTrfValue.setReceiveRate(td.getIfHclnOctets());
-              tmpTrfValue.setSendRate(td.getIfHcOutOctets());
-              nextCheckFlug = true;
-              break;
-            }
-          }
-        }
-
-        if (nextCheckFlug) {
-          tmpNode.getTrafficValue().add(tmpTrfValue);
-          nextCheckFlug = false;
-        }
-
-        for (List<VlanIfs> vlanIfsList : vlanIfsTable) {
-          for (VlanIfs vlanIfs : vlanIfsList) {
-            if (!key.getEquipmentsData().getNode_id().equals(vlanIfs.getNode_id())) {
-              continue;
-            }
-            String vpnType = key.getEquipmentsData().getVpn_type();
-            String ifNameTmp = "";
-            if (vpnType == null) {
-              ifNameTmp = vlanIfs.getIf_name();
-            } else {
-              if (vpnType.equals(CommonDefinitions.VPNTYPE_L3) && !vlanIfs.getVlan_id().equals("0")) {
-                ifNameTmp = vlanIfs.getIf_name() + key.getEquipmentsType().getUnit_connector() + vlanIfs.getVlan_id();
-              } else {
-                if ((null != key.getEquipmentsType().getVlan_traffic_capability() && null != vlanIfs.getPort_mode())
-                    && ((VLAN_PORTMODE_TRUNK == vlanIfs.getPort_mode()
-                      && ((key.getEquipmentsType().getVlan_traffic_capability().equals(VLAN_TRAFFIC_TYPE_CLI)
-                      || (key.getEquipmentsType().getVlan_traffic_capability().equals(VLAN_TRAFFIC_TYPE_MIB))))))) {
-                  ifNameTmp = vlanIfs.getIf_name() + key.getEquipmentsType().getUnit_connector() + vlanIfs.getVlan_id();
-                } else {
-                  ifNameTmp = vlanIfs.getIf_name();
-                }
-              }
-            }
-            if (td.getIfname().equals(ifNameTmp)) {
-              for (PhysicalIfs ifs : key.getEquipmentsData().getPhysicalIfsList()) {
-                if ((vlanIfs.getPhysical_if_id() != null)
-                    && (vlanIfs.getPhysical_if_id().equals(ifs.getPhysical_if_id()))) {
-                  tmpTrfValueVlan.setIfType(CommonDefinitions.IF_TYPE_VLAN_IF);
-                  tmpTrfValueVlan.setIfId(vlanIfs.getVlan_if_id());
-                  nextCheckFlug = true;
-                  break;
-                }
-              }
-              if (!nextCheckFlug) {
-                for (LagIfs ifs : key.getEquipmentsData().getLagIfsList()) {
-                  if ((vlanIfs.getLag_if_id() != null) && (vlanIfs.getLag_if_id().equals(ifs.getLag_if_id()))) {
-                    tmpTrfValueVlan.setIfType(CommonDefinitions.IF_TYPE_VLAN_IF);
-                    tmpTrfValueVlan.setIfId(vlanIfs.getVlan_if_id());
-                    nextCheckFlug = true;
-                    break;
-                  }
-                }
-              }
-              if (!nextCheckFlug) {
-                for (PhysicalIfs physIfs : key.getEquipmentsData().getPhysicalIfsList()) {
-                  for (BreakoutIfs boIfs : physIfs.getBreakoutIfsList()) {
-                    if ((vlanIfs.getBreakout_if_id() != null)
-                        && (vlanIfs.getBreakout_if_id().equals(boIfs.getBreakout_if_id()))) {
-                      tmpTrfValueVlan.setIfType(CommonDefinitions.IF_TYPE_VLAN_IF);
-                      tmpTrfValueVlan.setIfId(vlanIfs.getVlan_if_id());
-                      nextCheckFlug = true;
-                      break;
-                    }
-                  }
-                  if (nextCheckFlug) {
-                    break;
-                  }
-                }
-              }
-
-              tmpTrfValueVlan.setReceiveRate(td.getIfHclnOctets());
-              tmpTrfValueVlan.setSendRate(td.getIfHcOutOctets());
-              break;
-            }
-          }
-          if (nextCheckFlug) {
-            break;
-          }
-        }
-        if (nextCheckFlug) {
-          tmpNode.getTrafficValue().add(tmpTrfValueVlan);
-        }
-      }
-    }
+    SwitchTraffic tmpNode = setTrafficDataInternal(key, vlanIfsTable, trafficData, breakoutIfsDbList);
 
     if (!(tmpNode.getTrafficValue() == null)) {
       if (0 == tmpNode.getTrafficValue().size()) {
@@ -1301,7 +1198,7 @@ public class RestMapper {
    * @return traffic information (for response)
    */
   public static GetAllNodeTraffic toNodeTrafficDataList(ArrayList<NodeKeySet> nodeList,
-      List<List<VlanIfs>> vlanIfsTable, HashMap<NodeKeySet, ArrayList<TrafficData>> trafficData, Timestamp time,
+      List<List<VlanIfs>> vlanIfsTable, HashMap<NodeKeySet, HashMap<String, TrafficData>> trafficData, Timestamp time,
       int gatheringCycle, List<BreakoutIfs> breakoutIfsDbList) {
 
     logger.trace(CommonDefinitions.START);
@@ -1317,135 +1214,7 @@ public class RestMapper {
     ret.setSwitchTraffics(new ArrayList<SwitchTraffic>());
 
     for (NodeKeySet key : nodeList) {
-      SwitchTraffic tmpNode = new SwitchTraffic();
-      tmpNode.setNodeId(key.getEquipmentsData().getNode_id());
-      TrafficValue tmpTrfValue = null;
-      TrafficValue tmpTrfValueVlan = null;
-
-      if (trafficData.get(key) != null) {
-        for (TrafficData td : trafficData.get(key)) {
-          tmpTrfValue = new TrafficValue();
-          tmpTrfValueVlan = new TrafficValue();
-          boolean nextCheckFlug = false;
-
-          for (PhysicalIfs ifs : key.getEquipmentsData().getPhysicalIfsList()) {
-            if ((td.getIfname() != null) && td.getIfname().equals(ifs.getIf_name())) {
-              tmpTrfValue.setIfType(CommonDefinitions.IF_TYPE_PHYSICAL_IF);
-              tmpTrfValue.setIfId(ifs.getPhysical_if_id());
-              tmpTrfValue.setReceiveRate(td.getIfHclnOctets());
-              tmpTrfValue.setSendRate(td.getIfHcOutOctets());
-              nextCheckFlug = true;
-              break;
-            }
-          }
-
-          if (!nextCheckFlug) {
-            for (LagIfs ifs : key.getEquipmentsData().getLagIfsList()) {
-              if ((td.getIfname() != null) && td.getIfname().equals(ifs.getIf_name())) {
-                tmpTrfValue.setIfType(CommonDefinitions.IF_TYPE_LAG_IF);
-                tmpTrfValue.setIfId(ifs.getFc_lag_if_id());
-                tmpTrfValue.setReceiveRate(td.getIfHclnOctets());
-                tmpTrfValue.setSendRate(td.getIfHcOutOctets());
-                nextCheckFlug = true;
-                break;
-              }
-            }
-          }
-
-          if (!nextCheckFlug) {
-            for (BreakoutIfs boIfs : breakoutIfsDbList) {
-              if ((td.getIfname() != null) && td.getIfname().equals(boIfs.getIf_name())) {
-                tmpTrfValue.setIfType(CommonDefinitions.IF_TYPE_BREAKOUT_IF);
-                tmpTrfValue.setIfId(boIfs.getBreakout_if_id());
-                tmpTrfValue.setReceiveRate(td.getIfHclnOctets());
-                tmpTrfValue.setSendRate(td.getIfHcOutOctets());
-                nextCheckFlug = true;
-                break;
-              }
-            }
-          }
-
-          if (nextCheckFlug) {
-            tmpNode.getTrafficValue().add(tmpTrfValue);
-            nextCheckFlug = false;
-          }
-
-          for (List<VlanIfs> vlanIfsList : vlanIfsTable) {
-            for (VlanIfs vlanIfs : vlanIfsList) {
-              if (!key.getEquipmentsData().getNode_id().equals(vlanIfs.getNode_id())) {
-                continue;
-              }
-              String vpnType = key.getEquipmentsData().getVpn_type();
-              String ifNameTmp = "";
-              if (vpnType == null) {
-                ifNameTmp = vlanIfs.getIf_name();
-              } else {
-                if (vpnType.equals(CommonDefinitions.VPNTYPE_L3) && !vlanIfs.getVlan_id().equals("0")) {
-                  ifNameTmp = vlanIfs.getIf_name() + key.getEquipmentsType().getUnit_connector() + vlanIfs.getVlan_id();
-                } else {
-                  if ((null != key.getEquipmentsType().getVlan_traffic_capability() && null != vlanIfs.getPort_mode())
-                      && ((VLAN_PORTMODE_TRUNK == vlanIfs.getPort_mode()
-                        && ((key.getEquipmentsType().getVlan_traffic_capability().equals(VLAN_TRAFFIC_TYPE_CLI)
-                        || (key.getEquipmentsType().getVlan_traffic_capability().equals(VLAN_TRAFFIC_TYPE_MIB))))))) {
-                    ifNameTmp = vlanIfs.getIf_name() + key.getEquipmentsType().getUnit_connector()
-                        + vlanIfs.getVlan_id();
-                  } else {
-                    ifNameTmp = vlanIfs.getIf_name();
-                  }
-                }
-              }
-
-              if (td.getIfname().equals(ifNameTmp)) {
-                for (PhysicalIfs ifs : key.getEquipmentsData().getPhysicalIfsList()) {
-                  if ((vlanIfs.getPhysical_if_id() != null)
-                      && (vlanIfs.getPhysical_if_id().equals(ifs.getPhysical_if_id()))) {
-                    tmpTrfValueVlan.setIfType(CommonDefinitions.IF_TYPE_VLAN_IF);
-                    tmpTrfValueVlan.setIfId(vlanIfs.getVlan_if_id());
-                    nextCheckFlug = true;
-                    break;
-                  }
-                }
-                if (!nextCheckFlug) {
-                  for (LagIfs ifs : key.getEquipmentsData().getLagIfsList()) {
-                    if ((vlanIfs.getLag_if_id() != null) && (vlanIfs.getLag_if_id().equals(ifs.getLag_if_id()))) {
-                      tmpTrfValueVlan.setIfType(CommonDefinitions.IF_TYPE_VLAN_IF);
-                      tmpTrfValueVlan.setIfId(vlanIfs.getVlan_if_id());
-                      nextCheckFlug = true;
-                      break;
-                    }
-                  }
-                }
-                if (!nextCheckFlug) {
-                  for (PhysicalIfs physIfs : key.getEquipmentsData().getPhysicalIfsList()) {
-                    for (BreakoutIfs boIfs : physIfs.getBreakoutIfsList()) {
-                      if ((vlanIfs.getBreakout_if_id() != null)
-                          && (vlanIfs.getBreakout_if_id().equals(boIfs.getBreakout_if_id()))) {
-                        tmpTrfValueVlan.setIfType(CommonDefinitions.IF_TYPE_VLAN_IF);
-                        tmpTrfValueVlan.setIfId(vlanIfs.getVlan_if_id());
-                        nextCheckFlug = true;
-                        break;
-                      }
-                    }
-                    if (nextCheckFlug) {
-                      break;
-                    }
-                  }
-                }
-
-                tmpTrfValueVlan.setReceiveRate(td.getIfHclnOctets());
-                tmpTrfValueVlan.setSendRate(td.getIfHcOutOctets());
-                break;
-              }
-            }
-            if (nextCheckFlug) {
-              break;
-            }
-          }
-          if (nextCheckFlug) {
-            tmpNode.getTrafficValue().add(tmpTrfValueVlan);
-          }
-        }
-      }
+      SwitchTraffic tmpNode = setTrafficDataInternal(key, vlanIfsTable, trafficData, breakoutIfsDbList);
 
       if (!(tmpNode.getTrafficValue() == null)) {
         if (0 == tmpNode.getTrafficValue().size()) {
@@ -1460,6 +1229,117 @@ public class RestMapper {
     logger.debug("ret=" + ret);
 
     return ret;
+  }
+
+  /**
+   * Internal process for getting traffic information.
+   *
+   * @param nodeKey
+   *          node infomation
+   * @param vlanIfsTable
+   *          Table list of VLAN IF information
+   * @param trafficData
+   *          traffic information
+   * @param breakoutIfsDbList
+   *          breakoutIF list (DB)
+   * @return traffic information(for response)
+   */
+  private static SwitchTraffic setTrafficDataInternal(NodeKeySet nodeKey, List<List<VlanIfs>> vlanIfsTable,
+      HashMap<NodeKeySet, HashMap<String, TrafficData>> trafficData, List<BreakoutIfs> breakoutIfsDbList) {
+
+    SwitchTraffic tmpNode = new SwitchTraffic();
+    tmpNode.setNodeId(nodeKey.getEquipmentsData().getNode_id());
+
+    if ((trafficData.get(nodeKey) != null) && (trafficData.get(nodeKey).size() > 0)) {
+      HashMap<String, TrafficData> nodeTrafficData = trafficData.get(nodeKey);
+
+      for (PhysicalIfs ifs : nodeKey.getEquipmentsData().getPhysicalIfsList()) {
+        setTrafficDataInternalParts(nodeTrafficData.get(ifs.getIf_name()),
+            ifs.getIf_name(), CommonDefinitions.IF_TYPE_PHYSICAL_IF, ifs.getPhysical_if_id(), tmpNode);
+      }
+
+      for (LagIfs ifs : nodeKey.getEquipmentsData().getLagIfsList()) {
+        setTrafficDataInternalParts(nodeTrafficData.get(ifs.getIf_name()),
+            ifs.getIf_name(), CommonDefinitions.IF_TYPE_LAG_IF, ifs.getFc_lag_if_id(), tmpNode);
+      }
+
+      for (BreakoutIfs boIfs : breakoutIfsDbList) {
+        if (!nodeKey.getEquipmentsData().getNode_id().equals(boIfs.getNode_id())) {
+          continue;
+        }
+
+        setTrafficDataInternalParts(nodeTrafficData.get(boIfs.getIf_name()),
+            boIfs.getIf_name(), CommonDefinitions.IF_TYPE_BREAKOUT_IF, boIfs.getBreakout_if_id(), tmpNode);
+      }
+
+      for (List<VlanIfs> vlanIfsList : vlanIfsTable) {
+        for (VlanIfs vlanIfs : vlanIfsList) {
+          if (!nodeKey.getEquipmentsData().getNode_id().equals(vlanIfs.getNode_id())) {
+            continue;
+          }
+
+          String vpnType = nodeKey.getEquipmentsData().getVpn_type();
+          String ifNameTmp = "";
+          if (vpnType == null) {
+            ifNameTmp = vlanIfs.getIf_name();
+          } else {
+            if (vpnType.equals(CommonDefinitions.VPNTYPE_L3) && !vlanIfs.getVlan_id().equals("0")) {
+              ifNameTmp = vlanIfs.getIf_name() + nodeKey.getEquipmentsType().getUnit_connector() + vlanIfs.getVlan_id();
+            } else {
+              if ((null != nodeKey.getEquipmentsType().getVlan_traffic_capability() && null != vlanIfs.getPort_mode())
+                  && ((VLAN_PORTMODE_TRUNK == vlanIfs.getPort_mode()
+                      && ((nodeKey.getEquipmentsType().getVlan_traffic_capability().equals(VLAN_TRAFFIC_TYPE_CLI)
+                          || (nodeKey.getEquipmentsType().getVlan_traffic_capability()
+                              .equals(VLAN_TRAFFIC_TYPE_MIB))))))) {
+                ifNameTmp = vlanIfs.getIf_name() + nodeKey.getEquipmentsType().getUnit_connector() + vlanIfs.getVlan_id();
+              } else {
+                ifNameTmp = vlanIfs.getIf_name();
+              }
+            }
+          }
+
+          setTrafficDataInternalParts(nodeTrafficData.get(ifNameTmp),
+              ifNameTmp, CommonDefinitions.IF_TYPE_VLAN_IF, vlanIfs.getVlan_if_id(), tmpNode);
+        }
+      }
+    }
+
+    return tmpNode;
+  }
+
+  /**
+   * Converting traffic information.
+   *
+   * @param trafficData
+   *          traffic information
+   * @param ifName
+   *          IF name
+   * @param ifType
+   *          IF type
+   * @param ifId
+   *          IF ID
+   * @param nodeTrafficDataList
+   *          List for storing node traffic (to save conversion result)
+   */
+  private static void setTrafficDataInternalParts(TrafficData trafficData,
+      String ifName, String ifType, String ifId, SwitchTraffic nodeTrafficDataList) {
+
+    TrafficValue trfValue = new TrafficValue();
+
+    if ((ifName != null) && (trafficData != null)) {
+      trfValue.setIfType(ifType);
+      trfValue.setIfId(ifId);
+      trfValue.setReceiveRate(trafficData.getIfHclnOctets());
+      trfValue.setSendRate(trafficData.getIfHcOutOctets());
+      nodeTrafficDataList.getTrafficValue().add(trfValue);
+    } else if (ifName != null) {
+      trfValue.setIfType(ifType);
+      trfValue.setIfId(ifId);
+      trfValue.setReceiveRate(0.0);
+      trfValue.setSendRate(0.0);
+      nodeTrafficDataList.getTrafficValue().add(trfValue);
+    }
+
   }
 
   /**
@@ -1489,8 +1369,8 @@ public class RestMapper {
     ret.getEcemLog().getConditions().setStart_date(startDate);
     ret.getEcemLog().getConditions().setEnd_date(endDate);
     ret.getEcemLog().getConditions().setLimit_number(limitNumber);
-    ret.getEcemLog().setEc_log(new LogInformation());
     if (ecControllerLog != null && ecControllerLog.getEm_log() != null) {
+      ret.getEcemLog().setEc_log(new LogInformation());
       ArrayList<LogData> eclogdatalist = new ArrayList<LogData>();
       ret.getEcemLog().getEc_log().setDataNumber(ecControllerLog.getEm_log().getData_number());
       ret.getEcemLog().getEc_log().setOverLimitNumber(ecControllerLog.getEm_log().isOver_limit_number());
@@ -1503,8 +1383,8 @@ public class RestMapper {
       ret.getEcemLog().getEc_log().setLog_data(eclogdatalist);
     }
 
-    ret.getEcemLog().setEm_log(new LogInformation());
     if (emControllerLog != null && emControllerLog.getEm_log() != null) {
+      ret.getEcemLog().setEm_log(new LogInformation());
       ArrayList<LogData> emlogdatalist = new ArrayList<LogData>();
       ret.getEcemLog().getEm_log().setDataNumber(emControllerLog.getEm_log().getData_number());
       ret.getEcemLog().getEm_log().setOverLimitNumber(emControllerLog.getEm_log().isOver_limit_number());
@@ -1522,7 +1402,7 @@ public class RestMapper {
     return ret;
   }
 
-  /**
+   /**
    * REST Data Mapping_Controller Status Notification.
    *
    * @param emcontrollerstatus
@@ -1545,252 +1425,446 @@ public class RestMapper {
   }
 
   /**
-   * Controller Status Acquisition REST Response Acquisition.
+   *  Controller Status Acquisition REST Response Acquisition.
    *
-   * @param getinfo
-   *          acquisition parameter
-   * @param ecMainStateToLabel
-   *          service start-up status
-   * @param serverAddress
-   *          physical server address
    * @param ecMainObstraction
-   *          block status
-   * @param receiveCount
-   *          the number of receiving REST
-   * @param sendCount
-   *          the number of sending REST
-   * @param stdList
-   *          command execution result
-   * @param emControllerInformations
-   *          EM response
+   *
+   * @param ecMainState
+   *          EC-service start-up status
+   * @param emMainState
+   *          EC-service start-up status
+   * @param informationList
+   *          OS or acquired controller infomationOS
    * @return controller status acquisition REST response
    */
-  public static CheckEcMainModuleStatus toControllerStatus(String getinfo, String ecMainStateToLabel,
-      String serverAddress, boolean ecMainObstraction, int receiveCount, int sendCount, List<String> stdList,
-      ControllerStatusFromEm emControllerInformations) {
+  public static CheckEcMainModuleStatus toControllerStatus(boolean ecMainObstraction, String ecMainState,
+      String emMainState, ArrayList<Informations> informationList) {
     logger.trace(CommonDefinitions.START);
 
     CheckEcMainModuleStatus ret = new CheckEcMainModuleStatus();
-    ArrayList<Informations> infolist = new ArrayList<Informations>();
-    if (ecMainStateToLabel.length() != 0) {
 
-      boolean allSetFlg = false;
+    EcStatus ecStatus = new EcStatus();
+    ecStatus.setStatus(ecMainState);
+    if (ecMainObstraction == true) {
+      ecStatus.setBusy(EC_BUSY_STRING);
+    } else {
+      ecStatus.setBusy(EC_IN_SERVICE_STRING);
+    }
 
-      EcStatus ecStatus = new EcStatus();
-      ecStatus.setStatus(ecMainStateToLabel);
-      if (ecMainObstraction == true) {
-        ecStatus.setBusy(EC_BUSY_STRING);
-      } else {
-        ecStatus.setBusy(EC_IN_SERVICE_STRING);
-      }
-      ret.setEc_status(ecStatus);
+    EmStatus emStatus = new EmStatus();
+    emStatus.setStatus(emMainState);
 
-      Informations ecInformations = new Informations();
+    ret.setEc_status(ecStatus);
+    ret.setEm_status(emStatus);
+    ret.setInformations(informationList);
 
-      Gson gson = new Gson();
-      Map<String, Object> scriptResultList = gson.fromJson(stdList.get(0), new TypeToken<HashMap<String, Object>>() {
-      }.getType());
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
 
-      ecInformations.setControllerType("ec");
-      ecInformations.setHostName((String) scriptResultList.get("hostname"));
-      ecInformations.setManagementIpAddress(serverAddress);
+    return ret;
+  }
 
-      String os = String.valueOf(scriptResultList.get("top"));
-      String[] osList = os.split(",");
-      Float id = (float) 0.0;
-      int free = 0;
-      int used = 0;
-      int buffers = 0;
-      int swapUsed = 0;
-      int res = 0;
-      int nproc = 0;
-      Float cpu = (float) 0;
+  /**
+   *  Controller Status Acquisition REST Response Acquisition(only inforamtion-part).
+   *
+   * @param controllerType
+   *          controllerType
+   * @param getinfo
+   *          acquisition parameter
+   * @param serverAddress
+   *          physical server address
+   * @param receiveCount
+   *          number of received REST
+   * @param sendCount
+   *          number of sent REST
+   * @param stdList
+   *          command execution result
+   * @return status acquisition REST respons
+   */
+  public static Informations createInformations(String controllerType, String getinfo, String serverAddress,
+      int receiveCount, int sendCount, List<String> stdList) {
+    logger.trace(CommonDefinitions.START);
 
-      if (getinfo == null || getinfo.isEmpty()) {
-        allSetFlg = true;
-      }
-      if (allSetFlg || getinfo.contains("os-cpu") || getinfo.contains("os-mem") || getinfo.contains("os-disk")
-          || getinfo.contains("ctr-cpu") || getinfo.contains("ctr-mem")) {
+    boolean allSetFlg = false;
+
+    Informations ecInformations = new Informations();
+    Gson gson = new Gson();
+    Map<String, Object> scriptResultList = gson.fromJson(stdList.get(0), new TypeToken<HashMap<String, Object>>() {
+    }.getType());
+
+    ecInformations.setControllerType(controllerType);
+    ecInformations.setHostName((String) scriptResultList.get("hostname"));
+    ecInformations.setManagementIpAddress(serverAddress);
+
+    String os = String.valueOf(scriptResultList.get("top"));
+    String[] osList = os.split(",");
+    Float id = (float) 0.0;
+    int free = 0;
+    int used = 0;
+    int buffers = 0;
+    int swapUsed = 0;
+    int res = 0;
+    int nproc = 0;
+    Float cpu = (float) 0;
+
+    if (getinfo == null || getinfo.isEmpty()) {
+      allSetFlg = true;
+    }
+    if (allSetFlg || getinfo.contains("os-cpu") || getinfo.contains("os-mem") || getinfo.contains("os-disk")
+        || getinfo.contains("ctr-cpu") || getinfo.contains("ctr-mem")) {
+      try {
         try {
-          try {
-            id = Float.valueOf(osList[0].split("=")[1]);
-          } catch (NumberFormatException nfe) {
-            id = (float) -1;
-          }
-          try {
-            free = (int)(float)Float.valueOf(osList[1].split("=")[1]);
-          } catch (NumberFormatException nfe) {
-            free = -1;
-          }
-          try {
-            used = (int)(float)Float.valueOf(osList[2].split("=")[1]);
-          } catch (NumberFormatException nfe) {
-            used = -1;
-          }
-          try {
-            buffers = (int)(float)Float.valueOf(osList[3].split("=")[1]);
-          } catch (NumberFormatException nfe) {
-            buffers = -1;
-          }
-          try {
-            swapUsed = (int)(float)Float.valueOf(osList[4].split("=")[1]);
-          } catch (NumberFormatException nfe) {
-            swapUsed = -1;
-          }
-          try {
-            res = Math.round(Float.valueOf(osList[5].split("=")[1]));
-          } catch (NumberFormatException nfe) {
-            res = -1;
-          }
-          try {
-            cpu = Float.valueOf(osList[6].split("=")[1].replaceAll("}", ""));
-          } catch (NumberFormatException nfe) {
-            cpu = (float) -1;
-          }
-
-        } catch (ArrayIndexOutOfBoundsException ae) {
+          id = Float.valueOf(osList[0].split("=")[1]);
+        } catch (NumberFormatException nfe) {
           id = (float) -1;
+        }
+        try {
+          free = (int) (float) Float.valueOf(osList[1].split("=")[1]);
+        } catch (NumberFormatException nfe) {
           free = -1;
+        }
+        try {
+          used = (int) (float) Float.valueOf(osList[2].split("=")[1]);
+        } catch (NumberFormatException nfe) {
           used = -1;
+        }
+        try {
+          buffers = (int) (float) Float.valueOf(osList[3].split("=")[1]);
+        } catch (NumberFormatException nfe) {
           buffers = -1;
+        }
+        try {
+          swapUsed = (int) (float) Float.valueOf(osList[4].split("=")[1]);
+        } catch (NumberFormatException nfe) {
           swapUsed = -1;
+        }
+        try {
+          res = Math.round(Float.valueOf(osList[5].split("=")[1]));
+        } catch (NumberFormatException nfe) {
           res = -1;
+        }
+        try {
+          cpu = Float.valueOf(osList[6].split("=")[1].replaceAll("}", ""));
+        } catch (NumberFormatException nfe) {
           cpu = (float) -1;
         }
-        logger.debug(id);
-        logger.debug(free);
-        logger.debug(used);
-        logger.debug(buffers);
-        logger.debug(swapUsed);
-        logger.debug(res);
-        logger.debug(cpu);
-      }
 
-      if (allSetFlg || getinfo.contains("ctr-cpu")) {
-        try {
-          nproc = Math.round(Float.valueOf(String.valueOf(scriptResultList.get("nproc"))));
-        } catch (NumberFormatException nfe) {
-          logger.debug("get nproc error", scriptResultList.get("nproc"));
-        }
-        logger.debug("nproc=" + nproc);
+      } catch (ArrayIndexOutOfBoundsException ae) {
+        id = (float) -1;
+        free = -1;
+        used = -1;
+        buffers = -1;
+        swapUsed = -1;
+        res = -1;
+        cpu = (float) -1;
       }
+      logger.debug(id);
+      logger.debug(free);
+      logger.debug(used);
+      logger.debug(buffers);
+      logger.debug(swapUsed);
+      logger.debug(res);
+      logger.debug(cpu);
+    }
 
-      if (allSetFlg || getinfo.contains("os-cpu")) {
+    if (allSetFlg || getinfo.contains("ctr-cpu")) {
+      try {
+        nproc = Math.round(Float.valueOf(String.valueOf(scriptResultList.get("nproc"))));
+      } catch (NumberFormatException nfe) {
+        logger.debug("get nproc error", scriptResultList.get("nproc"));
+      }
+      logger.debug("nproc=" + nproc);
+    }
+
+    if (allSetFlg || getinfo.contains("os-cpu")) {
+      ecInformations.setOs(new OsInfo());
+      ecInformations.getOs().setCpu(new Cpu());
+      if (id != -1) {
+        ecInformations.getOs().getCpu().setUseRate((float) 100 - id);
+      } else {
+        ecInformations.getOs().getCpu().setUseRate((float) -1);
+      }
+    }
+    if (allSetFlg || getinfo.contains("os-mem")) {
+      if (ecInformations.getOs() == null) {
         ecInformations.setOs(new OsInfo());
-        ecInformations.getOs().setCpu(new Cpu());
-        if (id != -1) {
-          ecInformations.getOs().getCpu().setUseRate((float) 100 - id);
-        } else {
-          ecInformations.getOs().getCpu().setUseRate((float) -1);
+      }
+      ecInformations.getOs().setMemory(new Memory());
+      ecInformations.getOs().getMemory().setUsed(used);
+      ecInformations.getOs().getMemory().setFree(free);
+      ecInformations.getOs().getMemory().setBuffCache(buffers);
+      ecInformations.getOs().getMemory().setSwpd(swapUsed);
+    }
+    if (allSetFlg || getinfo.contains("os-disk")) {
+      ArrayList<DeviceInfo> devices = new ArrayList<DeviceInfo>();
+      String[] dfList = String.valueOf(scriptResultList.get("df")).split(",");
+      for (String info : dfList) {
+        try {
+          String info2 = info.replaceAll("\\[", "");
+          String info3 = info2.replaceAll("\\]", "");
+          String[] infoList = info3.trim().split(" ");
+          DeviceInfo devinfo = new DeviceInfo();
+          devinfo.setAvail(Integer.parseInt(infoList[3]));
+          devinfo.setFileSystem(infoList[0]);
+          devinfo.setMountedOn(infoList[5]);
+          devinfo.setSize(Integer.parseInt(infoList[1]));
+          devinfo.setUsed(Integer.parseInt(infoList[2]));
+          devices.add(devinfo);
+        } catch (ArrayIndexOutOfBoundsException aio) {
+          logger.debug("DfResultError", aio);
+          continue;
         }
       }
-      if (allSetFlg || getinfo.contains("os-mem")) {
+      if (!devices.isEmpty()) {
         if (ecInformations.getOs() == null) {
           ecInformations.setOs(new OsInfo());
         }
-        ecInformations.getOs().setMemory(new Memory());
-        ecInformations.getOs().getMemory().setUsed(used);
-        ecInformations.getOs().getMemory().setFree(free);
-        ecInformations.getOs().getMemory().setBuffCache(buffers);
-        ecInformations.getOs().getMemory().setSwpd(swapUsed);
+        ecInformations.getOs().setDisk(new Disk());
+        ecInformations.getOs().getDisk().setDevices(devices);
       }
-      if (allSetFlg || getinfo.contains("os-disk")) {
-        ArrayList<DeviceInfo> devices = new ArrayList<DeviceInfo>();
-        String[] dfList = String.valueOf(scriptResultList.get("df")).split(",");
-        for (String info : dfList) {
-          try {
-            String info2 = info.replaceAll("\\[", "");
-            String info3 = info2.replaceAll("\\]", "");
-            String[] infoList = info3.trim().split(" ");
-            DeviceInfo devinfo = new DeviceInfo();
-            devinfo.setAvail(Integer.parseInt(infoList[3]));
-            devinfo.setFileSystem(infoList[0]);
-            devinfo.setMountedOn(infoList[5]);
-            devinfo.setSize(Integer.parseInt(infoList[1]));
-            devinfo.setUsed(Integer.parseInt(infoList[2]));
-            devices.add(devinfo);
-          } catch (ArrayIndexOutOfBoundsException aio) {
-            logger.debug("DfResultError", aio);
-            continue;
-          }
-        }
-        if (!devices.isEmpty()) {
-          if (ecInformations.getOs() == null) {
-            ecInformations.setOs(new OsInfo());
-          }
-          ecInformations.getOs().setDisk(new Disk());
-          ecInformations.getOs().getDisk().setDevices(devices);
+    }
+    if (allSetFlg || getinfo.contains("os-traffic")) {
+      ArrayList<InterfaceInfoTraffic> interfaceInfos = new ArrayList<InterfaceInfoTraffic>();
+      String[] sarList = String.valueOf(scriptResultList.get("sar")).split(",");
+      for (String info : sarList) {
+        try {
+          String info2 = info.replaceAll("\\[", "");
+          String info3 = info2.replaceAll("\\]", "");
+          String[] infoList = info3.trim().split(" ");
+          InterfaceInfoTraffic interfaceInfo = new InterfaceInfoTraffic();
+          interfaceInfo.setIfname(infoList[1]);
+          interfaceInfo.setRxpck(Float.valueOf(infoList[2]));
+          interfaceInfo.setTxpck(Float.valueOf(infoList[3]));
+          interfaceInfo.setRxkb(Float.valueOf(infoList[4]));
+          interfaceInfo.setTxkb(Float.valueOf(infoList[5]));
+          interfaceInfos.add(interfaceInfo);
+        } catch (ArrayIndexOutOfBoundsException aio) {
+          logger.debug("SarResultError", aio);
+          continue;
         }
       }
-      if (allSetFlg || getinfo.contains("os-traffic")) {
-        ArrayList<InterfaceInfoTraffic> interfaceInfos = new ArrayList<InterfaceInfoTraffic>();
-        String[] sarList = String.valueOf(scriptResultList.get("sar")).split(",");
-        for (String info : sarList) {
-          try {
-            String info2 = info.replaceAll("\\[", "");
-            String info3 = info2.replaceAll("\\]", "");
-            String[] infoList = info3.trim().split(" ");
-            InterfaceInfoTraffic interfaceInfo = new InterfaceInfoTraffic();
-            interfaceInfo.setIfname(infoList[1]);
-            interfaceInfo.setRxpck(Float.valueOf(infoList[2]));
-            interfaceInfo.setTxpck(Float.valueOf(infoList[3]));
-            interfaceInfo.setRxkb(Float.valueOf(infoList[4]));
-            interfaceInfo.setTxkb(Float.valueOf(infoList[5]));
-            interfaceInfos.add(interfaceInfo);
-          } catch (ArrayIndexOutOfBoundsException aio) {
-            logger.debug("SarResultError", aio);
-            continue;
-          }
+      if (!interfaceInfos.isEmpty()) {
+        if (ecInformations.getOs() == null) {
+          ecInformations.setOs(new OsInfo());
         }
-        if (!interfaceInfos.isEmpty()) {
-          if (ecInformations.getOs() == null) {
-            ecInformations.setOs(new OsInfo());
-          }
-          ecInformations.getOs().setTraffic(new Traffic());
-          ecInformations.getOs().getTraffic().setInterfaces(interfaceInfos);
-        }
+        ecInformations.getOs().setTraffic(new Traffic());
+        ecInformations.getOs().getTraffic().setInterfaces(interfaceInfos);
       }
-      if (allSetFlg || getinfo.contains("ctr-cpu")) {
+    }
+
+    if (allSetFlg || getinfo.contains("ctr-cpu")) {
+      ecInformations.setController(new ControllerInfo());
+      if (cpu != -1 && nproc != 0) {
+        ecInformations.getController().setCpu(cpu / (float) nproc);
+      } else {
+        ecInformations.getController().setCpu((float) -1);
+      }
+    }
+    if (allSetFlg || getinfo.contains("ctr-mem")) {
+      if (ecInformations.getController() == null) {
         ecInformations.setController(new ControllerInfo());
-        if (cpu != -1 && nproc != 0) {
-          ecInformations.getController().setCpu(cpu / (float) nproc);
-        } else {
-          ecInformations.getController().setCpu((float) -1);
-        }
       }
-      if (allSetFlg || getinfo.contains("ctr-mem")) {
-        if (ecInformations.getController() == null) {
-          ecInformations.setController(new ControllerInfo());
-        }
-        ecInformations.getController().setMemory(res);
+      ecInformations.getController().setMemory(res);
+    }
+    if (allSetFlg || getinfo.contains("ctr-receive_rest_req")) {
+      if (ecInformations.getController() == null) {
+        ecInformations.setController(new ControllerInfo());
       }
-      if (allSetFlg || getinfo.contains("ctr-receive_req")) {
-        if (ecInformations.getController() == null) {
-          ecInformations.setController(new ControllerInfo());
-        }
-        ecInformations.getController().setReceiveRestRequest(receiveCount);
+      ecInformations.getController().setReceiveRestRequest(receiveCount);
+    }
+    if (allSetFlg || getinfo.contains("ctr-send_rest_req")) {
+      if (ecInformations.getController() == null) {
+        ecInformations.setController(new ControllerInfo());
       }
-      if (allSetFlg || getinfo.contains("ctr-send_req")) {
-        if (ecInformations.getController() == null) {
-          ecInformations.setController(new ControllerInfo());
-        }
-        ecInformations.getController().setSendRestRequest(sendCount);
-      }
-
-      infolist.add(ecInformations);
+      ecInformations.getController().setSendRestRequest(sendCount);
     }
 
-    if (emControllerInformations.getStatus() != null && !emControllerInformations.getStatus().isEmpty()) {
-      EmStatus emstatus = new EmStatus();
-      emstatus.setStatus(emControllerInformations.getStatus());
-      ret.setEm_status(emstatus);
+    return ecInformations;
+  }
+
+  /**
+   * REST data mapping : controller status  notification(server) (for EC).
+   *
+   * @param controllerType
+   *          controller type
+   * @param systemType
+   *          system type
+   * @param cpuToFc
+   *          CPU
+   * @param memoryToFc
+   *          meomory
+   * @param diskToFc
+   *          disk usage
+   * @return  information on controller status notification(server)(for sending REST)
+   */
+  public static ServerNotificationToFc toServerNotificationEc(String controllerType, String systemType, CpuToFc cpuToFc,
+      MemoryToFc memoryToFc, DiskToFc diskToFc) {
+    logger.trace(CommonDefinitions.START);
+
+    ControllerServerToFc controllerServerToFc = new ControllerServerToFc();
+    controllerServerToFc.setControllerType(controllerType);
+    controllerServerToFc.setSystemType(systemType);
+
+    FailureInfoToFc failureInfoToFc = new FailureInfoToFc();
+    if (cpuToFc == null && memoryToFc == null && diskToFc == null) {
+      return null;
     }
-    if (emControllerInformations.getInformations() != null && emControllerInformations.getInformations().size() != 0) {
-      emControllerInformations.getInformations().get(0).setControllerType("em");
-      infolist.add(emControllerInformations.getInformations().get(0));
+
+    if (cpuToFc != null) {
+      failureInfoToFc.setCpu(cpuToFc);
     }
-    if (!infolist.isEmpty()) {
-      ret.setInformations(infolist);
+    if (memoryToFc != null) {
+      failureInfoToFc.setMemory(memoryToFc);
+    }
+    if (diskToFc != null) {
+      failureInfoToFc.setDisk(diskToFc);
+    }
+
+    controllerServerToFc.setFailureInfo(failureInfoToFc);
+    ServerNotificationToFc ret = new ServerNotificationToFc();
+    ret.setController(controllerServerToFc);
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+
+    return ret;
+  }
+
+  /**
+   * REST data mapping : controller status  notification(server) (for EM).
+   *
+   * @param emConStatusSrv
+   *          EM controller status (server)
+   * @return  information on controller status notification(server)(for sending REST)
+   */
+  public static ServerNotificationToFc toServerNotificationEm(NotifyEmStatusServer emConStatusSrv) {
+    logger.trace(CommonDefinitions.START);
+
+    final String emAct = "em_act";
+    final String emSby = "em_sby";
+
+    ControllerServerToFc controllerServerToFc = new ControllerServerToFc();
+
+    controllerServerToFc.setControllerType(emAct);
+    if (emConStatusSrv.getControllerServer().getControllerType().equals(emSby)) {
+      controllerServerToFc.setControllerType(emSby);
+    }
+    controllerServerToFc.setSystemType(emConStatusSrv.getControllerServer().getSystemType());
+
+    CpuToFc cpuToFc = null;
+    if (emConStatusSrv.getControllerServer().getFailureInfo().getCpu() != null) {
+      cpuToFc = new CpuToFc();
+      cpuToFc.setUseRate(emConStatusSrv.getControllerServer().getFailureInfo().getCpu().getUseRate());
+    }
+
+    MemoryToFc memoryToFc = null;
+    if (emConStatusSrv.getControllerServer().getFailureInfo().getMemory() != null) {
+      memoryToFc = new MemoryToFc();
+      memoryToFc.setUsed(emConStatusSrv.getControllerServer().getFailureInfo().getMemory().getUsed());
+      if (emConStatusSrv.getControllerServer().getSystemType().equals(CommonDefinitions.SYSTEM_TYPE_CTL_PROCESS)) {
+        memoryToFc.setFree(null);
+      } else {
+        memoryToFc.setFree(emConStatusSrv.getControllerServer().getFailureInfo().getMemory().getFree());
+      }
+    }
+
+    DiskToFc diskToFc = null;
+    if (emConStatusSrv.getControllerServer().getFailureInfo().getDisk() != null) {
+      List<DevicesToFc> devicesToFcs = new ArrayList<DevicesToFc>();
+      for (DeviceInfo deviceInfo : emConStatusSrv.getControllerServer().getFailureInfo().getDisk().getDevices()) {
+        DevicesToFc devicesToFc = new DevicesToFc();
+        devicesToFc.setFileSystem(deviceInfo.getFileSystem());
+        devicesToFc.setMountedOn(deviceInfo.getMountedOn());
+        devicesToFc.setSize(deviceInfo.getSize());
+        devicesToFc.setUsed(deviceInfo.getUsed());
+        devicesToFcs.add(devicesToFc);
+      }
+      diskToFc = new DiskToFc();
+      diskToFc.setDevices(devicesToFcs);
+    }
+
+    FailureInfoToFc failureInfoToFc = new FailureInfoToFc();
+    failureInfoToFc.setCpu(cpuToFc);
+    failureInfoToFc.setMemory(memoryToFc);
+    failureInfoToFc.setDisk(diskToFc);
+    controllerServerToFc.setFailureInfo(failureInfoToFc);
+
+    ServerNotificationToFc ret = new ServerNotificationToFc();
+    ret.setController(controllerServerToFc);
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+
+    return ret;
+  }
+
+  /**
+   * REST data mapping : controller status  notification(log) (for EM).
+   *
+   * @param emConStatusLog
+*          EM controller status(log)
+   * @return i nformation on controller status notification(log)(for sending REST)
+   */
+  public static LogNotificationToFc toLogNotificationEm(NotifyEmStatusLog emConStatusLog) {
+    logger.trace(CommonDefinitions.START);
+
+    final String emAct = "em_act";
+
+    ControllerLogToFc controllerLogToFc = new ControllerLogToFc();
+
+    controllerLogToFc.setControllerType(emAct);
+    controllerLogToFc.setLogLevel(emConStatusLog.getControllerLog().getLogLevel());
+    List<String> logs = new ArrayList<String>();
+    for (String log : emConStatusLog.getControllerLog().getMessage()) {
+      logs.add(log);
+    }
+    controllerLogToFc.setLog(logs);
+
+    LogNotificationToFc ret = new LogNotificationToFc();
+    ret.setController(controllerLogToFc);
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+
+    return ret;
+  }
+
+  /**
+   * REST data mapping: Config-Audit difference information notification.
+   *
+   * @param emresp
+   *          Config-Audit difference information
+   * @return Config-Audit difference information notification(for sending REST)
+   */
+  public static ConfigAuditNotification toConfigAuditNotification(GetConfigAuditList emresp) {
+    logger.trace(CommonDefinitions.START);
+
+    ConfigAuditNotification ret = new ConfigAuditNotification();
+
+    for (NodeConfigAll result : emresp.getNodes()) {
+
+      NodeConfigToFc nodeConfig = new NodeConfigToFc();
+      nodeConfig.setNodeId(result.getNode().getNodeId());
+
+      LatestEmConfigToFc latestEmConfig = null;
+      if (result.getNode().getLatestEmConfig() != null) {
+        latestEmConfig = new LatestEmConfigToFc();
+        latestEmConfig.setDate(result.getNode().getLatestEmConfig().getDate());
+        latestEmConfig.setServerName(result.getNode().getLatestEmConfig().getServerName());
+        latestEmConfig.setConfig(result.getNode().getLatestEmConfig().getConfig());
+      }
+
+      NeConfigToFc neConfig = new NeConfigToFc();
+      neConfig.setDate(result.getNode().getNeConfig().getDate());
+      neConfig.setConfig(result.getNode().getNeConfig().getConfig());
+
+      DiffToFc diff = new DiffToFc();
+      diff.setDiffDataUnified(result.getNode().getDiff().getDiffDataUnified());
+
+      nodeConfig.setLatestEmConfig(latestEmConfig);
+      nodeConfig.setNeConfig(neConfig);
+      nodeConfig.setDiff(diff);
+
+      ret.getNodes().add(nodeConfig);
     }
 
     logger.debug(ret);

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -25,8 +25,8 @@ public class EcEmLog {
   private LogInformation em_log;
 
   /**
-   * Getting log acquisition condition information.
-   * @return log acquisition condition information
+   * Setting log acquisition condition information.
+   * @param conditions log acquisition condition information
    */
   public LogConditions getConditions() {
     return conditions;
@@ -48,7 +48,7 @@ public class EcEmLog {
     return ec_log;
   }
 
-  /**
+ /**
    * Setting EC log acquisition information.
    * @param ec_log EC log acquisition information
    */
@@ -70,6 +70,11 @@ public class EcEmLog {
    */
   public void setEm_log(LogInformation em_log) {
     this.em_log = em_log;
+  }
+
+  @Override
+  public String toString() {
+    return "EcEmLog [conditions=" + conditions + ", ec_log=" + ec_log + ", em_log=" + em_log + "]";
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,12 +9,12 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.LagIfs;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
-
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.LagIfs;
 
 /**
  * LAGIF Information DAO Class.
@@ -25,7 +25,7 @@ public class LagIfsDAO extends BaseDAO {
    * LAGIF Information Class Constructor.
    *
    * @param session
-   *          data base session
+   *          database session
    */
   public LagIfsDAO(Session session) {
     this.session = session;
@@ -39,7 +39,7 @@ public class LagIfsDAO extends BaseDAO {
    * @param check
    *           check
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void save(LagIfs lagIfs, boolean check) throws DBAccessException {
     try {
@@ -65,20 +65,18 @@ public class LagIfsDAO extends BaseDAO {
    * @param lagIfs
    *          LAGIF information
    * @throws DBAccessException
-   *           data base exception process
+   *           database exception process
    */
   public void updateState(LagIfs lagIfs) throws DBAccessException {
     try {
-      LagIfs regLagIfs = this.search(lagIfs.getNode_id(), lagIfs.getLag_if_id());
-      if (regLagIfs == null) {
-        this.errorMessage(NO_UPDATE_TARGET, LAG_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updateLagIfsState");
-        query.setString("key1", lagIfs.getNode_id());
-        query.setString("key2", lagIfs.getLag_if_id());
-        query.setParameter("key3", lagIfs.getIf_status(), StandardBasicTypes.INTEGER);
+      Query query = session.getNamedQuery("updateLagIfsState");
+      query.setString("key1", lagIfs.getNode_id());
+      query.setString("key2", lagIfs.getLag_if_id());
+      query.setParameter("key3", lagIfs.getIf_status(), StandardBasicTypes.INTEGER);
 
-        query.executeUpdate();
+      int count = query.executeUpdate();
+      if (count == 0) {
+        this.errorMessage(NO_UPDATE_TARGET, LAG_IFS, null);
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -94,21 +92,20 @@ public class LagIfsDAO extends BaseDAO {
    * @param lagIfs
    *          LAGIF information
    * @throws DBAccessException
-   *           data base exception process
+   *           database exception
    */
   public void updateIP(LagIfs lagIfs) throws DBAccessException {
     try {
-      LagIfs regLagIfs = this.search(lagIfs.getNode_id(), lagIfs.getLag_if_id());
-      if (regLagIfs == null) {
-        this.errorMessage(NO_UPDATE_TARGET, LAG_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updateLagIfsIP");
-        query.setString("key1", lagIfs.getNode_id());
-        query.setString("key2", lagIfs.getLag_if_id());
-        query.setString("key3", lagIfs.getIpv4_address());
-        query.setParameter("key4", lagIfs.getIpv4_prefix(), StandardBasicTypes.INTEGER);
 
-        query.executeUpdate();
+      Query query = session.getNamedQuery("updateLagIfsIP");
+      query.setString("key1", lagIfs.getNode_id());
+      query.setString("key2", lagIfs.getLag_if_id());
+      query.setString("key3", lagIfs.getIpv4_address());
+      query.setParameter("key4", lagIfs.getIpv4_prefix(), StandardBasicTypes.INTEGER);
+
+      int count = query.executeUpdate();
+      if (count == 0) {
+        this.errorMessage(NO_UPDATE_TARGET, LAG_IFS, null);
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -124,20 +121,18 @@ public class LagIfsDAO extends BaseDAO {
    * @param lagIfs
    *          LAGIF information
    * @throws DBAccessException
-   *           data base exception process
+   *           database exception
    */
   public void updateName(LagIfs lagIfs) throws DBAccessException {
     try {
-      LagIfs regLagIfs = this.search(lagIfs.getNode_id(), lagIfs.getLag_if_id());
-      if (regLagIfs == null) {
-        this.errorMessage(NO_UPDATE_TARGET, LAG_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updateLagIfName");
-        query.setString("key1", lagIfs.getNode_id());
-        query.setString("key2", lagIfs.getLag_if_id());
-        query.setString("key3", lagIfs.getIf_name());
+      Query query = session.getNamedQuery("updateLagIfName");
+      query.setString("key1", lagIfs.getNode_id());
+      query.setString("key2", lagIfs.getLag_if_id());
+      query.setString("key3", lagIfs.getIf_name());
 
-        query.executeUpdate();
+      int count = query.executeUpdate();
+      if (count == 0) {
+        this.errorMessage(NO_UPDATE_TARGET, LAG_IFS, null);
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -157,7 +152,7 @@ public class LagIfsDAO extends BaseDAO {
    * @param check
    *          Whether is it a target to be deleted from the other relations or not?
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void delete(String node_id, String lag_if_id, boolean check) throws DBAccessException {
     try {
@@ -197,7 +192,7 @@ public class LagIfsDAO extends BaseDAO {
    *          device ID (primary key)
    * @return lagIfsList search result
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public List<LagIfs> getList(String node_id) throws DBAccessException {
@@ -225,7 +220,7 @@ public class LagIfsDAO extends BaseDAO {
    *          LAGIF ID (primary key 2)
    * @return lagIfs search result
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public LagIfs search(String node_id, String lag_if_id) throws DBAccessException {
@@ -246,5 +241,32 @@ public class LagIfsDAO extends BaseDAO {
       this.errorMessage(SEARCH_FAILURE, LAG_IFS, e1);
     }
     return lagIfs;
+  }
+
+  /**
+   * LagIF status information table UPDATE(minimumu number of links).
+   *
+   * @param lagIfs
+   *          LAGIF information
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void updateMinLinkNum(LagIfs lagIfs) throws DBAccessException {
+    try {
+      Query query = session.getNamedQuery("updateLagIfMinLinkNum");
+      query.setString("key1", lagIfs.getNode_id());
+      query.setString("key2", lagIfs.getLag_if_id());
+      query.setParameter("key3", lagIfs.getMinimum_link_num(), StandardBasicTypes.INTEGER);
+
+      int count = query.executeUpdate();
+      if (count == 0) {
+        this.errorMessage(NO_UPDATE_TARGET, LAG_IFS, null);
+      }
+    } catch (DBAccessException e1) {
+      throw e1;
+    } catch (Throwable e2) {
+      logger.debug("lag_ifs update failed.", e2);
+      this.errorMessage(UPDATE_FAILURE, LAG_IFS, e2);
+    }
   }
 }

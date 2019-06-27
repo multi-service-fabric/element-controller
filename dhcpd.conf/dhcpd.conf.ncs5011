@@ -23,7 +23,7 @@ host NCS5011 {
     fixed-address $$MANAGEMENTADDRESS$$;
     next-server $$TFTPHOSTNAME$$;
     if exists user-class and option user-class = "iPXE" {
-        filename "http://$$TFTPHOSTNAME$$/no-such-file.sh";
+        filename "http://$$TFTPHOSTNAME$$/ncs5k-iso/ncs5k-mini-x.iso-6.1.2";
     } else {
         filename "http://$$TFTPHOSTNAME$$$$INITIALCONFIG$$";
     }

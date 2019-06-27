@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.cp;
@@ -11,10 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.dao.BaseDAO;
@@ -29,24 +27,23 @@ import msf.ecmm.ope.receiver.pojo.parts.VlanIfsDeleteVlanIf;
 public class AclUtilityCp {
 
   /** Logger. */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
-  /**
-   * Judging whether VLAN delete is possible/ impossible, at using ACL.
-   *
-   * @param allVlanIfsMap
-   *          Entire VLAN information which is held by such device having the VLAN to be deleted
-   * @param delVlans
-   *          the VLAN to be deleted
-   * @return judgement results
-   * @throws DBAccessException
-   *           In case abnormality has occurred in DB
-   */
+  /** 
+   * Judging whether VLAN delete is possible/ impossible, at using ACL. 
+   * 
+   * @param allVlanIfsMap 
+   *          Entire VLAN information which is held by such device having the VLAN to be deleted 
+   * @param delVlans 
+   *          the VLAN to be deleted 
+   * @return judgement results 
+   * @throws DBAccessException 
+   *           In case abnormality has occurred in DB 
+   */ 
   protected static boolean checkRemoveVlan(Map<String, List<VlanIfs>> allVlanIfsMap, List<VlanIfsDeleteVlanIf> delVlans)
       throws DBAccessException {
     logger.trace(CommonDefinitions.START);
     boolean ret = true;
-
 
     try (DBAccessManager session = new DBAccessManager()) {
 
@@ -84,6 +81,7 @@ public class AclUtilityCp {
           }
         }
 
+
         ret = checkLastPhysicalBaseVlnaSetAcl(allPhysVlanListMapMap, delPhysVlanListMapMap);
       }
       while (false);
@@ -93,16 +91,17 @@ public class AclUtilityCp {
     }
   }
 
-  /**
-   * ListMapMap Generation. Device ID:{Physical IFID：[VLANIFID1, VLANIFID2]}
-   *
-   * @param physVlanListMapMap
-   *          ListMapMap（IN/OUT）
-   * @param vlanIfs
-   *          VLAN Information
-   * @param nodeId
-   *          Device ID
-   */
+
+  /** 
+   * ListMapMap Generation. Device ID:{Physical IFID：[VLANIFID1, VLANIFID2]} 
+   * 
+   * @param physVlanListMapMap 
+   *          ListMapMap（IN/OUT） 
+   * @param vlanIfs 
+   *          VLAN Information 
+   * @param nodeId 
+   *          Device ID 
+   */ 
   protected static void createPhysVlanListMapMap(Map<String, Map<String, List<String>>> physVlanListMapMap,
       VlanIfs vlanIfs, String nodeId) {
     logger.trace(CommonDefinitions.START);
@@ -130,15 +129,15 @@ public class AclUtilityCp {
     logger.trace(CommonDefinitions.END);
   }
 
-  /**
-   * Judging whether it is applicable to the case where the last VLAN of the relevant physical IF is to be deleted and also such physical IF is provided with ACL configuraiton（LAG is allowed).
-   *
-   * @param allPhysVlanListMapMap
-   *          Mapping of information list map of physical VLAN to be deleted
-   * @param delPhysVlanListMapMap
-   *               Mapping of the entire VLAN information ListMap held by the device having the VLAN to be deleted
-   * @return  Judgment Results
-   */
+  /** 
+   * Judging whether it is applicable to the case where the last VLAN of the relevant physical IF is to be deleted and also such physical IF is provided with ACL configuraiton（LAG is allowed). 
+   * 
+   * @param allPhysVlanListMapMap 
+   *          Mapping of information list map of physical VLAN to be deleted 
+   * @param delPhysVlanListMapMap 
+   *               Mapping of the entire VLAN information ListMap held by the device having the VLAN to be deleted 
+   * @return  Judgment Results 
+   */ 
   protected static boolean checkLastPhysicalBaseVlnaSetAcl(
       Map<String, Map<String, List<String>>> allPhysVlanListMapMap,
       Map<String, Map<String, List<String>>> delPhysVlanListMapMap) throws DBAccessException {

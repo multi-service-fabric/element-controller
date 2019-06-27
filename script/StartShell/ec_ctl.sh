@@ -7,38 +7,39 @@
 ## and does REST interface notification to EC.
 ## (URI parameters are in JSON format)
 ##
-## Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+## Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
 ##
 
 ## Environment Definition
 HOST="192.168.51.52"
 PORT="18080"
 RETRYNUM=10
-FC_HOST="192.168.51.54"
-FC_PORT="18081"
 
 ## Input Argument (only stop/status are used)
 EVENT=""
 
+cd `dirname "$0"`
+EC_HOME="$(cd "$(dirname "$0")/../"; pwd)/"
+
 ## Environment Variable (only start/stop is used)
 JARFILE="msf.ecmm.ope.execute.ecstate.ECMainStarter"
-CONFFILE="/usr/ec_main/conf/ec_main.conf"
-EXNTED_CONFFILE="/usr/ec_main/lib/extend_operation.conf"
+CONFFILE="${EC_HOME}conf/ec_main.conf"
+EXNTED_CONFFILE="${EC_HOME}lib/extend_operation.conf"
 
 ## For Start-up Confirmation
-CHECKFILE="/usr/ec_main/lib/EcMainModule.jar:"
+CHECKFILE="${EC_HOME}lib/EcMainModule.jar:"
 
 ## Getting REST timeout time and the number of retries from the configuration
 RESTTIMEOUT=`grep rest_timeout ${CONFFILE} | sed s/rest_timeout=//`
 RESTRETRYNUM=`grep rest_retry_num ${CONFFILE} | sed s/rest_retry_num=//`
 
 
-CLASSPATH="/usr/ec_main/conf/"
-for name in `ls /usr/ec_main/lib/*.jar`; do
+CLASSPATH="${EC_HOME}conf/"
+for name in `ls ${EC_HOME}lib/*.jar`; do
   CLASSPATH="${CLASSPATH}:$name"
 done
 
-DEFINE="-Dlog4j.configurationFile=file:///usr/ec_main/conf/log4j2.xml"
+DEFINE="-Dlog4j.configurationFile=file://${EC_HOME}conf/log4j2.xml"
 
 ## Constant Definition
 #EC_NORMAL_STOP="NORMAL_STOP"

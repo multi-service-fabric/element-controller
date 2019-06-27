@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.common;
@@ -12,18 +12,17 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import msf.ecmm.common.log.MsfLogger;
 
 /**
- * thread to read InputStream
+ *  thread to read InputStream.
  */
 public class InputStreamThread extends Thread {
 
   /**
    * logger
    */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
   /**
    * read buffer
@@ -36,12 +35,12 @@ public class InputStreamThread extends Thread {
   private List<String> list = new ArrayList<String>();
 
   /**
-   * constructor (to specify text code)
+   * constructor (to specify text code) 
    *
    * @param is
-   *          InputStream
+   *          InputStream 
    * @param charset
-   *          text code set
+   *          text code set 
    */
   public InputStreamThread(InputStream is, String charset) {
     logger.trace(CommonDefinitions.START);
@@ -84,9 +83,9 @@ public class InputStreamThread extends Thread {
   }
 
   /**
-   * Getting the read string list.
+   * Getting the read string list. 
    *
-   * @return the string list which has been read
+   * @return the string list which has been read 
    */
   public List<String> getStringList() {
     return list;

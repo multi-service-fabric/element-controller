@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.config;
@@ -13,9 +13,7 @@ import java.util.Properties;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import msf.ecmm.common.log.MsfLogger;
 
 /**
  * Configuration Management Class.
@@ -49,8 +47,6 @@ public class EcConfiguration {
   /** EM Connection Timeout Value (for NETCONF over ssh).*/
   public static final String EM_TIMEOUT = "em_timeout";
   /** EC's Own Cluster ID. */
-  public static final String CLUSTER_ID = "cluster_id";
-  /** SNMP Request Timeout Time in Configuration Management Function. */
   public static final String DEVICE_SNMP_TIMEOUT = "device_snmp_timeout";
   /** No. of Retries for OSPF Neighbor Establishment ConfirmationOSPF. */
   public static final String OSPF_NEIGHBOR_RETRY_NUM = "ospf_neighbor_retry_num";
@@ -100,6 +96,50 @@ public class EcConfiguration {
   public static final String LOG_FILE_PATH = "log_file_path";
   /** Internal Link VLANID. */
   public static final String INTERNAL_LINK_VLANID = "internal_link_vlanid";
+  /** ACT CPU usage threshold. */
+  public static final String ACT_CPU_THRESHOLD = "act_cpu_threshold";
+  /** ACT memory usage threshold. */
+  public static final String ACT_MEMORY_THRESHOLD = "act_memory_threshold";
+  /** Controller CPU usage threshold. */
+  public static final String CONTROLLER_CPU_THRESHOLD = "controller_cpu_threshold";
+  /** Controller memoory usage threshold. */
+  public static final String CONTROLLER_MEMORY_THRESHOLD = "controller_memory_threshold";
+  /** SBY CPU usage threshold. */
+  public static final String SBY_CPU_THRESHOLD = "sby_cpu_threshold";
+  /** SBY memory usage threshold. */
+  public static final String SBY_MEMORY_THRESHOLD = "sby_memory_threshold";
+  /** SBY IP address. */
+  public static final String SBY_IP_ADDRESS = "sby_ip_address";
+  /** Shell file for SBY controller status aquisition. */
+  public static final String SBY_STATUS_GET_SHELL_FILE = "sby_status_get_shell_file";
+  /** SBY Login name. */
+  public static final String SBY_USRNAME = "sby_usrname";
+  /** SBY Login password. */
+  public static final String SBY_PASSWORD = "sby_password";
+  /** Periodic interval for monitoring controller status. */
+  public static final String CONTROLLER_STATUS_INTERVAL = "controller_status_interval";
+  /** Log revel(INFO) for judging whether controller status notification is required or not. */
+  public static final String NOTICE_LOG_LEVEL_INFO = "notice_log_level_info";
+  /** Log revel(WARN) for judging whether controller status notification is required or not. */
+  public static final String NOTICE_LOG_LEVEL_WARN = "notice_log_level_warn";
+  /** Log revel(ERROR) for judging whether controller status notification is required or not. */
+  public static final String NOTICE_LOG_LEVEL_ERROR = "notice_log_level_error";
+  /**Periodic interval for  Config-Audit execution. */
+  public static final String CONFIG_AUDIT_MONITOR_INTERVAL = "config_audit_monitor_interval";
+  /** Address to which Config-Audit difference information is notified. */
+  public static final String CONFIG_AUDIT_MONITOR_NOTIFY_ADDRESS = "config_audit_monitor_notify_address";
+  /** Port number to which Config-Audit difference information is notified. */
+  public static final String CONFIG_AUDIT_MONITOR_NOTIFY_PORT = "config_audit_monitor_notify_port";
+  /** URL  to which Config-Audi difference information is notified. */
+  public static final String CONFIG_AUDIT_MONITOR_NOTIFY_URL = "config_audit_monitor_notify_url";
+  /** EC resource group name. **/
+  public static final String EC_RESOURCE_GROUP_NAME = "ec_resource_group_name";
+  /** Name of monitored resource by EC. **/
+  public static final String EC_RESOURCE_STATUS_TARGET_NAME = "ec_resource_status_target_name";
+  /** Periopdic confirmation whether switch-over process has benn completed. **/
+  public static final String RESOURCE_CHECK_INTERVAL = "resource_check_interval";
+  /** Number of confirmation whether switch-over process has benn completed. **/
+  public static final String NUMBER_OF_RESOURCE_CHECK = "number_of_resource_check";
 
   /** Own Class Instance. */
   private static EcConfiguration me = new EcConfiguration();
@@ -108,8 +148,9 @@ public class EcConfiguration {
   private static Properties properties = new Properties();
 
   /** Log Output Instance. */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
+  private final int percentLimit = 100;
 
   /**
    * Configuration Management Functional Part Class Constructor.
@@ -136,8 +177,8 @@ public class EcConfiguration {
    */
   public void read(String filename) throws Exception {
 
-    logger.trace(CommonDefinitions.START);
-    logger.debug("load config start : " + filename);
+    logger.simpleLogTrace(CommonDefinitions.START);
+    logger.simpleLogDebug("load config start : " + filename);
     properties = new Properties();
     try (FileInputStream fis = new FileInputStream(filename)) {
       properties.load(new InputStreamReader(fis, "utf8"));
@@ -147,11 +188,11 @@ public class EcConfiguration {
 
     boolean ret = this.validate();
     if (ret != true) {
-      logger.debug("load config fail");
+      logger.simpleLogDebug("load config fail");
       throw new Exception("illegal data in config file");
     }
-    logger.debug("load config success");
-    logger.trace(CommonDefinitions.END);
+    logger.simpleLogDebug("load config success");
+    logger.simpleLogTrace(CommonDefinitions.END);
   }
 
   /**
@@ -179,7 +220,6 @@ public class EcConfiguration {
     requiredParameterMap.put(EM_USER, new InnerConfigCheck());
     requiredParameterMap.put(EM_PASSWORD, new InnerConfigCheck());
     requiredParameterMap.put(EM_TIMEOUT, new InnerConfigCheck());
-    requiredParameterMap.put(CLUSTER_ID, new InnerConfigCheck());
     requiredParameterMap.put(DEVICE_SNMP_TIMEOUT, new InnerConfigCheck());
     requiredParameterMap.put(OSPF_NEIGHBOR_RETRY_NUM, new InnerConfigCheck());
     requiredParameterMap.put(OSPF_NEIGHBOR_RETRY_INTERVAL, new InnerConfigCheck());
@@ -205,6 +245,28 @@ public class EcConfiguration {
     requiredParameterMap.put(EM_REST_PORT, new InnerConfigCheck());
     requiredParameterMap.put(LOG_FILE_PATH, new InnerConfigCheck());
     requiredParameterMap.put(INTERNAL_LINK_VLANID, new InnerConfigCheck());
+    requiredParameterMap.put(ACT_CPU_THRESHOLD, new InnerConfigCheck());
+    requiredParameterMap.put(ACT_MEMORY_THRESHOLD, new InnerConfigCheck());
+    requiredParameterMap.put(CONTROLLER_CPU_THRESHOLD, new InnerConfigCheck());
+    requiredParameterMap.put(CONTROLLER_MEMORY_THRESHOLD, new InnerConfigCheck());
+    requiredParameterMap.put(SBY_CPU_THRESHOLD, new InnerConfigCheck(""));
+    requiredParameterMap.put(SBY_MEMORY_THRESHOLD, new InnerConfigCheck(""));
+    requiredParameterMap.put(SBY_IP_ADDRESS, new InnerConfigCheck(""));
+    requiredParameterMap.put(SBY_STATUS_GET_SHELL_FILE, new InnerConfigCheck(""));
+    requiredParameterMap.put(SBY_USRNAME, new InnerConfigCheck(""));
+    requiredParameterMap.put(SBY_PASSWORD, new InnerConfigCheck(""));
+    requiredParameterMap.put(CONTROLLER_STATUS_INTERVAL, new InnerConfigCheck());
+    requiredParameterMap.put(NOTICE_LOG_LEVEL_INFO, new InnerConfigCheck());
+    requiredParameterMap.put(NOTICE_LOG_LEVEL_WARN, new InnerConfigCheck());
+    requiredParameterMap.put(NOTICE_LOG_LEVEL_ERROR, new InnerConfigCheck());
+    requiredParameterMap.put(CONFIG_AUDIT_MONITOR_INTERVAL, new InnerConfigCheck());
+    requiredParameterMap.put(CONFIG_AUDIT_MONITOR_NOTIFY_ADDRESS, new InnerConfigCheck(null));
+    requiredParameterMap.put(CONFIG_AUDIT_MONITOR_NOTIFY_PORT, new InnerConfigCheck(null));
+    requiredParameterMap.put(CONFIG_AUDIT_MONITOR_NOTIFY_URL, new InnerConfigCheck());
+    requiredParameterMap.put(EC_RESOURCE_GROUP_NAME, new InnerConfigCheck());
+    requiredParameterMap.put(EC_RESOURCE_STATUS_TARGET_NAME, new InnerConfigCheck());
+    requiredParameterMap.put(RESOURCE_CHECK_INTERVAL, new InnerConfigCheck());
+    requiredParameterMap.put(NUMBER_OF_RESOURCE_CHECK, new InnerConfigCheck());
 
     for (Object key : properties.keySet()) {
 
@@ -298,12 +360,6 @@ public class EcConfiguration {
           requiredParameterMap.get(EM_TIMEOUT).checkRet = true;
         }
       }
-      else if (key.equals(CLUSTER_ID)) {
-        requiredParameterMap.get(CLUSTER_ID).checkExec = true;
-        if (checkInteger((String) key, Integer.MIN_VALUE, Integer.MAX_VALUE, true)) {
-          requiredParameterMap.get(CLUSTER_ID).checkRet = true;
-        }
-      }
       else if (key.equals(DEVICE_SNMP_TIMEOUT)) {
         requiredParameterMap.get(DEVICE_SNMP_TIMEOUT).checkExec = true;
         if (checkInteger((String) key, 1, Integer.MAX_VALUE, true)) {
@@ -334,6 +390,7 @@ public class EcConfiguration {
           requiredParameterMap.get(FAILURE_SNMP_TIMEOUT).checkRet = true;
         }
       }
+
       else if ((key.equals(TRAFFIC_MIB_INTERVAL) || key.equals(TRAFFIC_SNMP_TIMEOUT)) && chkFlg == false) {
 
         chkFlg = true;
@@ -472,23 +529,173 @@ public class EcConfiguration {
           requiredParameterMap.get(INTERNAL_LINK_VLANID).checkRet = true;
         }
       }
+      else if (key.equals(ACT_CPU_THRESHOLD)) {
+        requiredParameterMap.get(ACT_CPU_THRESHOLD).checkExec = true;
+        if (checkInteger((String) key, 0, percentLimit, true)) {
+          requiredParameterMap.get(ACT_CPU_THRESHOLD).checkRet = true;
+        }
+      }
+      else if (key.equals(ACT_MEMORY_THRESHOLD)) {
+        requiredParameterMap.get(ACT_MEMORY_THRESHOLD).checkExec = true;
+        if (checkInteger((String) key, 0, Integer.MAX_VALUE, true)) {
+          requiredParameterMap.get(ACT_MEMORY_THRESHOLD).checkRet = true;
+        }
+      }
+      else if (key.equals(CONTROLLER_CPU_THRESHOLD)) {
+        requiredParameterMap.get(CONTROLLER_CPU_THRESHOLD).checkExec = true;
+        if (checkInteger((String) key, 0, percentLimit, true)) {
+          requiredParameterMap.get(CONTROLLER_CPU_THRESHOLD).checkRet = true;
+        }
+      }
+      else if (key.equals(CONTROLLER_MEMORY_THRESHOLD)) {
+        requiredParameterMap.get(CONTROLLER_MEMORY_THRESHOLD).checkExec = true;
+        if (checkInteger((String) key, 0, Integer.MAX_VALUE, true)) {
+          requiredParameterMap.get(CONTROLLER_MEMORY_THRESHOLD).checkRet = true;
+        }
+      }
+      else if (key.equals(SBY_CPU_THRESHOLD)) {
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(SBY_CPU_THRESHOLD).checkExec = true;
+          if (checkInteger((String) key, 0, percentLimit, false)) {
+            requiredParameterMap.get(SBY_CPU_THRESHOLD).checkRet = true;
+          }
+        }
+      }
+      else if (key.equals(SBY_MEMORY_THRESHOLD)) {
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(SBY_MEMORY_THRESHOLD).checkExec = true;
+          if (checkInteger((String) key, 0, Integer.MAX_VALUE, false)) {
+            requiredParameterMap.get(SBY_MEMORY_THRESHOLD).checkRet = true;
+          }
+        }
+      }
+      else if (key.equals(SBY_IP_ADDRESS)) {
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(SBY_IP_ADDRESS).checkExec = true;
+          if (checkString((String) key, false)) {
+            requiredParameterMap.get(SBY_IP_ADDRESS).checkRet = true;
+          }
+        }
+      }
+      else if (key.equals(SBY_STATUS_GET_SHELL_FILE)) {
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(SBY_STATUS_GET_SHELL_FILE).checkExec = true;
+          if (checkString((String) key, false)) {
+            requiredParameterMap.get(SBY_STATUS_GET_SHELL_FILE).checkRet = true;
+          }
+        }
+      }
+      else if (key.equals(SBY_USRNAME)) {
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(SBY_USRNAME).checkExec = true;
+          if (checkString((String) key, false)) {
+            requiredParameterMap.get(SBY_USRNAME).checkRet = true;
+          }
+        }
+      }
+      else if (key.equals(SBY_PASSWORD)) {
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(SBY_PASSWORD).checkExec = true;
+          if (checkString((String) key, false)) {
+            requiredParameterMap.get(SBY_PASSWORD).checkRet = true;
+          }
+        }
+      }
+      else if (key.equals(CONTROLLER_STATUS_INTERVAL)) {
+        requiredParameterMap.get(CONTROLLER_STATUS_INTERVAL).checkExec = true;
+        if (checkInteger((String) key, 0, Integer.MAX_VALUE, true)) {
+          requiredParameterMap.get(CONTROLLER_STATUS_INTERVAL).checkRet = true;
+        }
+      }
+      else if (key.equals(NOTICE_LOG_LEVEL_INFO)) {
+        requiredParameterMap.get(NOTICE_LOG_LEVEL_INFO).checkExec = true;
+        if (checkString((String) key, true)) {
+          requiredParameterMap.get(NOTICE_LOG_LEVEL_INFO).checkRet = true;
+        }
+      }
+      else if (key.equals(NOTICE_LOG_LEVEL_WARN)) {
+        requiredParameterMap.get(NOTICE_LOG_LEVEL_WARN).checkExec = true;
+        if (checkString((String) key, true)) {
+          requiredParameterMap.get(NOTICE_LOG_LEVEL_WARN).checkRet = true;
+        }
+      }
+      else if (key.equals(NOTICE_LOG_LEVEL_ERROR)) {
+        requiredParameterMap.get(NOTICE_LOG_LEVEL_ERROR).checkExec = true;
+        if (checkString((String) key, true)) {
+          requiredParameterMap.get(NOTICE_LOG_LEVEL_ERROR).checkRet = true;
+        }
+      }
+      else if (key.equals(CONFIG_AUDIT_MONITOR_INTERVAL)) {
+        requiredParameterMap.get(CONFIG_AUDIT_MONITOR_INTERVAL).checkExec = true;
+        if (checkInteger((String) key, 0, Integer.MAX_VALUE, true)) {
+          requiredParameterMap.get(CONFIG_AUDIT_MONITOR_INTERVAL).checkRet = true;
+        }
+      }
+      else if (key.equals(CONFIG_AUDIT_MONITOR_NOTIFY_ADDRESS)) {
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(CONFIG_AUDIT_MONITOR_NOTIFY_ADDRESS).checkExec = true;
+          requiredParameterMap.get(CONFIG_AUDIT_MONITOR_NOTIFY_ADDRESS).checkRet = true;
+        }
+      }
+      else if (key.equals(CONFIG_AUDIT_MONITOR_NOTIFY_PORT)) {
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(CONFIG_AUDIT_MONITOR_NOTIFY_PORT).checkExec = true;
+          if (checkInteger((String) key, 0, 65535, false)) {
+            requiredParameterMap.get(CONFIG_AUDIT_MONITOR_NOTIFY_PORT).checkRet = true;
+          }
+        }
+      }
+      else if (key.equals(CONFIG_AUDIT_MONITOR_NOTIFY_URL)) {
+        requiredParameterMap.get(CONFIG_AUDIT_MONITOR_NOTIFY_URL).checkExec = true;
+        if (checkString((String) key, true)) {
+          requiredParameterMap.get(CONFIG_AUDIT_MONITOR_NOTIFY_URL).checkRet = true;
+        }
+      }
+      else if (key.equals(EC_RESOURCE_GROUP_NAME)) {
+        requiredParameterMap.get(EC_RESOURCE_GROUP_NAME).checkExec = true;
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(EC_RESOURCE_GROUP_NAME).checkRet = true;
+        }
+      }
+      else if (key.equals(EC_RESOURCE_STATUS_TARGET_NAME)) {
+        requiredParameterMap.get(EC_RESOURCE_STATUS_TARGET_NAME).checkExec = true;
+        if (checkString((String) key, false)) {
+          requiredParameterMap.get(EC_RESOURCE_STATUS_TARGET_NAME).checkRet = true;
+        }
+      }
+      else if (key.equals(RESOURCE_CHECK_INTERVAL)) {
+        requiredParameterMap.get(RESOURCE_CHECK_INTERVAL).checkExec = true;
+        if (checkInteger((String) key, 0, Integer.MAX_VALUE, false)) {
+          requiredParameterMap.get(RESOURCE_CHECK_INTERVAL).checkRet = true;
+        }
+      }
+      else if (key.equals(NUMBER_OF_RESOURCE_CHECK)) {
+        requiredParameterMap.get(NUMBER_OF_RESOURCE_CHECK).checkExec = true;
+        if (checkInteger((String) key, 0, Integer.MAX_VALUE, false)) {
+          requiredParameterMap.get(NUMBER_OF_RESOURCE_CHECK).checkRet = true;
+        }
+      }
     }
 
     for (Map.Entry<String, InnerConfigCheck> keyValue : requiredParameterMap.entrySet()) {
       if (keyValue.getValue().checkRet == false) {
         if (keyValue.getValue().requiredCheck == false) {
           if (keyValue.getValue().checkExec == false) {
-            properties.setProperty(keyValue.getKey(), keyValue.getValue().defaultValue);
+            if (keyValue.getValue().defaultValue == null) {
+              properties.remove(keyValue.getKey());
+            } else {
+              properties.setProperty(keyValue.getKey(), keyValue.getValue().defaultValue);
+            }
           }
           else {
-            logger.error(LogFormatter.out.format(LogFormatter.MSG_508032, keyValue.getKey(),
+            logger.simpleLogError(LogFormatter.out.format(LogFormatter.MSG_508032, keyValue.getKey(),
                 properties.getProperty(keyValue.getKey())));
             ret = false;
           }
         }
         else {
           if (keyValue.getValue().checkExec == false) {
-            logger.error(LogFormatter.out.format(LogFormatter.MSG_508033, keyValue.getKey()));
+            logger.simpleLogError(LogFormatter.out.format(LogFormatter.MSG_508033, keyValue.getKey()));
           }
           ret = false;
         }
@@ -522,7 +729,36 @@ public class EcConfiguration {
         }
       }
     } catch (NumberFormatException nfe) {
-      logger.error(LogFormatter.out.format(LogFormatter.MSG_508032, key, tmp), nfe);
+      logger.simpleLogError(LogFormatter.out.format(LogFormatter.MSG_508032, key, tmp), nfe);
+    }
+    return value;
+  }
+
+  /**
+   * Configuration Acquisition.
+   *
+   * @param cls
+   *          class (Integer or String)
+   * @param key
+   *          property key value
+   * @return property value
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T getFromMsfLogger(Class<T> cls, String key) {
+
+    T value = null;
+    String tmp = "";
+    try {
+      tmp = properties.getProperty(key);
+      if (tmp != null) {
+
+        if (cls == String.class) {
+          value = (T) new String(tmp);
+        } else if (cls == Integer.class) {
+          value = (T) new Integer(Integer.parseInt(tmp));
+        }
+      }
+    } catch (NumberFormatException nfe) {
     }
     return value;
   }
@@ -543,7 +779,7 @@ public class EcConfiguration {
     String val = properties.getProperty(key);
     if (val == null || val.isEmpty()) {
       if (msg) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_508033, key));
+        logger.simpleLogError(LogFormatter.out.format(LogFormatter.MSG_508033, key));
       }
       ret = false;
     }
@@ -569,7 +805,7 @@ public class EcConfiguration {
     String val = properties.getProperty(key);
     if (val == null || val.isEmpty()) {
       if (msg) {
-        logger.error(LogFormatter.out.format(LogFormatter.MSG_508033, key));
+        logger.simpleLogError(LogFormatter.out.format(LogFormatter.MSG_508033, key));
       }
       ret = false;
 
@@ -578,13 +814,13 @@ public class EcConfiguration {
         int num = Integer.parseInt(val);
         if ((num != Integer.MIN_VALUE && num < min) || (num != Integer.MAX_VALUE && num > max)) {
           if (msg) {
-            logger.error(LogFormatter.out.format(LogFormatter.MSG_508032, key, val));
+            logger.simpleLogError(LogFormatter.out.format(LogFormatter.MSG_508032, key, val));
           }
           ret = false;
         }
       } catch (NumberFormatException | SecurityException | ClassCastException exp) {
         if (msg) {
-          logger.error(LogFormatter.out.format(LogFormatter.MSG_508032, key, val), exp);
+          logger.simpleLogError(LogFormatter.out.format(LogFormatter.MSG_508032, key, val), exp);
         }
         ret = false;
       }
@@ -596,11 +832,11 @@ public class EcConfiguration {
    * Inner Class for Configuration Data Check.
    */
   protected class InnerConfigCheck {
-    /** Check for mandatory/optional。ァMandatory (true)/ Optional(false). */
+    /** Check for mandatory/optional : Mandatory (true)/ Optional(false). */
     private Boolean requiredCheck = true;
-    /** Checked/ Not checked。ァChecked(true)/ Not checked(false). */
+    /** Checked/ Not checked : Checked(true)/ Not checked(false). */
     private Boolean checkExec = false;
-    /** Check results。ァNormal(true)/ Abnormal(false). */
+    /** Check results : Normal(true)/ Abnormal(false). */
     private Boolean checkRet = false;
     /** Default value. */
     private String defaultValue = "";

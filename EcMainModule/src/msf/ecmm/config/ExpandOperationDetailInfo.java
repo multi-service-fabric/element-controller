@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.config;
@@ -19,6 +19,8 @@ public class ExpandOperationDetailInfo {
   private String operationPriority;
   /** Lock required/not required.*/
   private boolean isLock;
+  /** Extention function configuration class. */
+  private String expandConfigurationClassName;
 
   /**
    * Getting Extension function operation type.
@@ -115,15 +117,29 @@ public class ExpandOperationDetailInfo {
     this.isLock = isLock;
   }
 
-  /*
-   * (Non Javadoc)
-   *
+  /**
+   * Getting Extention function configuration class.
+   * @return Expanded function configuration class.
+   */
+  public String getExpandConfigurationClassName() {
+    return expandConfigurationClassName;
+  }
+
+  /**
+   * Setting Extention function configuration class.
+   * @param expandConfigurationClassName.
+   */
+  public void setExpandConfigurationClassName(String expandConfigurationClassName) {
+    this.expandConfigurationClassName = expandConfigurationClassName;
+  }
+
+  /* (Non Javadoc)
    * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
     return "ExpandOperationDetailInfo [operationTypeName=" + operationTypeName + ", operationTypeId=" + operationTypeId
         + ", operationExecuteClassName=" + operationExecuteClassName + ", operationPriority=" + operationPriority
-        + ", isLock=" + isLock + "]";
+        + ", isLock=" + isLock + ", expandConfigurationClassName=" + expandConfigurationClassName + "]";
   }
 }

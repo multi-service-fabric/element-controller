@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -62,7 +62,7 @@ public class LagMembersDAO extends BaseDAO {
    * @param lag_if_id
    *          LAGIF ID
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void delete(String node_id, String lag_if_id) throws DBAccessException {
     try {
@@ -74,6 +74,43 @@ public class LagMembersDAO extends BaseDAO {
         query.setString("key1", node_id);
         query.setString("key2", lag_if_id);
         query.executeUpdate();
+      }
+    } catch (DBAccessException e1) {
+      throw e1;
+    } catch (Throwable e2) {
+      logger.debug("lag_members delete failed.", e2);
+      this.errorMessage(DELETE_FAILURE, LAG_MEMBERS, e2);
+    }
+  }
+
+  /**
+   * LAG Member Information Table DELETE.
+   *
+   * @param members
+   *          member to be deleted
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void delete(LagMembers members) throws DBAccessException {
+    try {
+      LagMembers lagMembers = this.search(members.getNode_id(), members.getLag_if_id(), members.getPhysical_if_id(),
+          members.getBreakout_if_id());
+      if (lagMembers == null) {
+        this.errorMessage(NO_DELETE_TARGET, LAG_MEMBERS, null);
+      } else {
+        if (null != members.getPhysical_if_id()) {
+          Query query = session.getNamedQuery("deletePhysicalLagMembers");
+          query.setString("key1", members.getNode_id());
+          query.setString("key2", members.getLag_if_id());
+          query.setString("key3", members.getPhysical_if_id());
+          query.executeUpdate();
+        } else {
+          Query query = session.getNamedQuery("deleteBreakoutLagMembers");
+          query.setString("key1", members.getNode_id());
+          query.setString("key2", members.getLag_if_id());
+          query.setString("key3", members.getBreakout_if_id());
+          query.executeUpdate();
+        }
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -96,7 +133,7 @@ public class LagMembersDAO extends BaseDAO {
    *          breakout IF ID
    * @return lagMembers LAGMember information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public LagMembers search(String node_id, String lag_if_id, String physical_if_id, String breakout_if_id)
@@ -111,12 +148,20 @@ public class LagMembersDAO extends BaseDAO {
         if ((lagMembersList != null) && (lagMembersList.size() != 0)) {
           lagMembers = lagMembersList.get(0);
         }
-      } else {
-        Query query = session.getNamedQuery("selectAllLagMembers");
+      } else if (physical_if_id != null) {
+        Query query = session.getNamedQuery("selectPhysicalLagMembers");
         query.setString("key1", node_id);
         query.setString("key2", lag_if_id);
         query.setString("key3", physical_if_id);
-        query.setString("key4", breakout_if_id);
+        List<LagMembers> lagMembersList = query.list();
+        if (!(lagMembersList == null) && lagMembersList.size() == 1) {
+          lagMembers = lagMembersList.get(0);
+        }
+      } else {
+        Query query = session.getNamedQuery("selectBreakoutLagMembers");
+        query.setString("key1", node_id);
+        query.setString("key2", lag_if_id);
+        query.setString("key3", breakout_if_id);
         List<LagMembers> lagMembersList = query.list();
         if (!(lagMembersList == null) && lagMembersList.size() == 1) {
           lagMembers = lagMembersList.get(0);

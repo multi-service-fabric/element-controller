@@ -1,14 +1,12 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 
 /**
  * EC Inter-Device IF Control Functional Part Class.
@@ -16,9 +14,9 @@ import msf.ecmm.common.LogFormatter;
 public class DevctrlCommon {
 
   /**
-   * logger.
+   * Logger.
    */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /**
    * Clean up (DHCP stop/Syslog monitoring stop).

@@ -1,6 +1,8 @@
 #!/bin/bash
 ##
-## Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+## Vlan traffic collect script (cumulus)
+##
+## Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
 ##
 
 RemoteHost=$1

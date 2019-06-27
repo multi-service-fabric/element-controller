@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.controllerstatemanagement;
@@ -13,6 +13,7 @@ import java.util.List;
 
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.convert.RestMapper;
@@ -29,11 +30,13 @@ import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.CheckEcMainModuleStatus;
+import msf.ecmm.ope.receiver.pojo.parts.Informations;
 
 /**
  * Getting controller status.
  */
 public class ECStateManagement extends Operation {
+
 
   /** In case input data check is NG. */
   private static final String ERROR_CODE_310101 = "310101";
@@ -43,6 +46,8 @@ public class ECStateManagement extends Operation {
   private static final String ERROR_CODE_310302 = "310302";
   /** Disconnection with EM or timeout has occurred while requesting controller status acquisition to EM. */
   private static final String ERROR_CODE_310303 = "310303";
+  /** Failed to get SBY status. */
+  private static final String ERROR_CODE_310305 = "310305";
   /** Other exception. */
   private static final String ERROR_CODE_310399 = "310399";
 
@@ -70,11 +75,24 @@ public class ECStateManagement extends Operation {
   /** Controller status acquisition shell script name. */
   private static final String CONTROLLER_STATUS = "controller_status.sh";
 
+  /** Controller status acquisition shell script name(SBY). */
+  private static final String CONTROLLER_STATUS_SBY = "controller_status_sby.sh";
+
+  /** Controller type. */
+  /** EC(ACT). */
+  private static final String EC_ACT = "ec";
+  /** EM(ACT). */
+  private static final String EM_ACT = "em";
+  /** EC(SBY). */
+  private static final String EC_SBY = "ec_sby";
+  /** EM(SBY). */
+  private static final String EM_SBY = "em_sby";
+
   /**
    * process id (pid).
    */
-  static final String CONTROLLER_PID =
-    java.lang.management.ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+  static final String CONTROLLER_PID = java.lang.management.ManagementFactory.getRuntimeMXBean().getName()
+      .split("@")[0];
 
   /**
    * Constructor.
@@ -104,18 +122,90 @@ public class ECStateManagement extends Operation {
     boolean ecMainObstraction = false;
     String serverAddress = "";
     int receiveCount = 0;
+    int receiveCountSby = 0;
     int sendCount = 0;
+    int sendCountSby = 0;
     List<String> stdList = new ArrayList<String>();
     List<String> errList = new ArrayList<String>();
+    List<String> stdListSby = new ArrayList<String>();
+    List<String> errListSby = new ArrayList<String>();
     ControllerStatusFromEm emControllerInformations = new ControllerStatusFromEm();
 
     boolean cmdRet = true;
+    int ret = 0;
+
+    boolean getEcFlg = false;
+    boolean getEmFlg = false;
+    boolean getEcSbyFlg = false;
+    boolean getEmSbyFlg = false;
+
+    String getUriConStr = getUriKeyMap().get(KEY_CONTROLLER);
+
+    String getEmOnlyStr = "";
+
+    if (getUriKeyMap().get(KEY_CONTROLLER) == null || getUriKeyMap().get(KEY_CONTROLLER).isEmpty()) {
+      getEcFlg = true;
+      getEmFlg = true;
+      getEcSbyFlg = true;
+      getEmSbyFlg = true;
+
+      getEmOnlyStr = EM_ACT + "+" + EM_SBY;
+    } else {
+      String[] getConTarget = getUriConStr.split(" ");
+      for (String target : getConTarget) {
+        if (target.equals(EC_ACT)) {
+          getEcFlg = true;
+        }
+        if (target.equals(EM_ACT)) {
+          getEmFlg = true;
+          if (getEmOnlyStr.length() != 0) {
+            getEmOnlyStr += "+";
+          }
+          getEmOnlyStr += EM_ACT;
+        }
+        if (target.equals(EC_SBY)) {
+          getEcSbyFlg = true;
+        }
+        if (target.equals(EM_SBY)) {
+          getEmSbyFlg = true;
+          if (getEmOnlyStr.length() != 0) {
+            getEmOnlyStr += "+";
+          }
+          getEmOnlyStr += EM_SBY;
+        }
+      }
+    }
+
+    String top = "0";
+    String nproc = "0";
+    String df = "0";
+    String sar = "0";
 
     AbstractResponseMessage response = null;
 
     try {
-      if (getUriKeyMap().get(KEY_CONTROLLER) == null || getUriKeyMap().get(KEY_CONTROLLER).contains("ec")
-          || getUriKeyMap().get(KEY_CONTROLLER).isEmpty()) {
+      if (getinfo == null || getinfo.isEmpty()) {
+        top = LINUX_COMMAND_TOP;
+        nproc = LINUX_COMMAND_NPROC;
+        df = LINUX_COMMAND_DF;
+        sar = LINUX_COMMAND_SAR;
+      } else {
+        if (getinfo.contains("os-cpu") || getinfo.contains("os-mem") || getinfo.contains("os-disk")
+            || getinfo.contains("ctr-cpu") || getinfo.contains("ctr-mem")) {
+          top = LINUX_COMMAND_TOP;
+        }
+        if (getinfo.contains("ctr-cpu")) {
+          nproc = LINUX_COMMAND_NPROC;
+        }
+        if (getinfo.contains("os-disk")) {
+          df = LINUX_COMMAND_DF;
+        }
+        if (getinfo.contains("os-traffic")) {
+          sar = LINUX_COMMAND_SAR;
+        }
+      }
+
+      if (getUriKeyMap().get(KEY_CONTROLLER) == null || getEcFlg || getUriKeyMap().get(KEY_CONTROLLER).isEmpty()) {
 
         ecMainState = ECMainState.ecMainStateToLabel(OperationControlManager.getInstance().getEcMainState(false));
         ecMainObstraction = OperationControlManager.getInstance().getEcMainObstraction(false);
@@ -123,36 +213,21 @@ public class ECStateManagement extends Operation {
         serverAddress = EcConfiguration.getInstance().get(String.class, EcConfiguration.SERVER_PHYSICAL_ADDRESS);
         String requestAverage = EcConfiguration.getInstance().get(String.class, EcConfiguration.REST_REQUEST_AVERAGE);
 
-        String top = "0";
-        String nproc = "0";
-        String df = "0";
-        String sar = "0";
-        if (getinfo == null || getinfo.isEmpty()) {
-          top = LINUX_COMMAND_TOP;
-          nproc = LINUX_COMMAND_NPROC;
-          df = LINUX_COMMAND_DF;
-          sar = LINUX_COMMAND_SAR;
-        } else {
-          if (getinfo.contains("os-cpu") || getinfo.contains("os-mem") || getinfo.contains("os-disk")
-              || getinfo.contains("ctr-cpu") || getinfo.contains("ctr-mem")) {
-            top = LINUX_COMMAND_TOP;
-          }
-          if (getinfo.contains("ctr-cpu")) {
-            nproc = LINUX_COMMAND_NPROC;
-          }
-          if (getinfo.contains("os-disk")) {
-            df = LINUX_COMMAND_DF;
-          }
-          if (getinfo.contains("os-traffic")) {
-            sar = LINUX_COMMAND_SAR;
-          }
-        }
         String hostname = LINUX_COMMAND_HOSTNAME;
 
         String scriptPath = EcConfiguration.getInstance().get(String.class, EcConfiguration.SCRIPT_PATH);
         String[] acquisitionconditions = { scriptPath + "/" + CONTROLLER_STATUS, top, nproc, df, sar, hostname,
             CONTROLLER_PID };
-        int ret = CommandExecutor.exec(acquisitionconditions, stdList, errList);
+
+        if (!CommonUtil.isFile(acquisitionconditions[0])) {
+          logger.warn(
+              LogFormatter.out.format(LogFormatter.MSG_403123, "StandbyControllerStatusScriptFile was not found."));
+          response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_310305);
+          return response;
+        }
+
+        ret = CommandExecutor.exec(acquisitionconditions, stdList, errList);
+
         if (ret != 0) {
           cmdRet = false;
           throw new Exception();
@@ -162,14 +237,50 @@ public class ECStateManagement extends Operation {
         sendCount = RestRequestCount.getRestRequestCount(REST_TRANSMISSION, Integer.parseInt(requestAverage));
       }
 
-      if (getUriKeyMap().get(KEY_CONTROLLER) == null || getUriKeyMap().get(KEY_CONTROLLER).contains("em")
+      if (getUriKeyMap().get(KEY_CONTROLLER) == null || getEcSbyFlg || getUriKeyMap().get(KEY_CONTROLLER).isEmpty()) {
+        serverAddress = EcConfiguration.getInstance().get(String.class, EcConfiguration.SBY_IP_ADDRESS);
+        String requestAverage = EcConfiguration.getInstance().get(String.class, EcConfiguration.REST_REQUEST_AVERAGE);
+
+        String sbyIpAddress = EcConfiguration.getInstance().get(String.class, EcConfiguration.SBY_IP_ADDRESS);
+        String sbyUsrName = EcConfiguration.getInstance().get(String.class, EcConfiguration.SBY_USRNAME);
+        String sbyPassword = EcConfiguration.getInstance().get(String.class, EcConfiguration.SBY_PASSWORD);
+        String sbyStatusGetShellFile = EcConfiguration.getInstance().get(String.class,
+            EcConfiguration.SBY_STATUS_GET_SHELL_FILE);
+
+        String hostname = LINUX_COMMAND_HOSTNAME;
+
+        String scriptPath = EcConfiguration.getInstance().get(String.class, EcConfiguration.SCRIPT_PATH);
+        String[] acquisitionconditionsSby = { scriptPath + "/" + CONTROLLER_STATUS_SBY, sbyIpAddress, sbyUsrName,
+            sbyPassword, sbyStatusGetShellFile, top, nproc, df, sar, hostname, };
+
+        if (!CommonUtil.isFile(acquisitionconditionsSby[0])) {
+          logger.warn(
+              LogFormatter.out.format(LogFormatter.MSG_403123, "StandbyControllerStatusScriptFile was not found."));
+          response = makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_310305);
+          return response;
+        }
+
+        ret = CommandExecutor.exec(acquisitionconditionsSby, stdListSby, errListSby);
+
+        if (ret != 0) {
+          cmdRet = false;
+          throw new Exception();
+        }
+
+        receiveCountSby = RestRequestCount.getRestRequestCount(REST_RECEPTION, Integer.parseInt(requestAverage));
+        sendCountSby = RestRequestCount.getRestRequestCount(REST_TRANSMISSION, Integer.parseInt(requestAverage));
+      }
+
+      if (getUriKeyMap().get(KEY_CONTROLLER) == null || getEmFlg || getEmSbyFlg
           || getUriKeyMap().get(KEY_CONTROLLER).isEmpty()) {
         RestClientToEm rc = new RestClientToEm();
         HashMap<String, String> keyMap = new HashMap<String, String>();
         AbstractRequest abstractRequest = new AbstractRequest();
+        keyMap.put(KEY_CONTROLLER, getEmOnlyStr);
         keyMap.put(KEY_GET_INFO, getUriKeyMap().get(KEY_GET_INFO));
         emControllerInformations = (ControllerStatusFromEm) rc.request(RestClientToEm.CONTROLLER_STATE, keyMap,
             abstractRequest, ControllerStatusFromEm.class);
+
         logger.debug("EM info=" + emControllerInformations);
 
         if (emControllerInformations.getStatus() == null) {
@@ -179,8 +290,19 @@ public class ECStateManagement extends Operation {
         }
       }
 
-      CheckEcMainModuleStatus outputData = RestMapper.toControllerStatus(getinfo, ecMainState, serverAddress,
-          ecMainObstraction, receiveCount, sendCount, stdList, emControllerInformations);
+      ArrayList<Informations> informationList = new ArrayList<Informations>();
+      if (getEcFlg) {
+        informationList
+            .add(RestMapper.createInformations(EC_ACT, getinfo, serverAddress, receiveCount, sendCount, stdList));
+      }
+      if (getEcSbyFlg) {
+        informationList.add(
+            RestMapper.createInformations(EC_SBY, getinfo, serverAddress, receiveCountSby, sendCountSby, stdListSby));
+      }
+      informationList.addAll(emControllerInformations.getInformations());
+
+      CheckEcMainModuleStatus outputData = RestMapper.toControllerStatus(ecMainObstraction, ecMainState,
+          emControllerInformations.getStatus(), informationList);
 
       response = makeSuccessResponse(RESP_OK_200, outputData);
 

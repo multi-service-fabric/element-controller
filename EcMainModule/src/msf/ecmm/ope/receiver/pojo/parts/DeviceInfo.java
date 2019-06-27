@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -36,6 +36,7 @@ public class DeviceInfo {
 
   /**
    * Getting device name where the file system is located.
+   *
    * @return device name where the file system is located
    */
   public String getFileSystem() {
@@ -44,15 +45,18 @@ public class DeviceInfo {
 
   /**
    * Setting device name where the file system is located.
-   * @param fileSystem device name where the file system is located
+   *
+   * @param fileSystem
+   *           device name where the file system is located
    */
   public void setFileSystem(String fileSystem) {
     this.fileSystem = fileSystem;
   }
 
   /**
-   * Getting mount point.
-   * @return mount point
+   * Getting volume in use.
+   *
+   * @return volume in use
    */
   public String getMountedOn() {
     return mountedOn;
@@ -60,7 +64,9 @@ public class DeviceInfo {
 
   /**
    * Setting mount point.
-   * @param mountedOn mount point
+   *
+   * @param mountedOn
+   *            mount point
    */
   public void setMountedOn(String mountedOn) {
     this.mountedOn = mountedOn;
@@ -68,6 +74,7 @@ public class DeviceInfo {
 
   /**
    * Getting total volume available in the file system.
+   *
    * @return total volume available in the file system
    */
   public Integer getSize() {
@@ -76,7 +83,9 @@ public class DeviceInfo {
 
   /**
    * Setting total volume available in the file system.
-   * @param size total volume available in the file system
+   *
+   * @param size
+   *           total volume available in the file system
    */
   public void setSize(Integer size) {
     this.size = size;
@@ -84,6 +93,7 @@ public class DeviceInfo {
 
   /**
    * Getting volume in use.
+   *
    * @return volume in use
    */
   public Integer getUsed() {
@@ -92,7 +102,9 @@ public class DeviceInfo {
 
   /**
    * Setting volume in use.
-   * @param used volume in use
+   *
+   * @param used 
+   *           volume in use
    */
   public void setUsed(Integer used) {
     this.used = used;
@@ -100,6 +112,7 @@ public class DeviceInfo {
 
   /**
    * Getting volume available.
+   *
    * @return volume available
    */
   public Integer getAvail() {
@@ -108,10 +121,17 @@ public class DeviceInfo {
 
   /**
    * Setting volume available.
-   * @param avail volume available
+   *
+   * @param avail
+   *           volume available
    */
   public void setAvail(Integer avail) {
     this.avail = avail;
   }
 
+  @Override
+  public String toString() {
+    return "DeviceInfo [fileSystem=" + fileSystem + ", mountedOn=" + mountedOn + ", size=" + size + ", used=" + used
+        + ", avail=" + avail + "]";
+  }
 }

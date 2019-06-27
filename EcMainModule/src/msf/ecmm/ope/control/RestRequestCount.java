@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.control;
@@ -10,10 +10,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 
 /**
@@ -24,7 +22,7 @@ public class RestRequestCount {
   /**
    * Logger.
    */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /** REST Sending Time List. */
   private static ArrayList<Calendar> restTransmissionList = new ArrayList<Calendar>();
@@ -39,7 +37,6 @@ public class RestRequestCount {
 
   private static Object transmissionLock = new Object();
   private static Object receptionLock = new Object();
-
 
   /**
    * Number of REST Transmissions Counting Process<br>
@@ -66,6 +63,7 @@ public class RestRequestCount {
       String requestaverage = EcConfiguration.getInstance().get(String.class, EcConfiguration.REST_REQUEST_AVERAGE);
       Calendar averagecalendar = Calendar.getInstance();
       averagecalendar.setTime(restdate);
+
       averagecalendar.add(Calendar.SECOND, -Integer.parseInt(requestaverage));
 
       if (requestType == (REST_TRANSMISSION)) {
@@ -95,7 +93,7 @@ public class RestRequestCount {
   public static int getRestRequestCount(int requestType, int requestAverage) {
 
     int requestCount = 0;
-	try {
+    try {
       logger.trace(CommonDefinitions.START);
       Object lockKey = null;
       if (requestType == (REST_TRANSMISSION)) {
@@ -120,14 +118,14 @@ public class RestRequestCount {
               .filter(countdate -> (countdate.compareTo(averagecalendar)) != -1).collect(Collectors.toList());
           requestCount = requestcountlist.size();
         } else {
-        	requestCount = -1;
+          requestCount = -1;
         }
         return requestCount;
       }
     } catch (Exception e) {
       return -1;
-  }
+    }
 
- }
+  }
 
 }

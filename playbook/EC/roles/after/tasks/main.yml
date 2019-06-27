@@ -1,0 +1,6 @@
+# After installing
+  - name: delete remote tmp file
+    shell: rm -rf {{ rpm_path }}.tar
+  - name: delete local tmp file
+    local_action: command rm -rf {{ rpm_path }}.tar
+

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo;
@@ -12,12 +12,10 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.emctrl.EmctrlException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -29,13 +27,13 @@ import org.xml.sax.InputSource;
 public class AbstractMessage {
 
   /** Logger Instance. */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
   /** String Operation Parts (XML Declaration Top). */
   protected static final String XML_START_TAG = "<?xml";
   /** String Operation Parts (Close Tag). */
   protected static final String XML_END_TAG = "?>\n";
-  /** Process Success Response Tag. */
+  /** String Operation Parts (Close Tag). */
   private static final String SUCCESS_TAG = "ok";
   /** Process Error Response Tag. */
   private static final String ERROR_TAG = "rpc-error";
@@ -44,7 +42,7 @@ public class AbstractMessage {
   /** Error Message Tag. */
   private static final String ERROR_MESSAGE = "error-message";
 
-  /** Process Result. */
+   /** Process Result. */
   private boolean result = false;
 
   /** Error Message. */
@@ -121,11 +119,11 @@ public class AbstractMessage {
   }
 
   /**
-   * XML decode.
+   * Setting error type.
    *
    * @return xml data
-   * @throws EmctrlException
-   *           Instance of which XML decode is impossible was specified.
+   * @param errorType
+   *          error type
    */
   public String decode() throws EmctrlException {
 
@@ -165,6 +163,18 @@ public class AbstractMessage {
       JAXB.marshal(headerMessage, createXml);
     } else if (this instanceof BreakoutIfAddDelete) {
       bodyMessage.setBreakoutIfAddDelete((BreakoutIfAddDelete) this);
+      JAXB.marshal(headerMessage, createXml);
+    } else if (this instanceof IfStatusUpdate) {
+      bodyMessage.setIfStatusUpdate((IfStatusUpdate) this);
+      JAXB.marshal(headerMessage, createXml);
+    } else if (this instanceof UpdateNodeInfo) {
+      bodyMessage.setUpdateNodeInfo((UpdateNodeInfo) this);
+      JAXB.marshal(headerMessage, createXml);
+    } else if (this instanceof CeLagIfsChange) {
+      bodyMessage.setCeLagIfsChange((CeLagIfsChange) this);
+      JAXB.marshal(headerMessage, createXml);
+    } else if (this instanceof InternalLinkLagIfsChange) {
+      bodyMessage.setInternalLinkLagIfsChange((InternalLinkLagIfsChange) this);
       JAXB.marshal(headerMessage, createXml);
 
     } else {

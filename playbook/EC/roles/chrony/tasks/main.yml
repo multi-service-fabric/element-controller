@@ -1,0 +1,33 @@
+# Setting chrony
+  - include: getrpm.yml
+    when: download_flag
+  - name: chrony install 1
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/libseccomp-2.3.1-3.el7.x86_64.rpm
+  - name: chrony install 2
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/chrony-3.2-2.el7.x86_64.rpm
+  - name: add chrony setting file
+    shell: touch /var/lib/chrony/drift
+  - name: replace chrony setting 1
+    replace: dest=/etc/chrony.conf regexp='^server 0.centos.pool.ntp.org iburst' replace='#server 0.centos.pool.ntp.org iburst'
+  - name: replace chrony setting 2
+    replace: dest=/etc/chrony.conf regexp='^server 1.centos.pool.ntp.org iburst' replace='#server 1.centos.pool.ntp.org iburst'
+  - name: replace chrony setting 3
+    replace: dest=/etc/chrony.conf regexp='^server 2.centos.pool.ntp.org iburst' replace='#server 2.centos.pool.ntp.org iburst'
+  - name: replace chrony setting 4
+    replace: dest=/etc/chrony.conf regexp='^server 3.centos.pool.ntp.org iburst' replace='#server 3.centos.pool.ntp.org iburst'
+  - name: check before add setting
+    find: paths=/etc/chrony.conf
+          patterns='^server .*iburst$'
+    register: found_files
+  - name: add chrony setting 1
+    lineinfile:
+      dest=/etc/chrony.conf
+      insertafter='#server 3.centos.pool.ntp.org iburst'
+      line='server {{ ntp_server_address }} iburst'
+    when: found_files.matched == 0
+  - name: stop chrony
+    shell: systemctl stop chronyd.service
+  - name: restart chrony
+    shell: systemctl restart chronyd.service
+  - name: register chrony
+    shell: systemctl enable chronyd.service

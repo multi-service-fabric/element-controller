@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl;
@@ -13,13 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.snmp4j.smi.IpAddress;
 
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.devctrl.pojo.DhcpInfo;
 
@@ -30,7 +29,7 @@ public class DhcpController {
   /**
    * logger.
    */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
   /** Self(singleton) */
   private static DhcpController me = new DhcpController();
@@ -70,7 +69,6 @@ public class DhcpController {
 
   /** The folder path of the file (initial config file) used by tftp. */
   private static final String INITIALCONFIG_PREFIX_TFTP = "/var/lib/tftpboot";
-
   /** The folder path of the file (initial config file) used by httpd. */
   private static final String INITIALCONFIG_PREFIX_HTTP = "/var/www/html";
 

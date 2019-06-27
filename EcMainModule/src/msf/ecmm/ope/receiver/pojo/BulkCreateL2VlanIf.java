@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo;
@@ -34,6 +34,9 @@ public class BulkCreateL2VlanIf extends AbstractRestMessage {
 
   /** Loopback in slice(VRF). */
   private LoopBackInterface loopbackInterface = null;
+
+  /** Q-in-Q capability. */
+  private Boolean qInQ = null;
 
   /** List information of VLANIF of which ESI value is to be changed. */
   private ArrayList<UpdateVlanIfs> updateVlanIfs;
@@ -153,6 +156,25 @@ public class BulkCreateL2VlanIf extends AbstractRestMessage {
   }
 
   /**
+   * Getting Q-in-Q capability.
+   *
+   * @return Q-in-Q capability
+   */
+  public Boolean getqInQ() {
+    return qInQ;
+  }
+
+  /**
+   * Setting Q-in-Q capability.
+   *
+   * @param qInQ
+   *          Q-in-Q capability
+   */
+  public void setqInQ(Boolean qInQ) {
+    this.qInQ = qInQ;
+  }
+
+  /**
    * Getting list information of VLANIF of which ESI value is to be changed.
    *
    * @return updateVlanIfs
@@ -178,9 +200,9 @@ public class BulkCreateL2VlanIf extends AbstractRestMessage {
    */
   @Override
   public String toString() {
-    return "BulkCreateL2VlanIf [createVlanIfs=" + createVlanIfs + ", vrfId=" + vrfId + ", updateVlanIfs="
-        + updateVlanIfs + ", vni=" + vni + ",plane=" + plane + ", l3Vni=" + l3Vni + ", loopbackInterface="
-        + loopbackInterface + "]";
+    return "BulkCreateL2VlanIf [createVlanIfs=" + createVlanIfs + ", vrfId=" + vrfId + ", vni=" + vni + ", plane="
+        + plane + ", l3Vni=" + l3Vni + ", loopbackInterface=" + loopbackInterface + ", qInQ=" + qInQ
+        + ", updateVlanIfs=" + updateVlanIfs + "]";
   }
 
   /**

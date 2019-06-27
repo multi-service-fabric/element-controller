@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.convert;
@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.db.pojo.BreakoutIfs;
 import msf.ecmm.db.pojo.EquipmentIfs;
 import msf.ecmm.db.pojo.IfNameRules;
@@ -20,16 +21,13 @@ import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.PhysicalIfs;
 import msf.ecmm.db.pojo.VlanIfs;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Logical Physical Conversion Process Utilities.
  */
 public class LogicalPhysicalConverter {
 
   /** logger. */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /**
    * Generating Slice Name.
@@ -112,10 +110,12 @@ public class LogicalPhysicalConverter {
   /**
    * Generating Physical IF Name (for DB configuration).
    *
-   * @param suffix
-   *          port name suffix
-   * @param slotName
-   *          IF slot name
+   * @param physicalIfId
+   *          physical IFID
+   * @param speed
+   *          physical IF speed
+   * @param nodes
+   *          device information
    * @return physical IF name (port name suffix + IF slot name)
    */
   public static String toPhysicalIfName(String suffix, String slotName) {
@@ -691,5 +691,5 @@ public class LogicalPhysicalConverter {
         ret = ifs;
     }
     return ret;
-}
+  }
 }

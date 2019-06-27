@@ -1,6 +1,7 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
+
 package msf.ecmm.config;
 
 import static msf.ecmm.common.CommonDefinitions.*;
@@ -16,9 +17,7 @@ import java.util.Set;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import msf.ecmm.common.log.MsfLogger;
 
 /**
  * Extension function configuration class.
@@ -33,8 +32,10 @@ public class ExpandOperation {
   private static final int PRIORITY = 2;
   /** Lock required/not required. */
   private static final int IS_LOCK = 3;
+  /** Extension function configuration class. */
+  private static final int CONFIG_CLASS = 4;
   /** No. of value. */
-  private static final int VALUE_NUM = 4;
+  private static final int VALUE_NUM = 5;
 
   /** Own class instance. */
   private static ExpandOperation me = new ExpandOperation();
@@ -43,7 +44,7 @@ public class ExpandOperation {
   private static Properties properties = new Properties();
 
   /** Log output instance. */
-  private final Logger logger = LogManager.getLogger(EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /** Retention data. */
   private Map<String, ExpandOperationDetailInfo> data = new HashMap<>();
@@ -108,7 +109,7 @@ public class ExpandOperation {
       do {
         String[] values = val.split(",", -1);
         if (values.length != VALUE_NUM) {
-          logger.debug("value num NG key=", (String)key);
+          logger.debug("value num NG key=", (String) key);
           break;
         }
 
@@ -155,11 +156,13 @@ public class ExpandOperation {
         }
         opeData.setLock(isLock);
 
+        tmpStr = values[CONFIG_CLASS];
+        opeData.setExpandConfigurationClassName(tmpStr);
+
         data.put(opeName, opeData);
         checkResult = true;
 
-      }
-      while (false);
+      } while (false);
       if (!checkResult) {
         logger.error(LogFormatter.out.format(LogFormatter.MSG_508032, key, val));
         ret = false;
@@ -170,10 +173,11 @@ public class ExpandOperation {
     return ret;
   }
 
-
   /**
    * Getting the extended operation information.
-   * @param expandOperationName Extended operation name
+   *
+   * @param expandOperationName
+   *          Extended operation name
    * @return Extended operation information
    */
   public ExpandOperationDetailInfo get(String expandOperationName) {
@@ -189,7 +193,7 @@ public class ExpandOperation {
   }
 
   /**
-	* Property value (character string) check.
+   * Property value (character string) check.
    *   In case that acceptable character string is not specified, regard empty character string as an error
    *
    * @param data
@@ -198,7 +202,7 @@ public class ExpandOperation {
    *          Acceptable character strings
    * @return true：Check OK false：Check NG
    */
-  private boolean checkString(String data, String ... acceptableStrings) {
+  private boolean checkString(String data, String... acceptableStrings) {
     logger.trace(CommonDefinitions.START);
 
     boolean ret = false;
@@ -215,7 +219,8 @@ public class ExpandOperation {
   }
 
   /**
-	* Property value (numeric value) check.
+   * Property value (numeric value) check.
+   *
    * @param data
    *          Check target
    * @param min

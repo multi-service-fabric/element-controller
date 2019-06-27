@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.convert;
@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.db.pojo.BGPOptions;
 import msf.ecmm.db.pojo.BootErrorMessages;
 import msf.ecmm.db.pojo.BreakoutIfs;
@@ -43,6 +41,7 @@ import msf.ecmm.ope.receiver.pojo.CreateLagInterface;
 import msf.ecmm.ope.receiver.pojo.DeleteNode;
 import msf.ecmm.ope.receiver.pojo.RecoverNodeService;
 import msf.ecmm.ope.receiver.pojo.RegisterEquipmentType;
+import msf.ecmm.ope.receiver.pojo.UpdateLagInterface;
 import msf.ecmm.ope.receiver.pojo.UpdatePhysicalInterface;
 import msf.ecmm.ope.receiver.pojo.parts.BreakoutBaseIf;
 import msf.ecmm.ope.receiver.pojo.parts.CreateVlanIfs;
@@ -69,7 +68,7 @@ import msf.ecmm.ope.receiver.pojo.parts.VlanIfsCreateL3VlanIf;
 public class DbMapper {
 
   /** logger. */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /**
    * DB data mapping_generate LagIF<br>
@@ -155,6 +154,41 @@ public class DbMapper {
    * DB Data Mapping_Model Information Registration<br>
    * Convert model information into DB storable format.
    *
+   * @param inputData
+   *          Information for changing LagIf
+   * @param minLinkNum
+   *          minimum number of links
+   * @param lagIfs
+   *          Lag information corresponding to input LagIFID(FC)
+   * @param physicalIfsList
+   *          Physical IF information list
+   * @param breakoutIfsList
+   *          BreakoutIF nformation list
+   * @param lagMembersList
+   *          Lag member list
+   * @return Information for generating LagIF( for saving in DB)
+   */
+  public static LagIfs toLagIfChange(UpdateLagInterface inputData, Integer minLinkNum, LagIfs lagIfs,
+      List<PhysicalIfs> physicalIfsList, List<BreakoutIfs> breakoutIfsList, List<LagMembers> lagMembersList) {
+
+    logger.trace(CommonDefinitions.START);
+    logger.debug("inputData=" + inputData + ", minLinkNum=" + minLinkNum + ", lagIfs=" + lagIfs + ", physicalIfsList="
+        + physicalIfsList + ", breakoutIfsList=" + breakoutIfsList + ", lagMembersList=" + lagMembersList);
+    LagIfs ret = new LagIfs();
+    ret.setNode_id(lagIfs.getNode_id());
+    ret.setLag_if_id(lagIfs.getLag_if_id());
+    ret.setMinimum_link_num(minLinkNum);
+
+    Set<LagMembers> lagMembersSetList = new HashSet<LagMembers>(lagMembersList);
+    ret.setLagMembersList(lagMembersSetList);
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+  /**
+   * DB data mapping : Register model information  
+   *
    * @param registerEquipmentTypeRest
    *          model information
    * @return model information (for DB storage)
@@ -217,14 +251,33 @@ public class DbMapper {
         } else {
           ret.setIrb_symmetric_capability(false);
         }
-      }else {
+      } else {
         ret.setIrb_asymmetric_capability(false);
         ret.setIrb_symmetric_capability(false);
+      }
+
+      if (registerEquipmentTypeRest.getEquipment().getCapabilities().getqInQ() != null) {
+        ret.setQ_in_q_selectable_by_node_capability(
+            registerEquipmentTypeRest.getEquipment().getCapabilities().getqInQ().getSelectableByNode());
+        ret.setQ_in_q_selectable_by_vlan_if_capability(
+            registerEquipmentTypeRest.getEquipment().getCapabilities().getqInQ().getSelectableByVlanIf());
+
+        if ((ret.getQ_in_q_selectable_by_node_capability() == null || !ret.getQ_in_q_selectable_by_node_capability())
+            && (ret.getQ_in_q_selectable_by_vlan_if_capability() != null
+                && ret.getQ_in_q_selectable_by_vlan_if_capability())) {
+          logger.debug("This Q in Q parameter is not guarantee.");
+        }
+
+      } else {
+        ret.setQ_in_q_selectable_by_node_capability(null);
+        ret.setQ_in_q_selectable_by_vlan_if_capability(null);
       }
     } else {
       ret.setEvpn_capability(false);
       ret.setL2vpn_capability(false);
       ret.setL3vpn_capability(false);
+      ret.setQ_in_q_selectable_by_node_capability(false);
+      ret.setQ_in_q_selectable_by_vlan_if_capability(false);
     }
     QosRegisterEquipment qos = registerEquipmentTypeRest.getEquipment().getQos();
     if (qos != null) {
@@ -305,7 +358,7 @@ public class DbMapper {
       ret.setSame_vlan_number_traffic_total_value_flag(
           registerEquipmentTypeRest.getEquipment().getSameVlanNumberTrafficTotalValueFlag());
     }
-    if ( null != registerEquipmentTypeRest.getEquipment().getVlanTrafficCapability()) {
+    if (null != registerEquipmentTypeRest.getEquipment().getVlanTrafficCapability()) {
       ret.setVlan_traffic_capability(registerEquipmentTypeRest.getEquipment().getVlanTrafficCapability());
       if (registerEquipmentTypeRest.getEquipment().getVlanTrafficCapability()
           .equals(CommonDefinitions.VLAN_TRAFFIC_TYPE_MIB)) {
@@ -386,6 +439,7 @@ public class DbMapper {
 
     ret.setIrb_type(addNodeRest.getCreateNode().getIrbType());
 
+    ret.setQ_in_q_type(addNodeRest.getCreateNode().getqInQType());
     logger.debug(ret);
     logger.trace(CommonDefinitions.END);
     return ret;
@@ -565,8 +619,8 @@ public class DbMapper {
    * @throws IllegalArgumentException
    *           physical IF name generation failure, etc.
    */
-  private static Nodes setRelatedNodesCommon(String nodeId,
-      InternalLinkIf internalLinkIf, Equipments equipments, Nodes nodes) throws IllegalArgumentException {
+  private static Nodes setRelatedNodesCommon(String nodeId, InternalLinkIf internalLinkIf, Equipments equipments,
+      Nodes nodes) throws IllegalArgumentException {
     logger.trace(CommonDefinitions.START);
     logger.debug(nodeId + " , " + internalLinkIf + " , " + equipments + " , " + nodes);
 
@@ -1042,7 +1096,7 @@ public class DbMapper {
    *          IRB instance ID
    * @return L2VLAN IFDbMapper.java
    */
-  public static VlanIfs toL2VlanIfCreate(CreateVlanIfs input, Nodes nodesDb, String irbInstanceId) {
+  public static VlanIfs toL2VlanIfCreate(CreateVlanIfs input, Nodes nodesDb, String irbInstanceId, Boolean qInQ) {
 
     logger.trace(CommonDefinitions.START);
     logger.debug(input + ", " + nodesDb);
@@ -1080,7 +1134,8 @@ public class DbMapper {
       vlanIfs.setRemark_menu(input.getQos().getRemarkMenu());
       vlanIfs.setEgress_queue_menu(input.getQos().getEgressQueue());
     }
-     vlanIfs.setIrb_instance_id(irbInstanceId);
+    vlanIfs.setIrb_instance_id(irbInstanceId);
+    vlanIfs.setQ_in_q(qInQ);
 
     logger.debug(vlanIfs);
     logger.trace(CommonDefinitions.END);
@@ -1277,7 +1332,7 @@ public class DbMapper {
   }
 
   /**
-   * DB Data Mapping_VLAN IF Change（QoS setting）<br>
+   * DB Data Mapping_VLAN IF Change (QoS setting) <br>
    * Converting VLAN IF change into DB storable format.
    *
    * @param input
@@ -1308,7 +1363,7 @@ public class DbMapper {
   }
 
   /**
-   * DB Data Mapping_VLAN IF Batch Change（QoS setting）<br>
+   * DB Data Mapping_VLAN IF Batch Change (QoS setting) <br>
    * Converting VLAN IF change into DB storable format.
    *
    * @param input
@@ -1339,8 +1394,8 @@ public class DbMapper {
    *          Speed of IF to which QoS is set
    * @param capability
    *          Inflow shaping possible/ impossible
-   * @return Setting of inflow shaping rate to DB/EM is possible：true<br>
-   *         Setting of inflow shaping rate to DB/EM is impossibe：false
+   * @return Setting of inflow shaping rate to DB/EM is possible : true<br>
+   *         Setting of inflow shaping rate to DB/EM is impossibe : false
    */
   public static boolean checkQosShapingRateValue(Float input, int ifSpeed, boolean capability) {
 
@@ -1369,8 +1424,8 @@ public class DbMapper {
    *          remark menu value transferred from FC
    * @param equipmentDb
    *          Defice information
-   * @return Setting of remark menu value to DB/EM is possible：true<br>
-   *         Setting of remark menu value to DB/EM is impossible：false
+   * @return Setting of remark menu value to DB/EM is possible true<br>
+   *         Setting of remark menu value to DB/EM is impossible false
    */
   public static boolean checkQosRemarkMenuValue(String input, Equipments equipmentDb) {
 
@@ -1404,8 +1459,8 @@ public class DbMapper {
    *          Egress queue menu value transferred from FC
    * @param equipmentDb
    *          Device information
-   * @return Setting of Egress queue menu to DB/EM is possible：true<br>
-   *         Setting of Egress queue menu to DB/EM is impossible：false
+   * @return Setting of Egress queue menu to DB/EM is possible : true<br>
+   *         Setting of Egress queue menu to DB/EM is impossible : false
    */
   public static boolean checkQosEgressQueueMenuValue(String input, Equipments equipmentDb) {
 
@@ -1432,16 +1487,16 @@ public class DbMapper {
 
   }
 
-/**
- * DB Data Mapping_breakoutIF generation<br>
- * Converting the information for generating breakoutIF into DB storable format.
- *
- * @param input
- *          information for generating breakoutIF
- * @param nodes
- *          device information
- * @return information for generating breakoutIF (for DB storage)
- */
+  /**
+   * DB Data Mapping_breakoutIF generation<br>
+   * Converting the information for generating breakoutIF into DB storable format.
+   *
+   * @param input
+   *          information for generating breakoutIF
+   * @param nodes
+   *          device information
+   * @return information for generating breakoutIF (for DB storage)
+   */
   public static List<BreakoutIfs> tobreakoutIfCreate(CreateBreakoutIf input, Nodes nodes) {
 
     logger.trace(CommonDefinitions.START);
@@ -1567,11 +1622,11 @@ public class DbMapper {
    * @param input
    *          input rest information(Additional service recovery)
    * @param inputNodes
-   *          Device information to be recovered（including physical IF、LAGIF、breakoutIF）
+   *          Device information to be recovered (including physical IF, LAGIF, breakoutIF)
    * @param inputVlanIfsList
    *          Vlan list registered in the device to be recovered
    * @param inputEquipments
-   *          Device information after recovery（including IF information）
+   *          Device information after recovery (including IF information)
    * @param retAddPhysicalIfsList
    *          Generate DB-POJO <Physical IF to be added> (out parameters)
    * @param retDelPhysicalIfsList
@@ -1582,7 +1637,7 @@ public class DbMapper {
    *          Conversion table from recovered LAG IF name to recovered LAG IF name (out parameters)
    * @param retVlanIfsList
    *          VlanIF Information table updating POJO (out parameters)
-   * @return Nodes generated DB-POJO＜node information including update IF information＞
+   * @return Nodes generated DB-POJO <device information including update IF information>
    */
   public static Nodes toRecoverUpdate(RecoverNodeService input, Nodes inputNodes, List<VlanIfs> inputVlanIfsList,
       Equipments inputEquipments, List<PhysicalIfs> retAddPhysicalIfsList, List<PhysicalIfs> retDelPhysicalIfsList,

@@ -1,8 +1,8 @@
 ## element controller building guide
 
 **Version 1.0**
-**December 7, 2018**
-**Copyright(c) 2018 Nippon Telegraph and Telephone Corporation**
+**March 26, 2019**
+**Copyright(c) 2019 Nippon Telegraph and Telephone Corporation**
 
 This text describes how to generate EcMainModule.jar from Java files.
 
@@ -29,16 +29,26 @@ sh jar_create.sh
 ・★msf/
   |--ecmm/
   |  |--common/
+  |  |  |--log/
+  |  |  |  |--LogNotice.java
+  |  |  |  |--MsfLogger.java
   |  |  |--CommandExecutor.java
   |  |  |--CommonDefinitions.java
+  |  |  |--CommonDefinitionsNodeOsUpgrade.java
   |  |  |--CommonUtil.java
   |  |  |--InputStreamThread.java
   |  |  |--LogFormatter.java
   |  |  |--package-info.java
   |  |--config/
+  |  |  |--ControllerFileUpgradeConfiguration.java
+  |  |  |--DiskThresholdConfiguration.java
   |  |  |--EcConfiguration.java
+  |  |  |--ExpandConfigInfo.java
+  |  |  |--ExpandConfigurationBase.java
   |  |  |--ExpandOperation.java
   |  |  |--ExpandOperationDetailInfo.java
+  |  |  |--NodeOsUpgradeConfiguration.java
+  |  |  |--PingOspfNeighborConfiguration.java
   |  |  |--package-info.java
   |  |--convert/
   |  |  |--DbMapper.java
@@ -120,12 +130,16 @@ sh jar_create.sh
   |  |  |--systemStatus.hbm.xml
   |  |  |--vlanIfs.hbm.xml
   |  |  |--vrrpOptions.hbm.xml
+  |  |--devctr/
+  |  |  |--ControllerFileUpgradeScriptExecutor.java
   |  |--devctrl/
   |  |  |--CreateInitialDeviceConfig.java
   |  |  |--DevctrlCommon.java
   |  |  |--DevctrlException.java
   |  |  |--DhcpController.java
+  |  |  |--ExtendScriptController.java
   |  |  |--HttpdController.java
+  |  |  |--NodeOsUpgradeScriptExecutor.java
   |  |  |--ScriptController.java
   |  |  |--SnmpController.java
   |  |  |--SyslogController.java
@@ -134,10 +148,13 @@ sh jar_create.sh
   |  |  |--pojo
   |  |  |  |--DhcpInfo.java
   |  |  |  |--InitialDeviceConfig.java
+  |  |  |  |--PingData.java
   |  |  |  |--SnmpIfOperStatus.java
   |  |  |  |--SnmpIfTraffic.java
   |  |  |  |--package-info.java
   |  |--emctrl/
+  |  |  |--ConfigAuditCycleManager.java
+  |  |  |--ConfigAuditJob.java
   |  |  |--EmController.java
   |  |  |--EmctrlException.java
   |  |  |--RequestQueueEntry.java
@@ -151,19 +168,24 @@ sh jar_create.sh
   |  |  |  |--BodyMessage.java
   |  |  |  |--BreakoutIfAddDelete.java
   |  |  |  |--CeLagAddDelete.java
+  |  |  |  |--CeLagIfsChange.java
   |  |  |  |--HeaderMessage.java
+  |  |  |  |--IfStatusUpdate.java
   |  |  |  |--InternalLinkAddDelete.java
+  |  |  |  |--InternalLinkLagIfsChange.java
   |  |  |  |--L2SliceAddDelete.java
   |  |  |  |--L3SliceAddDelete.java
   |  |  |  |--LeafAddDelete.java
   |  |  |  |--RecoverUpdateNode.java
+  |  |  |  |--RecoverUpdateNodeNodeOsUpgrade.java
   |  |  |  |--RecoverUpdateService.java
   |  |  |  |--SpineAddDelete.java
   |  |  |  |--TargetMessage.java
+  |  |  |  |--UpdateNodeInfo.java
   |  |  |  |--package-info.java
   |  |  |  |--parts/
   |  |  |  |  |--AclFilter.java
-  |  |  |  |  |-- Anycast.java
+  |  |  |  |  |--Anycast.java
   |  |  |  |  |--AttributeOperation.java
   |  |  |  |  |--BreakoutIf.java
   |  |  |  |  |--CeInterface.java
@@ -177,9 +199,12 @@ sh jar_create.sh
   |  |  |  |  |--Device.java
   |  |  |  |  |--DeviceLeaf.java
   |  |  |  |  |--DeviceLeafAcl.java
+  |  |  |  |  |--DeviceNodeOsUpgrade.java
   |  |  |  |  |--DummyVlan.java
   |  |  |  |  |--Equipment.java
+  |  |  |  |  |--EquipmentWithOperation.java
   |  |  |  |  |--InterfaceNames.java
+  |  |  |  |  |--InterfaceStatusUpdate.java
   |  |  |  |  |--InternalInterface.java
   |  |  |  |  |--InternalInterfaceMember.java
   |  |  |  |  |--InternalLag.java
@@ -226,13 +251,17 @@ sh jar_create.sh
   |  |  |  |--AbstractRequest.java
   |  |  |  |--AbstractResponse.java
   |  |  |  |--CommonRequestToEm.java
+  |  |  |  |--ConfigAuditFromEm.java
   |  |  |  |--ControllerLog.java
   |  |  |  |--ControllerStatusFromEm.java
   |  |  |  |--package-info.java
   |  |  |  |--parts/
+  |  |  |  |  |--DiffFromEm.java
+  |  |  |  |  |--LatestEmConfigFromEm.java
   |  |  |  |  |--LogConditions.java
   |  |  |  |  |--LogData.java
   |  |  |  |  |--LogInformation.java
+  |  |  |  |  |--NeConfigFromEm.java
   |  |--fcctrl/
   |  |  |--RestClient.java
   |  |  |--RestClientException.java
@@ -241,14 +270,29 @@ sh jar_create.sh
   |  |  |  |--AbstractRequest.java
   |  |  |  |--AbstractResponse.java
   |  |  |  |--CommonResponseFromFc.java
+  |  |  |  |--ConfigAuditNotification.java
   |  |  |  |--ControllerStatusToFc.java
+  |  |  |  |--LogNotificationToFc.java
   |  |  |  |--NotifyNodeStartUpToFc.java
   |  |  |  |--Operations.java
+  |  |  |  |--ServerNotificationToFc.java
   |  |  |  |--UpdateLogicalIfStatus.java
+  |  |  |  |--UpgradeOperationToFc.java
   |  |  |  |--package-info.java
   |  |  |  |--parts
   |  |  |  |  |--Controller.java
+  |  |  |  |  |--ControllerLogToFc.java
+  |  |  |  |  |--ControllerServerToFc.java
+  |  |  |  |  |--CpuToFc.java
+  |  |  |  |  |--DevicesToFc.java
+  |  |  |  |  |--DiffToFc.java
+  |  |  |  |  |--DiskToFc.java
+  |  |  |  |  |--FailureInfoToFc.java
   |  |  |  |  |--IfsLogical.java
+  |  |  |  |  |--LatestEmConfigToFc.java
+  |  |  |  |  |--MemoryToFc.java
+  |  |  |  |  |--NeConfigToFc.java
+  |  |  |  |  |--NodeConfigToFc.java
   |  |  |  |  |--NodeLogical.java
   |  |  |  |  |--package-info.java
   |  |--ope/
@@ -270,6 +314,9 @@ sh jar_create.sh
   |  |  |  |--constitution
   |  |  |  |  |--allinfo/
   |  |  |  |  |  |--AllBreakoutIfInfoAcquisition.java
+  |  |  |  |  |  |--AllConfigAuditAcquisition.java
+  |  |  |  |  |  |--AllConfigAuditAcquisitionThread.java
+  |  |  |  |  |  |--AllConfigAuditUtility.java
   |  |  |  |  |  |--AllDeviceInfoAcquisition.java
   |  |  |  |  |  |--AllDeviceTypeInfoAcquisition.java
   |  |  |  |  |  |--AllIfInfoAcquisition.java
@@ -281,27 +328,42 @@ sh jar_create.sh
   |  |  |  |  |  |--package-info.java
   |  |  |  |  |--device/
   |  |  |  |  |  |--AcceptNodeRecover.java
+  |  |  |  |  |  |--AcceptNodeRecoverNodeOsUpgrade.java
   |  |  |  |  |  |--AclUtilityDevice.java
   |  |  |  |  |  |--AddNodeException.java
   |  |  |  |  |  |--BLeafAddition.java
+  |  |  |  |  |  |--BLeafAdditionPriorityLeafSpine.java
   |  |  |  |  |  |--BLeafRemove.java
   |  |  |  |  |  |--BLeafRemoveAcl.java
+  |  |  |  |  |  |--ConfigAuditAcquisition.java
+  |  |  |  |  |  |--ControllerSwitch.java
+  |  |  |  |  |  |--ControllerSwitchThread.java
   |  |  |  |  |  |--DeviceInfoAcquisition.java
   |  |  |  |  |  |--DeviceInfoRegistration.java
   |  |  |  |  |  |--DeviceInfoRemove.java
   |  |  |  |  |  |--LeafAddition.java
+  |  |  |  |  |  |--LeafAdditionPriorityLeafSpine.java
   |  |  |  |  |  |--LeafChange.java
   |  |  |  |  |  |--LeafRemove.java
   |  |  |  |  |  |--LeafRemoveAcl.java
   |  |  |  |  |  |--NodeAddedNotification.java
   |  |  |  |  |  |--NodeAddition.java
   |  |  |  |  |  |--NodeAdditionThread.java
+  |  |  |  |  |  |--NodeAdditionThreadNodeOsUpgrade.java
   |  |  |  |  |  |--NodeChange.java
   |  |  |  |  |  |--NodeInfoAcquisition.java
   |  |  |  |  |  |--NodeInfoRegistration.java
+  |  |  |  |  |  |--NodeInfoRegistrationPriorityLeafSpine.java
+  |  |  |  |  |  |--NodeOsUpdate.java
+  |  |  |  |  |  |--NodeOsUpgrade.java
+  |  |  |  |  |  |--NodeOsUpgradeNotification.java
+  |  |  |  |  |  |--NodeOsUpgradeThread.java
   |  |  |  |  |  |--NodeRecover.java
+  |  |  |  |  |  |--NodeRecoverNodeOsUpgrade.java
   |  |  |  |  |  |--NodeRemove.java
+  |  |  |  |  |  |--PriorityLeafSpineUtility.java
   |  |  |  |  |  |--SpineAddition.java
+  |  |  |  |  |  |--SpineAdditionPriorityLeafSpine.java
   |  |  |  |  |  |--SpineRemove.java
   |  |  |  |  |  |--SpineRemoveAcl.java
   |  |  |  |  |  |--package-info.java
@@ -314,7 +376,9 @@ sh jar_create.sh
   |  |  |  |  |  |--BreakoutIfDelete.java
   |  |  |  |  |  |--BreakoutIfInfoAcquisition.java
   |  |  |  |  |  |--DeleteFilter.java
+  |  |  |  |  |  |--InternalLinkIfChange.java
   |  |  |  |  |  |--LagCreate.java
+  |  |  |  |  |  |--LagIfInfoChange.java
   |  |  |  |  |  |--LagInfoAcquisition.java
   |  |  |  |  |  |--LagInterfaceFilterAcquisition.java
   |  |  |  |  |  |--LagRemove.java
@@ -330,6 +394,10 @@ sh jar_create.sh
   |  |  |  |  |--ECMainLogAcquisition.java
   |  |  |  |  |--ECMainStateSendNotification.java
   |  |  |  |  |--ECStateManagement.java
+  |  |  |  |  |--LogNotification.java
+  |  |  |  |  |--ResourceCheckCycleManager.java
+  |  |  |  |  |--ResourceCheckJob.java
+  |  |  |  |  |--ServerNotification.java
   |  |  |  |  |--package-info.java
   |  |  |  |--cp/
   |  |  |  |  |--AclUtilityCp.java
@@ -352,6 +420,11 @@ sh jar_create.sh
   |  |  |  |  |--package-info.java
   |  |  |  |--notification/
   |  |  |  |  |--AllTrafficDataAcquisition.java
+  |  |  |  |  |--ExecutePing.java
+  |  |  |  |  |--ExecutePingThread.java
+  |  |  |  |  |--IfBlockAndOpen.java
+  |  |  |  |  |--OspfNeighborAcquisition.java
+  |  |  |  |  |--OspfNeighborAcquisitionThread.java
   |  |  |  |  |--SNMPTrapSignalRecieveNotification.java
   |  |  |  |  |--TrafficDataAcquisition.java
   |  |  |  |  |--package-info.java
@@ -385,9 +458,13 @@ sh jar_create.sh
   |  |  |  |  |--DeleteBreakoutIf.java
   |  |  |  |  |--DeleteNode.java
   |  |  |  |  |--EmControllerReceiveStatus.java
+  |  |  |  |  |--ExecutePingRequest.java
+  |  |  |  |  |--ExecutePingResult.java
   |  |  |  |  |--GetAllNodeTraffic.java
   |  |  |  |  |--GetBreakoutInterface.java
   |  |  |  |  |--GetBreakoutInterfaceList.java
+  |  |  |  |  |--GetConfigAudit.java
+  |  |  |  |  |--GetConfigAuditList.java
   |  |  |  |  |--GetControllerLog.java
   |  |  |  |  |--GetEquipmentType.java
   |  |  |  |  |--GetEquipmentTypeList.java
@@ -399,6 +476,8 @@ sh jar_create.sh
   |  |  |  |  |--GetNode.java
   |  |  |  |  |--GetNodeList.java
   |  |  |  |  |--GetNodeTraffic.java
+  |  |  |  |  |--GetOspfNeighborInfoRequest.java
+  |  |  |  |  |--GetOspfNeighborInfoResult.java
   |  |  |  |  |--GetPhysicalInterface.java
   |  |  |  |  |--GetPhysicalInterfaceFilter.java
   |  |  |  |  |--GetPhysicalInterfaceFilterList.java
@@ -407,11 +486,19 @@ sh jar_create.sh
   |  |  |  |  |--GetVlanInterfaceFilter.java
   |  |  |  |  |--GetVlanInterfaceFilterList.java
   |  |  |  |  |--GetVlanInterfaceList.java
+  |  |  |  |  |--IfBlockAndOpenRequest.java
+  |  |  |  |  |--InternalLinkChange.java
+  |  |  |  |  |--NodeInfoUpdate.java
+  |  |  |  |  |--NodeOsUpgradeRequest.java
+  |  |  |  |  |--NotifyEmStatusLog.java
+  |  |  |  |  |--NotifyEmStatusServer.java
   |  |  |  |  |--NotifyNodeStartUp.java
+  |  |  |  |  |--NotifyOsUpgrade.java
   |  |  |  |  |--NotifyReceiveSnmpTrap.java
   |  |  |  |  |--Operations.java
   |  |  |  |  |--RecoverNodeService.java
   |  |  |  |  |--RegisterEquipmentType.java
+  |  |  |  |  |--UpdateLagInterface.java
   |  |  |  |  |--UpdatePhysicalInterface.java
   |  |  |  |  |--UpdateVlanIf.java
   |  |  |  |  |--package-info.java
@@ -420,7 +507,7 @@ sh jar_create.sh
   |  |  |  |  |  |--AddressInfo.java
   |  |  |  |  |  |--As.java
   |  |  |  |  |  |--BaseIf.java
-  |  |  |  |  |  |--BaseIfCreateVlanIf.java
+  |  |  |  |  |  |--BaseIfInfo.java
   |  |  |  |  |  |--Bgp.java
   |  |  |  |  |  |--BgpAddNode.java
   |  |  |  |  |  |--BgpCreateL3cp.java
@@ -431,11 +518,14 @@ sh jar_create.sh
   |  |  |  |  |  |--ClusterLink.java
   |  |  |  |  |  |--Controller.java
   |  |  |  |  |  |--ControllerInfo.java
+  |  |  |  |  |  |--ControllerLog.java
+  |  |  |  |  |  |--ControllerServer.java
   |  |  |  |  |  |--Cpu.java
   |  |  |  |  |  |--CreateNode.java
   |  |  |  |  |  |--CreateVlanIfs.java
   |  |  |  |  |  |--DeleteFilters.java
   |  |  |  |  |  |--DeviceInfo.java
+  |  |  |  |  |  |--Diff.java
   |  |  |  |  |  |--Disk.java
   |  |  |  |  |  |--EcEmLog.java
   |  |  |  |  |  |--EcStatus.java
@@ -445,6 +535,7 @@ sh jar_create.sh
   |  |  |  |  |  |--EquipmentAddNode.java
   |  |  |  |  |  |--EquipmentIf.java
   |  |  |  |  |  |--EquipmentRegisterNode.java
+  |  |  |  |  |  |--FailureInfo.java
   |  |  |  |  |  |--GetTerms.java
   |  |  |  |  |  |--IfFilter.java
   |  |  |  |  |  |--IfNameRule.java
@@ -453,8 +544,10 @@ sh jar_create.sh
   |  |  |  |  |  |--InterfaceInfo.java
   |  |  |  |  |  |--InterfaceInfoTraffic.java
   |  |  |  |  |  |--InternalLinkIf.java
+  |  |  |  |  |  |--InternalLinkIfInternalLinkChange.java
   |  |  |  |  |  |--InternalLinkIfsDeleteNode.java
   |  |  |  |  |  |--InternalLinkInfo.java
+  |  |  |  |  |  |--InternalLinkOppo.java
   |  |  |  |  |  |--IrbCapabilities.java
   |  |  |  |  |  |--IrbUpdateValue.java
   |  |  |  |  |  |--IrbValue.java
@@ -464,31 +557,43 @@ sh jar_create.sh
   |  |  |  |  |  |--L3VniValue.java
   |  |  |  |  |  |--L3vpn.java
   |  |  |  |  |  |--LagIf.java
+  |  |  |  |  |  |--LagIfChangeLagIf.java
   |  |  |  |  |  |--LagIfCreateLagIf.java
   |  |  |  |  |  |--LagIfFilter.java
   |  |  |  |  |  |--LagMember.java
   |  |  |  |  |  |--LagMembersBreakoutIfs.java
   |  |  |  |  |  |--LagMembersPhysicalIfs.java
+  |  |  |  |  |  |--LatestEmConfig.java
   |  |  |  |  |  |--LogConditions.java
   |  |  |  |  |  |--LogData.java
   |  |  |  |  |  |--LogInformation.java
   |  |  |  |  |  |--LoopBackInterface.java
   |  |  |  |  |  |--Memory.java
   |  |  |  |  |  |--MultiHomingValue.java
+  |  |  |  |  |  |--NeConfig.java
   |  |  |  |  |  |--Neighbor.java
   |  |  |  |  |  |--Node.java
   |  |  |  |  |  |--NodeChangeNode.java
+  |  |  |  |  |  |--NodeConfig.java
+  |  |  |  |  |  |--NodeConfigAll.java
   |  |  |  |  |  |--NodeDeleteNode.java
   |  |  |  |  |  |--NodeInterface.java
+  |  |  |  |  |  |--NodeOsUpgrade.java
   |  |  |  |  |  |--NodeRecoverNode.java
   |  |  |  |  |  |--NodeRegisterNode.java
   |  |  |  |  |  |--OppositeNodesDeleteNode.java
   |  |  |  |  |  |--OppositeNodesInterface.java
   |  |  |  |  |  |--OsInfo.java
+  |  |  |  |  |  |--OspfNeighborIfsResponse.java
+  |  |  |  |  |  |--OspfNeighborsRequest.java
+  |  |  |  |  |  |--OspfNeighborsResponse.java
   |  |  |  |  |  |--PairNode.java
   |  |  |  |  |  |--PhysicalIf.java
   |  |  |  |  |  |--PhysicalIfFilter.java
   |  |  |  |  |  |--PhysicalIfsCreateLagIf.java
+  |  |  |  |  |  |--PingTargetsRequest.java
+  |  |  |  |  |  |--PingTargetsResponse.java
+  |  |  |  |  |  |--QInQCapabilities.java
   |  |  |  |  |  |--QosCapabilities.java
   |  |  |  |  |  |--QosConfigValues.java
   |  |  |  |  |  |--QosGetVlanIfs.java
@@ -508,6 +613,7 @@ sh jar_create.sh
   |  |  |  |  |  |--UnusePhysicalIf.java
   |  |  |  |  |  |--UpdateDeleteNode.java
   |  |  |  |  |  |--UpdateNode.java
+  |  |  |  |  |  |--UpdateInternalLinkIfs.java
   |  |  |  |  |  |--UpdateOption.java
   |  |  |  |  |  |--UpdateStaticRoute.java
   |  |  |  |  |  |--UpdateVlanIfs.java
@@ -532,14 +638,20 @@ sh jar_create.sh
   |  |  |  |  |--package-info.java
   |  |  |  |  |--v1/
   |  |  |  |  |  |--ClusterLink.java
+  |  |  |  |  |  |--ConfigAudit.java
   |  |  |  |  |  |--Cps.java
   |  |  |  |  |  |--EcMainModule.java
   |  |  |  |  |  |--EquipmentType.java
   |  |  |  |  |  |--Filter.java
   |  |  |  |  |  |--Interface.java
+  |  |  |  |  |  |--InterfacePriorityNode.java
   |  |  |  |  |  |--Node.java
+  |  |  |  |  |  |--NodeOsUpgradeNotificationRecv.java
+  |  |  |  |  |  |--NodeOsUpgradeRecv.java
   |  |  |  |  |  |--NodeTraffic.java
   |  |  |  |  |  |--PATCH.java
+  |  |  |  |  |  |--PingOspf.java
+  |  |  |  |  |  |--Switchover.java
   |  |  |  |  |  |--VlanInterface.java
   |  |  |  |  |  |--package-info.java
   |  |--traffic/

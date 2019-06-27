@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo;
@@ -40,7 +40,7 @@ public class BodyMessage extends AbstractMessage {
   @XmlElement(name = "recover-node")
   private RecoverUpdateNode recoverUpdateNode = null;
 
-	/** Recover Update Node (servise reconfiguration) POJO Class. */
+  /** Recover Update Node (servise reconfiguration) POJO Class. */
   @XmlElement(name = "recover-service")
   private RecoverUpdateService recoverUpdateService = null;
 
@@ -59,6 +59,22 @@ public class BodyMessage extends AbstractMessage {
   /** breakoutIF Registration/Deletion POJO Class. */
   @XmlElement(name = "breakout")
   private BreakoutIfAddDelete breakoutIfAddDelete = null;
+
+  /** POJO class for opening and closing IF. */
+  @XmlElement(name = "interface-condition")
+  private IfStatusUpdate ifStatusUpdate = null;
+
+  /** POJO class for updating node information. */
+  @XmlElement(name = "device-info")
+  private UpdateNodeInfo updateNodeInfo = null;
+
+  /**  POJO class for changing LagIF(for Ce). */
+  @XmlElement(name = "ce-lag")
+  private CeLagIfsChange ceLagIfsChange = null;
+
+  /** POJO class for changing LagIF(internal link). */
+  @XmlElement(name = "internal-link")
+  private InternalLinkLagIfsChange internalLinkLagIfsChange = null;
 
   /**
    * Generating new instance.
@@ -257,7 +273,7 @@ public class BodyMessage extends AbstractMessage {
     this.betweenClustersLinkAddDelete = betweenClustersLinkAddDelete;
   }
 
- /**
+  /**
    * Getting breakoutIF registration/deletion POJO class.
    *
    * @return breakoutIF registration/deletion POJO class
@@ -276,8 +292,86 @@ public class BodyMessage extends AbstractMessage {
     this.breakoutIfAddDelete = breakoutIfAddDelete;
   }
 
+  /**
+   * Getting POJO class for opening and closing IF.
+   *
+   * @return  POJO class for opening and closing IF
+   */
+  public IfStatusUpdate getIfStatusUpdate() {
+    return ifStatusUpdate;
+  }
+
+  /**
+   * Setting POJO class for opening and closing IF.
+   *
+   * @param ifStatusUpdate
+   *          POJO class for opening and closing IF
+   */
+  public void setIfStatusUpdate(IfStatusUpdate ifStatusUpdate) {
+    this.ifStatusUpdate = ifStatusUpdate;
+  }
+
+  /**
+   * Getting POJO class for updating node information.
+   *
+   * @return POJO class for updating node information
+   */
+  public UpdateNodeInfo getUpdateNodeInfo() {
+    return updateNodeInfo;
+  }
+
+  /**
+   * Setting POJO class for updating node information.
+   *
+   * @param updateNodeInfo
+   *          POJO class for updating node information
+   */
+  public void setUpdateNodeInfo(UpdateNodeInfo updateNodeInfo) {
+    this.updateNodeInfo = updateNodeInfo;
+  }
+
+  /**
+   * Getting POJO class for changing LagIF(for Ce).
+   *
+   * @return POJO class for changing LagIF(for Ce)
+   */
+  public CeLagIfsChange getCeLagIfsChange() {
+    return ceLagIfsChange;
+  }
+
+  /**
+   * Setting POJO class for changing LagIF(for Ce).
+   *
+   * @param ceLagIfsChange
+   *          POJO class for changing LagIF(for Ce)
+   */
+  public void setCeLagIfsChange(CeLagIfsChange ceLagIfsChange) {
+    this.ceLagIfsChange = ceLagIfsChange;
+  }
+
+  /**
+   * Getting POJO class for changing LagIF(internal link).
+   *
+   * @return POJO class for changing LagIF(internal link)
+   */
+  public InternalLinkLagIfsChange getInternalLinkLagIfsChange() {
+    return internalLinkLagIfsChange;
+  }
+
+  /**
+   * Setting POJO class for changing LagIF(internal link).
+   *
+   * @param internalLinkLagIfsChange
+   *          POJO class for changing LagIF(internal link)
+   */
+  public void setInternalLinkLagIfsChange(InternalLinkLagIfsChange internalLinkLagIfsChange) {
+    this.internalLinkLagIfsChange = internalLinkLagIfsChange;
+  }
+
   /*
-   * Stringizing Instance.
+   * (non Javadoc)
+   *
+   * @see java.lang.Object#toString()
    */
   @Override
   public String toString() {
@@ -286,6 +380,7 @@ public class BodyMessage extends AbstractMessage {
         + internalLinkLagAddDelete + ", recoverUpdateNode=" + recoverUpdateNode + ", recoverUpdateService="
         + recoverUpdateService + ", ceLagAddDelete=" + ceLagAddDelete + ", bLeafAddDelete=" + bLeafAddDelete
         + ", betweenClustersLinkAddDelete=" + betweenClustersLinkAddDelete + ", breakoutIfAddDelete="
-        + breakoutIfAddDelete + "]";
+        + breakoutIfAddDelete + ", ifStatusUpdate=" + ifStatusUpdate + ", updateNodeInfo=" + updateNodeInfo
+        + ", ceLagIfsChange=" + ceLagIfsChange + ", internalLinkLagIfsChange=" + internalLinkLagIfsChange + "]";
   }
 }

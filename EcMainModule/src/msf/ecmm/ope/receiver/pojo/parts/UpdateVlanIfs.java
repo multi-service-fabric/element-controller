@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -19,7 +19,7 @@ public class UpdateVlanIfs {
   private String nodeId = null;
 
   /** IF information to which VLAN IF is created */
-  private BaseIfCreateVlanIf baseIf = null;
+  private BaseIfInfo baseIf = null;
 
   /** ESI value. */
   private String esi = null;
@@ -82,7 +82,7 @@ public class UpdateVlanIfs {
    *
    * @return baseIf
    */
-  public BaseIfCreateVlanIf getBaseIf() {
+  public BaseIfInfo getBaseIf() {
     return baseIf;
   }
 
@@ -92,7 +92,7 @@ public class UpdateVlanIfs {
    * @param baseIf
    *          Setting baseIf
    */
-  public void setBaseIf(BaseIfCreateVlanIf baseIf) {
+  public void setBaseIf(BaseIfInfo baseIf) {
     this.baseIf = baseIf;
   }
 

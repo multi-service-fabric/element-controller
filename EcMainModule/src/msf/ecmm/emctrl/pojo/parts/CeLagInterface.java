@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo.parts;
@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -17,6 +18,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "ce-lag-interface")
 public class CeLagInterface {
+
+  /** Internal link attribute data. */
+  @XmlAttribute
+  private String operation = null;
 
   /** LAG IF Configuration Name */
   private String name = null;
@@ -29,11 +34,11 @@ public class CeLagInterface {
   @XmlElement(name = "minimum-links")
   private Long minimumLinks = null;
 
-   /** Line Speed (only for LagIF Generation) */
+  /** Line Speed (only for LagIF Generation) */
   @XmlElement(name = "link-speed")
   private String linkSpeed = null;
 
- /** Physical IF Information List for CE */
+  /** Physical IF Information List for CE */
   @XmlElement(name = "leaf-interface")
   private List<LeafInterface> leafInterfaceList = null;
 
@@ -42,6 +47,25 @@ public class CeLagInterface {
    */
   public CeLagInterface() {
     super();
+  }
+
+  /**
+   * Getting operation.
+   *
+   * @return operation
+   */
+  public String getOperation() {
+    return operation;
+  }
+
+  /**
+   * Setting operation
+   *
+   * @param operation
+   *          operation
+   */
+  public void setOperation(String operation) {
+    this.operation = operation;
   }
 
   /**
@@ -90,6 +114,7 @@ public class CeLagInterface {
   public Long getMinimumLinks() {
     return minimumLinks;
   }
+
 
   /**
    * Setting the number of LAG members.

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo.parts;
@@ -20,7 +20,7 @@ public class Equipment {
   /** OS Name */
   private String os = null;
 
-  /** Firmware Version */
+  /** /** Firmware Version */
   private String firmware = null;
 
   /** Login ID */
@@ -28,6 +28,10 @@ public class Equipment {
 
   /** Password */
   private String password = null;
+
+  /** Q-in-Q Type */
+  @XmlElement(name = "q_in_q")
+  private String qInQ = null;
 
   /** Device Configuration Necessity Flag */
   @XmlElement(name = "newly-establish")
@@ -60,9 +64,9 @@ public class Equipment {
   }
 
   /**
-   * Getting OS name.
+   * Getting firmware version.
    *
-   * @return OS name
+   * @return firmware version
    */
   public String getOs() {
     return os;
@@ -149,6 +153,25 @@ public class Equipment {
     this.newlyEstablish = null;
   }
 
+  /**
+   * Setting Q-in-Q type.
+   *
+   * @return Q-in-Q type
+   */
+  public String getqInQ() {
+    return qInQ;
+  }
+
+  /**
+   * Setting Q-in-Q type.
+   *
+   * @param qInQ
+   *          Q-in-Q type
+   */
+  public void setqInQ(String qInQ) {
+    this.qInQ = qInQ;
+  }
+
   /*
    * (Non-Javadoc)
    *
@@ -157,7 +180,7 @@ public class Equipment {
   @Override
   public String toString() {
     return "Equipment [platform=" + platform + ", os=" + os + ", firmware=" + firmware + ", loginid=" + loginid
-        + ", password=" + password + ", newlyEstablish=" + newlyEstablish + "]";
+        + ", password=" + password + ", qInQ=" + qInQ + ", newlyEstablish=" + newlyEstablish + "]";
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.convert;
@@ -9,11 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.db.pojo.BreakoutIfs;
 import msf.ecmm.db.pojo.DummyVlanIfs;
 import msf.ecmm.db.pojo.EquipmentIfs;
@@ -29,13 +27,17 @@ import msf.ecmm.emctrl.pojo.BLeafAddDelete;
 import msf.ecmm.emctrl.pojo.BetweenClustersLinkAddDelete;
 import msf.ecmm.emctrl.pojo.BreakoutIfAddDelete;
 import msf.ecmm.emctrl.pojo.CeLagAddDelete;
+import msf.ecmm.emctrl.pojo.CeLagIfsChange;
+import msf.ecmm.emctrl.pojo.IfStatusUpdate;
 import msf.ecmm.emctrl.pojo.InternalLinkAddDelete;
+import msf.ecmm.emctrl.pojo.InternalLinkLagIfsChange;
 import msf.ecmm.emctrl.pojo.L2SliceAddDelete;
 import msf.ecmm.emctrl.pojo.L3SliceAddDelete;
 import msf.ecmm.emctrl.pojo.LeafAddDelete;
 import msf.ecmm.emctrl.pojo.RecoverUpdateNode;
 import msf.ecmm.emctrl.pojo.RecoverUpdateService;
 import msf.ecmm.emctrl.pojo.SpineAddDelete;
+import msf.ecmm.emctrl.pojo.UpdateNodeInfo;
 import msf.ecmm.emctrl.pojo.parts.Anycast;
 import msf.ecmm.emctrl.pojo.parts.AttributeOperation;
 import msf.ecmm.emctrl.pojo.parts.BreakoutIf;
@@ -51,7 +53,9 @@ import msf.ecmm.emctrl.pojo.parts.Device;
 import msf.ecmm.emctrl.pojo.parts.DeviceLeaf;
 import msf.ecmm.emctrl.pojo.parts.DummyVlan;
 import msf.ecmm.emctrl.pojo.parts.Equipment;
+import msf.ecmm.emctrl.pojo.parts.EquipmentWithOperation;
 import msf.ecmm.emctrl.pojo.parts.InterfaceNames;
+import msf.ecmm.emctrl.pojo.parts.InterfaceStatusUpdate;
 import msf.ecmm.emctrl.pojo.parts.InternalInterface;
 import msf.ecmm.emctrl.pojo.parts.InternalInterfaceMember;
 import msf.ecmm.emctrl.pojo.parts.Irb;
@@ -100,7 +104,7 @@ import msf.ecmm.ope.receiver.pojo.CreateLagInterface;
 import msf.ecmm.ope.receiver.pojo.DeleteBreakoutIf;
 import msf.ecmm.ope.receiver.pojo.DeleteNode;
 import msf.ecmm.ope.receiver.pojo.RecoverNodeService;
-import msf.ecmm.ope.receiver.pojo.parts.BaseIfCreateVlanIf;
+import msf.ecmm.ope.receiver.pojo.parts.BaseIfInfo;
 import msf.ecmm.ope.receiver.pojo.parts.BreakoutBaseIf;
 import msf.ecmm.ope.receiver.pojo.parts.CreateNode;
 import msf.ecmm.ope.receiver.pojo.parts.CreateVlanIfs;
@@ -124,13 +128,13 @@ import msf.ecmm.ope.receiver.pojo.parts.VlanIfsCreateL3VlanIf;
 import msf.ecmm.ope.receiver.pojo.parts.VlanIfsDeleteVlanIf;
 
 /**
- * EM Data Mapping.
+ * EM data mapping.
  *
  */
 public class EmMapper {
 
   /** logger. */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /**
    * EM Data Mapping_Leaf Device Extention [Device]; Convert Leaf device extention information (device) into EM transmittable format.
@@ -184,6 +188,8 @@ public class EmMapper {
    *          IP address of EC
    * @param nodesListDbMapper
    *          device information list (DB mapper) (device to be extended/opposing device)
+   * @param internalLinkVlanId
+   *          internal Link VLANID
    * @return Spine device extention information (device) (for sending to EM)
    * @throws IllegalArgumentException
    *           Model Information entered from FC does not exist in DB
@@ -223,8 +229,8 @@ public class EmMapper {
    * @param pairNodes
    *           pair B-Leaf information (DB)
    * @param internalLinkVlanId
-   *         Internal link VLANID
- * @return Spine device extention information (device) (for sending to EM)
+   *          Internal link VLANID
+   * @return Spine device extention information (device) (for sending to EM)
    * @throws IllegalArgumentException
    *           Device information entered from FC does not exist in DB.
    */
@@ -304,13 +310,13 @@ public class EmMapper {
     Nodes target = null;
     for (Nodes nodes : nodesListDbMapper) {
       if (createNode.getNodeId().equals(nodes.getNode_id())) {
-        target = nodes; 
+        target = nodes;
       }
     }
 
     Device device = new Device();
     if (target.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
-      device.setName(CommonDefinitions.COREROUTER_HOSTNAME); 
+      device.setName(CommonDefinitions.COREROUTER_HOSTNAME);
     } else {
       device.setName(target.getNode_name());
     }
@@ -322,6 +328,12 @@ public class EmMapper {
     equipment.setPassword(createNode.getPassword());
     if (createNode.getProvisioning() == true) {
       equipment.addNewlyEstablish();
+    }
+    if (createNode.getqInQType() == null || createNode.getqInQType().equals(CommonDefinitions.Q_IN_Q_UNSUPPORT)) {
+    } else if (createNode.getqInQType().equals(CommonDefinitions.Q_IN_Q_ONLY)) {
+      equipment.setqInQ(CommonDefinitions.SELECTABLE_BY_NODE);
+    } else if (createNode.getqInQType().equals(CommonDefinitions.Q_IN_Q_SUPPORT)) {
+      equipment.setqInQ(CommonDefinitions.SELECTABLE_BY_VLAN_IF);
     }
     device.setEquipment(equipment);
 
@@ -405,7 +417,7 @@ public class EmMapper {
       internalIf.setName(getIfName(restIf.getIfType(), restIf.getIfId(), target));
 
       if (restIf.getIfType().equals(CommonDefinitions.IF_TYPE_BREAKOUT_IF)) {
-        internalIf.setType(CommonDefinitions.IF_TYPE_PHYSICAL_IF); 
+        internalIf.setType(CommonDefinitions.IF_TYPE_PHYSICAL_IF);
       } else {
         internalIf.setType(restIf.getIfType());
       }
@@ -462,7 +474,7 @@ public class EmMapper {
       boolean oppoFlag) {
     String oppoHostname = "";
     if (oppoFlag) {
-      oppoHostname = createNode.getHostname(); 
+      oppoHostname = createNode.getHostname();
     } else {
       OppositeNodesInterface oppo = createNode.getOppositeNodes().get(oppoInternalIfIndex);
       if (oppo == null) {
@@ -603,7 +615,7 @@ public class EmMapper {
    *          device information list
    * @param internalLinkVlanId
    *          Internal link VLANID
- * @return Leaf device extention information (internal LAG) (for sending to EM)
+   * @return Leaf device extention information (internal LAG) (for sending to EM)
    * @throws IllegalArgumentException
    *           Model information entered from FC does not exist in DB.
    */
@@ -681,7 +693,7 @@ public class EmMapper {
       ret = changeBLeaf(changeNode, node, pairNode);
     } else if (changeNode.getAction().equals(CommonDefinitions.CHANGE_LEAF)) {
       ret = changeLeaf(changeNode, node, pairNode);
-    } else { 
+    } else {
       ret = deleteOspfRoute(changeNode, node);
     }
 
@@ -890,7 +902,7 @@ public class EmMapper {
     Device device = new Device();
     device.setOperation("delete");
     if (target.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
-      device.setName(CommonDefinitions.COREROUTER_HOSTNAME); 
+      device.setName(CommonDefinitions.COREROUTER_HOSTNAME);
     } else {
       device.setName(target.getNode_name());
     }
@@ -970,16 +982,16 @@ public class EmMapper {
 
     device.setName(nodesDb.getNode_name());
 
-    InternalInterface internalInterface = new InternalInterface(); 
+    InternalInterface internalInterface = new InternalInterface();
     internalInterface.setName(getIfName(oppoNodeRest.getInternalLinkIf().getIfInfo().getIfType(),
         oppoNodeRest.getInternalLinkIf().getIfInfo().getIfId(), nodesDb));
     internalInterface.setOperation("delete");
     String type = oppoNodeRest.getInternalLinkIf().getIfInfo().getIfType();
     if (oppoNodeRest.getInternalLinkIf().getIfInfo().getIfType().equals(CommonDefinitions.IF_TYPE_BREAKOUT_IF)) {
-      type = CommonDefinitions.IF_TYPE_PHYSICAL_IF; 
+      type = CommonDefinitions.IF_TYPE_PHYSICAL_IF;
     }
     internalInterface.setType(type);
-    internalInterface.setMinimumLinks(0L); 
+    internalInterface.setMinimumLinks(0L);
     if (type.equals(CommonDefinitions.IF_TYPE_LAG_IF)) {
       List<InternalInterfaceMember> internalLagList = new ArrayList<InternalInterfaceMember>();
       for (LagIfs lagIfs : nodesDb.getLagIfsList()) {
@@ -1000,14 +1012,14 @@ public class EmMapper {
             memberEm.setOperation("delete");
             internalLagList.add(memberEm);
           }
-          break; 
+          break;
         }
       }
       internalInterface.setInternalInterfaceMember(internalLagList);
     }
 
     List<InternalInterface> internalInterfaceList = new ArrayList<>();
-    internalInterfaceList.add(internalInterface); 
+    internalInterfaceList.add(internalInterface);
     device.setInternalLagList(internalInterfaceList);
 
     logger.debug(device);
@@ -1042,7 +1054,7 @@ public class EmMapper {
 
     Device device = new Device();
     if (nodes.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
-      device.setName(CommonDefinitions.COREROUTER_HOSTNAME); 
+      device.setName(CommonDefinitions.COREROUTER_HOSTNAME);
     } else {
       device.setName(nodes.getNode_name());
     }
@@ -1120,7 +1132,7 @@ public class EmMapper {
     ret.setDevice(new ArrayList<Device>());
     ret.getDevice().add(new Device());
     if (nodes.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
-      ret.getDevice().get(0).setName(CommonDefinitions.COREROUTER_HOSTNAME); 
+      ret.getDevice().get(0).setName(CommonDefinitions.COREROUTER_HOSTNAME);
     } else {
       ret.getDevice().get(0).setName(nodes.getNode_name());
     }
@@ -1177,7 +1189,7 @@ public class EmMapper {
 
     ret.setDevice(new LeafDevice());
     if (nodes.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
-      ret.getDevice().setName(CommonDefinitions.COREROUTER_HOSTNAME); 
+      ret.getDevice().setName(CommonDefinitions.COREROUTER_HOSTNAME);
     } else {
       ret.getDevice().setName(nodes.getNode_name());
     }
@@ -1250,6 +1262,7 @@ public class EmMapper {
    *          IF ID
    * @return information for deleting inter-cluster link (for sending to EM)
    */
+
   public static BetweenClustersLinkAddDelete toBetweenClustersLinkDelete(Nodes nodes, String ifType, String ifId) {
 
     logger.trace(CommonDefinitions.START);
@@ -1261,7 +1274,7 @@ public class EmMapper {
 
     ret.setDevice(new LeafDevice());
     if (nodes.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
-      ret.getDevice().setName(CommonDefinitions.COREROUTER_HOSTNAME); 
+      ret.getDevice().setName(CommonDefinitions.COREROUTER_HOSTNAME);
     } else {
       ret.getDevice().setName(nodes.getNode_name());
     }
@@ -1396,11 +1409,17 @@ public class EmMapper {
                         createVlanIfs.getIrbValue().getVirtualGatewayAddress(), false));
               }
 
+              if (input.getqInQ() == null || !input.getqInQ()) {
+                cp.delQInQ();
+              } else {
+                cp.addQInQ();
+              }
+
               deviceLeaf.getCpList().add(cp);
             } else {
               dummyVlan = new DummyVlan();
               dummyVlan.setVlanId(createVlanIfs.getVlanId().longValue());
-              dummyVlan.setVni((long)createVlanIfs.getIrbValue().getVni());
+              dummyVlan.setVni((long) createVlanIfs.getIrbValue().getVni());
               dummyVlan.setIrb(
                   getIrb(createVlanIfs.getIrbValue().getIpv4Address(), createVlanIfs.getIrbValue().getIpv4Prefix(),
                       createVlanIfs.getIrbValue().getVirtualGatewayAddress(), true));
@@ -1517,8 +1536,8 @@ public class EmMapper {
             for (DummyVlanIfs ifs : allDummyVlanIfsMap.get(updateVlanIfs.getNodeId())) {
               if (ifs.getVlan_if_id().equals(updateVlanIfs.getVlanIfId())) {
                 cp = new Cp();
-                cp.setName(getIfName(updateVlanIfs.getBaseIf().getIfType(),
-                    updateVlanIfs.getBaseIf().getIfId(), nodes));
+                cp.setName(
+                    getIfName(updateVlanIfs.getBaseIf().getIfType(), updateVlanIfs.getBaseIf().getIfId(), nodes));
                 cp.setVlanId(new Long(ifs.getVlan_id()));
                 cp.setEsi(updateVlanIfs.getEsi());
                 cp.setSystemId(updateVlanIfs.getLacpSystemId());
@@ -1538,10 +1557,9 @@ public class EmMapper {
                   }
                   cp.setQos(setQos(updateVlanIfs.getBaseIf(), updateVlanIfs.getQos(), nodes));
                   if (null != updateVlanIfs.getIrbValue()) {
-                    cp.setIrb(
-                        getIrb(updateVlanIfs.getIrbValue().getIpv4Address(),
-                            updateVlanIfs.getIrbValue().getIpv4Prefix(),
-                            updateVlanIfs.getIrbValue().getVirtualGatewayAddress(), false));
+                    cp.setIrb(getIrb(updateVlanIfs.getIrbValue().getIpv4Address(),
+                        updateVlanIfs.getIrbValue().getIpv4Prefix(),
+                        updateVlanIfs.getIrbValue().getVirtualGatewayAddress(), false));
                   }
 
                   dummyVlan = new DummyVlan();
@@ -1624,7 +1642,7 @@ public class EmMapper {
 
           deviceLeaf = new DeviceLeaf();
           if (nodes.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
-            deviceLeaf.setName(CommonDefinitions.COREROUTER_HOSTNAME); 
+            deviceLeaf.setName(CommonDefinitions.COREROUTER_HOSTNAME);
           } else {
             deviceLeaf.setName(nodes.getNode_name());
           }
@@ -1777,15 +1795,15 @@ public class EmMapper {
   }
 
   /**
-   * QoS setting when generating VLANIF batch.
+   * Setting QOS in VLANIF batch generation.
    *
    * @param vlanIfs
    *          VLAN IF information
    * @param nodes
    *          device information
-   * @return QoS settings(for sending to EM)
+   * @return QoS cofiuration(for sendin gEM)
    */
-  private static Qos setQos(BaseIfCreateVlanIf baseIf, QosValues inputQos, Nodes nodes) {
+  private static Qos setQos(BaseIfInfo baseIf, QosValues inputQos, Nodes nodes) {
     Qos qos = null;
 
     if (nodes.getEquipments().getQos_shaping_flg()) {
@@ -1827,7 +1845,7 @@ public class EmMapper {
     return qos;
   }
 
-  /**
+    /**
    * EM Data Mapping_Deleting/Changing L2VLAN IF IN A Lump<br>
    * Convert L2VLAN IF batch deletion/change information into EM transmittable format.
    *
@@ -2038,7 +2056,7 @@ public class EmMapper {
         if (inputVlanIfs.getNodeId().equals(nodesDb.getNode_id())) {
           deviceLeaf = new DeviceLeaf();
           if (nodesDb.getEquipments().getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
-            deviceLeaf.setName(CommonDefinitions.COREROUTER_HOSTNAME); 
+            deviceLeaf.setName(CommonDefinitions.COREROUTER_HOSTNAME);
           } else {
             deviceLeaf.setName(nodesDb.getNode_name());
           }
@@ -2437,7 +2455,6 @@ public class EmMapper {
 
     ret.setName("breakout");
     ret.setDevice(new Device());
-
     ret.getDevice().setName(nodes.getNode_name());
     ret.getDevice().setBreakoutIfList(new ArrayList<BreakoutIf>());
 
@@ -2774,4 +2791,236 @@ public class EmMapper {
     return irb;
   }
 
+  /**
+   * EM data mapping to closed and open IF<br>
+   * Converting IF open/closed information to EM-readable format
+   *
+   * @param nodeName
+   *          node name
+   * @param ifName
+   *          IF name
+   * @param ifType
+   *          IF type
+   * @param status
+   *          IF status
+   * @return information on IF open/closed（for EM sending）
+   */
+  public static IfStatusUpdate toIfStatusUpdate(String nodeName, String ifName, String ifType, String status) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("nodeName=" + nodeName + ", ifName=" + ifName + ", ifType=" + ifType + "status=" + status);
+
+    IfStatusUpdate ret = new IfStatusUpdate();
+
+    ret.setName("interface-condition");
+    ret.setDevice(new Device());
+    ret.getDevice().setName(nodeName);
+    ret.getDevice().setIfStatusInfo(new InterfaceStatusUpdate());
+    ret.getDevice().getIfStatusInfo().setOperation(CommonDefinitions.OPERATION_TYPE_REPLACE);
+    ret.getDevice().getIfStatusInfo().setName(ifName);
+    if (ifType.equals(CommonDefinitions.IF_TYPE_BREAKOUT_IFS)) {
+      ret.getDevice().getIfStatusInfo().setType(CommonDefinitions.IF_TYPE_PHYSICAL_IFS);
+    } else {
+      ret.getDevice().getIfStatusInfo().setType(ifType);
+    }
+    ret.getDevice().getIfStatusInfo().setCondition(new XmlStringElement());
+    ret.getDevice().getIfStatusInfo().getCondition().setOperation(CommonDefinitions.OPERATION_TYPE_REPLACE);
+
+    if (status.equals(CommonDefinitions.IF_STATE_OK_STRING)) {
+      ret.getDevice().getIfStatusInfo().getCondition().setValue(CommonDefinitions.PORT_CONDITION_ENABLE);
+    } else {
+      ret.getDevice().getIfStatusInfo().getCondition().setValue(CommonDefinitions.PORT_CONDITION_DISABLE);
+    }
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+
+    return ret;
+  }
+
+  /**
+   * EM data mapping to change LAG for CE<br>
+   * Converting  LAG change information to  EM-readable format.
+   *
+   * @param action
+   *           control type
+   * @param nodes
+   *          node information
+   * @param lagIfs
+   *          LAG information
+   * @param minLinkNum
+   *          minimum number of links
+   * @param physicalIfsList
+   *          physical IF information list
+   * @param breakoutIfsList
+   *          breakoutIF information list
+   * @return LAG change information for CE (for sending to EM)
+   */
+
+  public static CeLagIfsChange toLagIfsChange(String action, Nodes nodes, LagIfs lagIfs, Integer minLinkNum,
+      List<PhysicalIfs> physicalIfsList, List<BreakoutIfs> breakoutIfsList) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("action=" + action + ", nodes=" + nodes + ", lagIfs=" + lagIfs + ", minLinkNum=" + minLinkNum
+        + ", physicalIfsList=" + physicalIfsList + ", breakoutIfsList=" + breakoutIfsList);
+
+    List<LeafInterface> leafInterfaceList = new ArrayList<LeafInterface>();
+    if (physicalIfsList != null) {
+      for (PhysicalIfs physicalIfs : physicalIfsList) {
+        LeafInterface leafInterface = new LeafInterface();
+        if (action.equals(CommonDefinitions.OPERATION_TYPE_DELETE)) {
+          leafInterface.setOperation(CommonDefinitions.OPERATION_TYPE_DELETE);
+        }
+        leafInterface.setName(physicalIfs.getIf_name());
+        leafInterfaceList.add(leafInterface);
+      }
+    }
+    if (breakoutIfsList != null) {
+      for (BreakoutIfs breakoutIfs : breakoutIfsList) {
+        LeafInterface leafInterface = new LeafInterface();
+        if (action.equals(CommonDefinitions.OPERATION_TYPE_DELETE)) {
+          leafInterface.setOperation(CommonDefinitions.OPERATION_TYPE_DELETE);
+        }
+        leafInterface.setName(breakoutIfs.getIf_name());
+        leafInterfaceList.add(leafInterface);
+      }
+    }
+
+    CeLagInterface ceLagInterface = new CeLagInterface();
+    ceLagInterface.setName(lagIfs.getIf_name());
+    ceLagInterface.setMinimumLinks(minLinkNum.longValue());
+    ceLagInterface.setLeafInterfaceList(leafInterfaceList);
+    ceLagInterface.setOperation(CommonDefinitions.OPERATION_TYPE_REPLACE);
+
+    Device device = new Device();
+    device.setName(nodes.getNode_name());
+    List<Device> deviceList = new ArrayList<Device>();
+    deviceList.add(device);
+    List<CeLagInterface> ceLagInterfaceList = new ArrayList<CeLagInterface>();
+    ceLagInterfaceList.add(ceLagInterface);
+    device.setCeLagInterfaceList(ceLagInterfaceList);
+
+    CeLagIfsChange ret = new CeLagIfsChange();
+    final String ceLag = "ce-lag";
+    ret.setName(ceLag);
+    ret.setDevice(deviceList);
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+
+    return ret;
+  }
+
+  /**
+   * EM data mapping to increse/decrease speed of internal link Lag <br>
+   * Converting  information on LAG speed to  EM-readable format.
+   *
+   * @param action
+   *          control type
+   * @param nodes
+   *          node information
+   * @param lagIfs
+   *          LAG information
+   * @param minLinkNum
+   *          minimum number of links
+   * @param physicalIfsList
+   *          phsical IF information list
+   * @param breakoutIfsList
+   *          breakoutIF information list
+   * @return information to increse/decrease speed internal link（for sending to EM）
+   */
+  public static InternalLinkLagIfsChange toInternalLinkLagIfsChange(String action, Nodes nodes, LagIfs lagIfs,
+      Integer minLinkNum, List<PhysicalIfs> physicalIfsList, List<BreakoutIfs> breakoutIfsList) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("action=" + action + ", nodes=" + nodes + ", lagIfs=" + lagIfs + ", minLinkNum=" + minLinkNum
+        + ", physicalIfsList=" + physicalIfsList + ", breakoutIfsList=" + breakoutIfsList);
+
+    List<InternalInterfaceMember> internalInterfaceMemberList = new ArrayList<InternalInterfaceMember>();
+    if (physicalIfsList != null) {
+      for (PhysicalIfs physicalIfs : physicalIfsList) {
+        InternalInterfaceMember internalInterfaceMember = new InternalInterfaceMember();
+        internalInterfaceMember.setName(physicalIfs.getIf_name());
+        if (action.equals(CommonDefinitions.OPERATION_TYPE_DELETE)) {
+          internalInterfaceMember.setOperation(CommonDefinitions.OPERATION_TYPE_DELETE);
+        }
+        internalInterfaceMemberList.add(internalInterfaceMember);
+      }
+    }
+    if (breakoutIfsList != null) {
+      for (BreakoutIfs breakoutIfs : breakoutIfsList) {
+        InternalInterfaceMember internalInterfaceMember = new InternalInterfaceMember();
+        internalInterfaceMember.setName(breakoutIfs.getIf_name());
+        if (action.equals(CommonDefinitions.OPERATION_TYPE_DELETE)) {
+          internalInterfaceMember.setOperation(CommonDefinitions.OPERATION_TYPE_DELETE);
+        }
+        internalInterfaceMemberList.add(internalInterfaceMember);
+      }
+    }
+
+    InternalInterface internalInterface = new InternalInterface();
+    internalInterface.setName(lagIfs.getIf_name());
+    internalInterface.setType(CommonDefinitions.IF_TYPE_LAG_IF);
+    internalInterface.setOperation(CommonDefinitions.OPERATION_TYPE_REPLACE);
+    internalInterface.setMinimumLinks(minLinkNum.longValue());
+    internalInterface.setInternalInterfaceMember(internalInterfaceMemberList);
+
+    Device device = new Device();
+    device.setName(nodes.getNode_name());
+    List<InternalInterface> internalInterfaceList = new ArrayList<InternalInterface>();
+    internalInterfaceList.add(internalInterface);
+    device.setInternalLagList(internalInterfaceList);
+
+    final String internalLink = "internal-link";
+    InternalLinkLagIfsChange ret = new InternalLinkLagIfsChange();
+    ret.setName(internalLink);
+    List<Device> deviceList = new ArrayList<Device>();
+    deviceList.add(device);
+    ret.setDevice(deviceList);
+
+    logger.debug(ret);
+    logger.trace(CommonDefinitions.END);
+
+    return ret;
+  }
+
+  /**
+   * EM data mapping(to update node equiment information).
+   *
+   * @param nodesDb
+   *          node information
+   * @param newEqDb
+   *          node equipment information
+   * @return EM send message（to update node information）
+   */
+  public static UpdateNodeInfo toNodeInfoUpdate(Nodes nodesDb, Equipments newEqDb) {
+
+    logger.trace(CommonDefinitions.START);
+
+    UpdateNodeInfo updateNodeInfo = new UpdateNodeInfo();
+
+    updateNodeInfo.setName("device-info");
+
+    EquipmentWithOperation eq = new EquipmentWithOperation();
+
+    XmlStringElement platform = new XmlStringElement();
+    platform.setOperation(CommonDefinitions.OPERATION_TYPE_REPLACE);
+    platform.setValue(newEqDb.getPlatform_name());
+    eq.setPlatform(platform);
+    XmlStringElement os = new XmlStringElement();
+    os.setOperation(CommonDefinitions.OPERATION_TYPE_REPLACE);
+    os.setValue(newEqDb.getOs_name());
+    eq.setOs(os);
+    XmlStringElement firmware = new XmlStringElement();
+    firmware.setOperation(CommonDefinitions.OPERATION_TYPE_REPLACE);
+    firmware.setValue(newEqDb.getFirmware_version());
+    eq.setFirmware(firmware);
+    Device device = new Device();
+    device.setOperation(CommonDefinitions.OPERATION_TYPE_REPLACE);
+    device.setName(nodesDb.getNode_name());
+    device.setEquipmentWithOperation(eq);
+    updateNodeInfo.setDevice(device);
+
+    logger.debug(updateNodeInfo);
+    logger.trace(CommonDefinitions.END);
+
+    return updateNodeInfo;
+  }
 }

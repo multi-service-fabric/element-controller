@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo.parts;
@@ -37,11 +37,15 @@ public class Device {
   /** Information of Device To Be Extended (only for Spine/Leaf/B-Leaf Device Extention). */
   private Equipment equipment = null;
 
+  /** Node Information which updates Information. */
+  @XmlElement(name = "equipment")
+  private EquipmentWithOperation equipmentWithOperation = null;
+
   /** breakoutIF Information List (only for Spine/Leaf Device Extention and breakoutIF Registration/Deletion). */
   @XmlElement(name = "breakout-interface")
   private List<BreakoutIf> breakoutIfList = null;
 
-   /** Internal Link Configuration Information List (only for Spine/Leaf/B-Leaf Device Extention). */
+  /** Internal Link Configuration Information List (only for Spine/Leaf/B-Leaf Device Extention). */
   @XmlElement(name = "internal-interface")
   private List<InternalInterface> internalLagList = null;
 
@@ -49,18 +53,18 @@ public class Device {
   @XmlElement(name = "management-interface")
   private ManagementInterface managementInterface = null;
 
- /** Loopback IF Configuration Information (only for Spine/Leaf/B-Leaf Device Extention). */
+  /** Loopback IF Configuration Information (only for Spine/Leaf/B-Leaf Device Extention). */
   @XmlElement(name = "loopback-interface")
   private LoopbackInterface loopbackInterface = null;
 
-/** List of LAGIF Configuration Information for CE (only for LagIF Generation/Deletion). */
+  /** List of LAGIF Configuration Information for CE (only for LagIF Generation/Deletion). */
   @XmlElement(name = "ce-lag-interface")
   private List<CeLagInterface> ceLagInterfaceList = null;
 
- /** SNMP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
+  /** SNMP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
   private Snmp snmp = null;
 
- /** NTP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
+  /** NTP Server Information (only for Spine/Leaf/B-Leaf Device Extention). */
   private Ntp ntp = null;
 
   /** L3VPN Configuration Information (only for Leaf/B-Leaf Device Extention). */
@@ -75,7 +79,7 @@ public class Device {
   @XmlElement(name = "ospf")
   private OspfAddNode ospfAddNode = null;
 
- /** physicalIF Information Conversion List (only for Service Update Node/Service reconfiguration). */
+  /** physicalIF Information Conversion List (only for Service Update Node/Service reconfiguration). */
   @XmlElement(name = "physical-ifs")
   private List<InterfaceNames> physiIfNames = null;
 
@@ -85,6 +89,10 @@ public class Device {
 
   /** QoS Update information(only for Service reconfiguration). */
   private Qos qos = null;
+
+  /** IF configuration information to open/close IF. */
+  @XmlElement(name = "interface")
+  private InterfaceStatusUpdate ifStatusInfo = null;
 
   /**
    * Generating new instance.
@@ -244,6 +252,25 @@ public class Device {
     this.snmp = snmp;
   }
 
+  //** In this version, the following is out of implementation.
+  // /**
+  // * Getting MSDP configuration information (used only when Spine node is added).
+  // *
+  // * @return MSDP configuration information (used only when Spine node is added)
+  // */
+  // public Msdp getMsdp() {
+  // return msdp;
+  // }
+  //
+  // /**
+  // * Set MSDP configuration information (used only when Spine node is added).
+  // *
+  // * @param msdp
+  // * MSDP configuration information (used only when Spine node is added)
+  // */
+  // public void setMsdp(Msdp msdp) {
+  // this.msdp = msdp;
+  // }
 
   /**
    * Getting NTP server information (only for Spine/Leaf/B-Leaf device extention).
@@ -300,6 +327,25 @@ public class Device {
    */
   public void setEquipment(Equipment equipment) {
     this.equipment = equipment;
+  }
+
+  /**
+   * Getting Node information which updates information.
+   *
+   * @return Node information which updates information.
+   */
+  public EquipmentWithOperation getEquipmentWithOperation() {
+    return equipmentWithOperation;
+  }
+
+  /**
+   * Setting Node information which updates information.
+   *
+   * @param equipmentWithOperation
+   *          Node information which updates information.
+   */
+  public void setEquipmentWithOperation(EquipmentWithOperation equipmentWithOperation) {
+    this.equipmentWithOperation = equipmentWithOperation;
   }
 
   /**
@@ -368,7 +414,7 @@ public class Device {
     return nodeType;
   }
 
-  /**
+/**
    * Setting Node type.
    *
    * @param nodeType
@@ -435,19 +481,33 @@ public class Device {
     this.qos = qos;
   }
 
-  /*
-   * Stringizing Instance.
+  /**
+   * Getting IF configuration information to open/close IF.
    *
-   * @see java.lang.Object#toString()
+   * @return IF configuration information to open/close IF
    */
+  public InterfaceStatusUpdate getIfStatusInfo() {
+    return ifStatusInfo;
+  }
+
+  /**
+   * Setting IF configuration information to open/close IF.
+   *
+   * @param ifStatusInfo
+   *          IF configuration information to open/close IF
+   */
+  public void setIfStatusInfo(InterfaceStatusUpdate ifStatusInfo) {
+    this.ifStatusInfo = ifStatusInfo;
+  }
+
   @Override
   public String toString() {
     return "Device [operation=" + operation + ", vpnType=" + vpnType + ", name=" + name + ", nodeType=" + nodeType
-        + ", equipment=" + equipment + ", breakoutIfList=" + breakoutIfList + ", internalLagList=" + internalLagList
-        + ", managementInterface=" + managementInterface + ", loopbackInterface=" + loopbackInterface
-        + ", ceLagInterfaceList=" + ceLagInterfaceList + ", snmp=" + snmp + ", ntp=" + ntp + ", l3Vpn=" + l3Vpn
-        + ", l2Vpn=" + l2Vpn + ", ospfAddNode=" + ospfAddNode + ", physiIfNames=" + physiIfNames + ", lagIfNames="
-        + lagIfNames + ", qos=" + qos + "]";
+        + ", equipment=" + equipment + ", equipmentWithOperation=" + equipmentWithOperation + ", breakoutIfList="
+        + breakoutIfList + ", internalLagList=" + internalLagList + ", managementInterface=" + managementInterface
+        + ", loopbackInterface=" + loopbackInterface + ", ceLagInterfaceList=" + ceLagInterfaceList + ", snmp=" + snmp
+        + ", ntp=" + ntp + ", l3Vpn=" + l3Vpn + ", l2Vpn=" + l2Vpn + ", ospfAddNode=" + ospfAddNode + ", physiIfNames="
+        + physiIfNames + ", lagIfNames=" + lagIfNames + ", qos=" + qos + ", ifStatusInfo=" + ifStatusInfo + "]";
   }
 
 }

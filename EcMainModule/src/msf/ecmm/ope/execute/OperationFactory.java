@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute;
@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.ExpandOperation;
 import msf.ecmm.config.ExpandOperationDetailInfo;
 import msf.ecmm.ope.execute.constitution.allinfo.AllBreakoutIfInfoAcquisition;
@@ -29,6 +30,7 @@ import msf.ecmm.ope.execute.constitution.device.LeafRemove;
 import msf.ecmm.ope.execute.constitution.device.NodeAddedNotification;
 import msf.ecmm.ope.execute.constitution.device.NodeInfoAcquisition;
 import msf.ecmm.ope.execute.constitution.device.NodeInfoRegistration;
+import msf.ecmm.ope.execute.constitution.device.NodeOsUpdate;
 import msf.ecmm.ope.execute.constitution.device.NodeRecover;
 import msf.ecmm.ope.execute.constitution.device.SpineAddition;
 import msf.ecmm.ope.execute.constitution.device.SpineRemove;
@@ -38,6 +40,7 @@ import msf.ecmm.ope.execute.constitution.interfaces.BreakoutIfCreate;
 import msf.ecmm.ope.execute.constitution.interfaces.BreakoutIfDelete;
 import msf.ecmm.ope.execute.constitution.interfaces.BreakoutIfInfoAcquisition;
 import msf.ecmm.ope.execute.constitution.interfaces.LagCreate;
+import msf.ecmm.ope.execute.constitution.interfaces.LagIfInfoChange;
 import msf.ecmm.ope.execute.constitution.interfaces.LagInfoAcquisition;
 import msf.ecmm.ope.execute.constitution.interfaces.LagRemove;
 import msf.ecmm.ope.execute.constitution.interfaces.PhysicalIfInfoAcquisition;
@@ -45,6 +48,8 @@ import msf.ecmm.ope.execute.constitution.interfaces.PhysicalIfInfoChange;
 import msf.ecmm.ope.execute.controllerstatemanagement.ECMainLogAcquisition;
 import msf.ecmm.ope.execute.controllerstatemanagement.ECMainStateSendNotification;
 import msf.ecmm.ope.execute.controllerstatemanagement.ECStateManagement;
+import msf.ecmm.ope.execute.controllerstatemanagement.LogNotification;
+import msf.ecmm.ope.execute.controllerstatemanagement.ServerNotification;
 import msf.ecmm.ope.execute.cp.AllL2VlanIfChange;
 import msf.ecmm.ope.execute.cp.AllL2VlanIfCreate;
 import msf.ecmm.ope.execute.cp.AllL2VlanIfRemove;
@@ -57,12 +62,10 @@ import msf.ecmm.ope.execute.cp.VlanIfInfoAcquisition;
 import msf.ecmm.ope.execute.ecstate.ECMainStopper;
 import msf.ecmm.ope.execute.ecstate.ObstructionStateController;
 import msf.ecmm.ope.execute.notification.AllTrafficDataAcquisition;
+import msf.ecmm.ope.execute.notification.IfBlockAndOpen;
 import msf.ecmm.ope.execute.notification.SNMPTrapSignalRecieveNotification;
 import msf.ecmm.ope.execute.notification.TrafficDataAcquisition;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Operation Generation Class Definition<br>
@@ -74,7 +77,7 @@ public class OperationFactory {
   /**
    * logger.
    */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /**
    * Running Instance Acquisition.
@@ -138,12 +141,16 @@ public class OperationFactory {
       ret = new NodeRecover(idt, ukm);
     } else if (opeType == OperationType.AcceptNodeRecover) {
       ret = new AcceptNodeRecover(idt, ukm);
+    } else if (opeType == OperationType.NodeUpdate) {
+      ret = new NodeOsUpdate(idt, ukm);
     } else if (opeType == OperationType.LagCreate) {
       ret = new LagCreate(idt, ukm);
     } else if (opeType == OperationType.LagInfoAcquisition) {
       ret = new LagInfoAcquisition(idt, ukm);
     } else if (opeType == OperationType.LagRemove) {
       ret = new LagRemove(idt, ukm);
+    } else if (opeType == OperationType.LagIfChange) {
+      ret = new LagIfInfoChange(idt, ukm);
     } else if (opeType == OperationType.BreakoutIfCreate) {
       ret = new BreakoutIfCreate(idt, ukm);
     } else if (opeType == OperationType.BreakoutIfDelete) {
@@ -188,8 +195,14 @@ public class OperationFactory {
       ret = new ECMainLogAcquisition(idt, ukm);
     } else if (opeType == OperationType.ControllerStateSendNotification) {
       ret = new ECMainStateSendNotification(idt, ukm);
+    } else if (opeType == OperationType.ControllerStateSendNotificationLog) {
+      ret = new LogNotification(idt, ukm);
+    } else if (opeType == OperationType.ControllerStateSendNotificationServer) {
+      ret = new ServerNotification(idt, ukm);
     } else if (opeType == OperationType.TrafficDataAllAcquisition) {
       ret = new AllTrafficDataAcquisition(idt, ukm);
+    } else if (opeType == OperationType.IfBlockAndOpen) {
+      ret = new IfBlockAndOpen(idt, ukm);
     } else {
       ret = null;
     }
@@ -252,7 +265,7 @@ public class OperationFactory {
       obj = constructor.newInstance(argsList);
     } catch (Throwable ex) {
       logger.error(LogFormatter.out.format(LogFormatter.MSG_503102, className));
-      throw new IllegalArgumentException(); 
+      throw new IllegalArgumentException();
     }
     logger.trace(CommonDefinitions.END);
     return (Operation) obj;

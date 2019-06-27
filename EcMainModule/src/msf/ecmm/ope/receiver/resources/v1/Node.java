@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.resources.v1;
@@ -11,6 +11,7 @@ import java.util.HashMap;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -24,6 +25,7 @@ import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.ReceiverDefinitions;
 import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.AddDeleteNode;
+import msf.ecmm.ope.receiver.pojo.NodeInfoUpdate;
 import msf.ecmm.ope.receiver.pojo.RecoverNodeService;
 import msf.ecmm.ope.receiver.resources.BaseResource;
 
@@ -56,6 +58,13 @@ public class Node extends BaseResource {
   private static final String ERROR_CODE_460301 = "460301";
   /** Other exceptions. */
   private static final String ERROR_CODE_460499 = "460499";
+
+  /** Device informtation update In case input data check result is NG(json error). */
+  private static final String ERROR_CODE_590101 = "590101";
+  /** Device Information Acquisition - operation  execution preparation failure. */
+  private static final String ERROR_CODE_590301 = "590301";
+  /** Other exceptions. */
+  private static final String ERROR_CODE_590499 = "590499";
 
   /**
    * Device Extention/Removal.
@@ -118,7 +127,7 @@ public class Node extends BaseResource {
           operationType = OperationType.LeafChange;
         } else {
           logger.debug("Unkown action " + addDeleteNode.getAction());
-          throw new JsonSyntaxException(""); 
+          throw new JsonSyntaxException("");
         }
       }
     } catch (NullPointerException nullPointerException) {
@@ -186,7 +195,7 @@ public class Node extends BaseResource {
    *
    * @param nodeId
    *          Node ID
-   * @return REST responce
+   * @return REST response
    */
   @POST
   @Path("{node_id}/recover_node")
@@ -204,6 +213,34 @@ public class Node extends BaseResource {
     uriKeyMap.put(KEY_NODE_ID, nodeId);
 
     Response response = executeOperation(uriKeyMap, RecoverNodeService.class);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
+  /**
+   * Update NOde information.
+   *
+   * @param nodeId
+   *           Node ID
+   * @return REST response
+   */
+  @PUT
+  @Path("{node_id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response nodeUpdate(@PathParam("node_id") String nodeId) {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.NodeUpdate;
+
+    setErrorCode(ERROR_CODE_590101, ERROR_CODE_590301, ERROR_CODE_590499);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+
+    Response response = executeOperation(uriKeyMap, NodeInfoUpdate.class);
 
     logger.trace(CommonDefinitions.END);
     return response;

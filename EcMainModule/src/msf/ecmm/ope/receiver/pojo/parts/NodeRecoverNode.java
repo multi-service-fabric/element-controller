@@ -1,8 +1,11 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.ope.execute.OperationType;
@@ -25,6 +28,12 @@ public class NodeRecoverNode {
   /** MAC Address. */
   private String macAddr;
 
+  /** Flag showing node OS upgrade. */
+  private Boolean nodeUpgrade;
+
+  /** Internal linl information list. */
+  private List<InternalLinkOppo> internalLinkIfs = new ArrayList<>();
+
   /**
    * Getting Node Type.
    *
@@ -35,7 +44,7 @@ public class NodeRecoverNode {
   }
 
   /**
-   *  Setting Node Type.
+   * Setting Node Type.
    *
    * @param nodeType
    *          setting nodeType
@@ -83,6 +92,37 @@ public class NodeRecoverNode {
   }
 
   /**
+   * (non Javadoc)
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "NodeRecoverNode [nodeType=" + nodeType + ", username=" + username + ", password=" + password + ", macAddr="
+        + macAddr + ", nodeUpgrade=" + nodeUpgrade + ", internalLinkIfs=" + internalLinkIfs + "]";
+  }
+
+  /**
+   * Input Parameter Check.
+   *
+   * @param ope
+   *           operation type
+   * @throws CheckDataException
+   *           input check error
+   */
+  public void check(OperationType ope) throws CheckDataException {
+
+    if (nodeType == null) {
+      throw new CheckDataException();
+    } else {
+      if (!nodeType.equals(CommonDefinitions.NODETYPE_LEAF) && !nodeType.equals(CommonDefinitions.NODETYPE_BLEAF)
+          && !nodeType.equals(CommonDefinitions.NODETYPE_SPINE)) {
+        throw new CheckDataException();
+      }
+    }
+  }
+
+  /**
    * Getting Mac Address.
    *
    * @return macAddr
@@ -102,43 +142,41 @@ public class NodeRecoverNode {
   }
 
   /**
-   *  Stringizing Instance
+   * Getting flag showing node OS upgrade
    *
-   * @see java.lang.Object#toString()
+   * @return flag showing node OS upgrade
    */
-  @Override
-  public String toString() {
-    return "NodeRecoverNode [nodeType=" + nodeType + ", username=" + username + ", password=" + password + ", macAddr="
-        + macAddr + "]";
+  public Boolean getNodeUpgrade() {
+    return nodeUpgrade;
   }
 
   /**
-   * Input Parameter Check.
+   * Setting flag showing node OS upgrade
    *
-   * @param ope
-   *           operation type
-   * @throws CheckDataException
-   *           input check error
+   * @param nodeUpgrade
+   *          flag showing node OS upgrade
    */
-  public void check(OperationType ope) throws CheckDataException {
+  public void setNodeUpgrade(Boolean nodeUpgrade) {
+    this.nodeUpgrade = nodeUpgrade;
+  }
 
-    if (nodeType == null) {
-      throw new CheckDataException();
-    } else {
-      if (!nodeType.equals(CommonDefinitions.NODETYPE_LEAF) && !nodeType.equals(CommonDefinitions.NODETYPE_BLEAF)) {
-        throw new CheckDataException();
-      }
-    }
-    if (username == null) {
-      throw new CheckDataException();
-    }
-    if (password == null) {
-      throw new CheckDataException();
-    }
-    if (macAddr == null) {
-      throw new CheckDataException();
-    }
+  /**
+   * Getting internal linl information list
+   *
+   * @return internal linl information list
+   */
+  public List<InternalLinkOppo> getInternalLinkIfs() {
+    return internalLinkIfs;
+  }
 
+  /**
+   * Setting internal linl information list
+   *
+   * @param internalLinkIfs
+   *          internal linl information list
+   */
+  public void setInternalLinkIfs(List<InternalLinkOppo> internalLinkIfs) {
+    this.internalLinkIfs = internalLinkIfs;
   }
 
 }

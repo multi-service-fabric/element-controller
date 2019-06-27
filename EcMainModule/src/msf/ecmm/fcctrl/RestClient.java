@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.fcctrl;
@@ -17,8 +17,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
@@ -29,6 +27,7 @@ import com.google.gson.JsonSyntaxException;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.fcctrl.pojo.AbstractRequest;
 import msf.ecmm.fcctrl.pojo.AbstractResponse;
@@ -36,34 +35,56 @@ import msf.ecmm.fcctrl.pojo.CommonResponseFromFc;
 import msf.ecmm.ope.control.RestRequestCount;
 
 /**
- * REST Client.
+ * REST Client
  */
 public class RestClient {
 
   /**
-   * Logger.
+   * REST Client
    */
-  protected static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  protected MsfLogger logger = null;
 
   /** Process Execution Request. */
   public static final int OPERATION = 0;
   /** Extention Completion Notification. */
   public static final int NOTIFY_NODE_ADDITION = 1;
 
-  /** Controler Status Notification. */
-  public static final int CONTROLLER_STATE_NOTIFICATION = 2;
 
-  /** Protocol. */
+  /** Controler Status Notification(switch-over). */
+  public static final int CONTROLLER_STATE_NOTIFICATION = 2;
+  /** Controler Status Notification(log). */
+  public static final int CONTROLLER_STATE_NOTIFICATION_LOG = 3;
+  /** Controler Status Notification(server). */
+  public static final int CONTROLLER_STATE_NOTIFICATION_SERVER = 4;
+
+  /** Protocol name. */
   private static final String PROTOCOL = "http";
 
-  /** POST Method. */
-  protected static final int POST = 0;
-  /** PUT Method. */
-  protected static final int PUT = 1;
-  /** GET Method. */
-  protected static final int GET = 2;
+  /** POST method. */
+  public static final int POST = 0;
+  /** PUT method. */
+  public static final int PUT = 1;
+  /** GET method. */
+  public static final int GET = 2;
 
   protected static final String NEED_RETRY = "000001";
+
+  /**
+   *Cunstructor for  RestClient class.
+   */
+  public RestClient() {
+    logger = new MsfLogger();
+  }
+
+  /**
+   * Cunstructor for RestClient class.
+   *
+   * @param logOutput
+   *          Flag indicating no log output
+   */
+  public RestClient(boolean logOutput) {
+    logger = new MsfLogger(logOutput);
+  }
 
   /**
    * json Parser.
@@ -167,7 +188,7 @@ public class RestClient {
     logger.debug("requestType:" + requestType);
 
     EcConfiguration config = EcConfiguration.getInstance();
-    int retryNum = config.get(Integer.class, EcConfiguration.REST_RETRY_NUM); 
+    int retryNum = config.get(Integer.class, EcConfiguration.REST_RETRY_NUM);
     int timeout = config.get(Integer.class, EcConfiguration.REST_TIMEOUT); 
     String fcIpaddr = config.get(String.class, getAddressKey()); 
     String fcPort = config.get(String.class, getPortKey()); 
@@ -178,13 +199,13 @@ public class RestClient {
     checkKeyMap(requestType, keyMap);
 
     String url = createUrl(fcIpaddr, fcPort); 
-    String uri = createUri(requestType, keyMap); 
+    String uri = createUri(requestType, keyMap);
     String jsonImage = "";
     if (requestData != null) {
       jsonImage = jsonParser.toJson(requestData); 
     }
     logger.debug("sendData:" + jsonImage);
-    int method = getMethod(requestType); 
+    int method = getMethod(requestType);
 
     int lastErrorReason = RestClientException.NOT_SET;
     Response response;
@@ -200,7 +221,117 @@ public class RestClient {
         } else {
           response = doGet(clientConfig, url, uri, jsonImage, keyMap);
         }
-        responseBody = response.readEntity(String.class); 
+        responseBody = response.readEntity(String.class);
+
+        if (isSuccess(response)) {
+          logger.debug("Recv OK");
+          break;
+        } else {
+          logger.debug("Recv NG");
+          logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, getStatus(response)));
+          lastErrorReason = RestClientException.ERROR_RESPONSE;
+          if (needRetry(requestType, responseBody)) {
+            logger.debug("retry");
+            continue;
+          }
+          logger.debug("do not retry");
+          break;
+        }
+
+      } catch (ProcessingException pe) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, "-"), pe);
+        if (pe.getCause() instanceof ConnectException) {
+          lastErrorReason = RestClientException.CONNECT_NG;
+          logger.debug("retry");
+          continue;
+        }
+        if (pe.getCause() instanceof SocketTimeoutException) {
+          lastErrorReason = RestClientException.TIMEOUT;
+          break;
+        }
+        lastErrorReason = RestClientException.COMMON_NG;
+        break;
+      } catch (Exception exp) {
+        logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, "-"), exp);
+        lastErrorReason = RestClientException.COMMON_NG;
+        break;
+      }
+    }
+
+    AbstractResponse returnResponse;
+    if (lastErrorReason == RestClientException.NOT_SET) {
+      RestRequestCount.requestcount(RestRequestCount.REST_TRANSMISSION);
+      try {
+        returnResponse = jsonParser.fromJson(responseBody, responseType);
+      } catch (JsonSyntaxException jse) {
+        logger.debug("Notify to FC/EM NG. format error.", jse);
+        throw new RestClientException(RestClientException.JSON_FORMAT_NG);
+      }
+      logger.debug("Notify to FC/EM OK. data:" + responseBody);
+    } else {
+      logger.debug("Notify to FC/EM NG.");
+      throw new RestClientException(lastErrorReason);
+    }
+
+    logger.trace(CommonDefinitions.END);
+
+    return returnResponse;
+  }
+
+  /**
+   * Manual for REST request.
+   *
+   * @param address
+   *          destination address
+   * @param port
+   *          port 
+   * @param method
+   *          method
+   * @param uri
+   *          URI
+   * @param requestData
+   *           request data(data for setting request body) in case of no body, null is set.
+   * @param responseType
+   *           returned POJO type if it is not a getting request, CommonResponse.class is set)
+   * @return Response POJO
+   * @throws RestClientException
+   *           REST request failure exception: failure cause is available by using getCode()
+   */
+  public AbstractResponse request(String address, String port, int method, String uri, AbstractRequest requestData,
+      Class<? extends AbstractResponse> responseType) throws RestClientException {
+
+    logger.trace(CommonDefinitions.START);
+    logger.debug("address=" + address + " port=" + port + " method=" + method + " uri=" + uri);
+
+    int timeout = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.REST_TIMEOUT);
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.property(ClientProperties.READ_TIMEOUT, timeout * 1000);
+
+    String url = createUrl(address, port); 
+
+    String jsonImage = "";
+    if (requestData != null) {
+      jsonImage = jsonParser.toJson(requestData);
+    }
+    logger.debug("sendData:" + jsonImage);
+
+    int lastErrorReason = RestClientException.NOT_SET;
+    Response response;
+    String responseBody = "";
+
+    int retryNum = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.REST_RETRY_NUM);
+    for (int retryCount = 0; retryCount <= retryNum; retryCount++) {
+      lastErrorReason = RestClientException.NOT_SET;
+      try {
+        if (method == POST) {
+          response = doPost(clientConfig, url, uri, jsonImage);
+        } else if (method == PUT) {
+          response = doPut(clientConfig, url, uri, jsonImage);
+        } else {
+          response = doGet(clientConfig, url, uri, jsonImage, null);
+        }
+
+        responseBody = response.readEntity(String.class);
 
         if (isSuccess(response)) {
           logger.debug("Recv OK");
@@ -209,7 +340,7 @@ public class RestClient {
           logger.debug("Recv NG");
           logger.error(LogFormatter.out.format(LogFormatter.MSG_513031, getStatus(response)));
           lastErrorReason = RestClientException.ERROR_RESPONSE;
-          if (needRetry(requestType, responseBody)) {
+          if (needRetry(NOT_SET, responseBody)) {
             logger.debug("retry");
             continue;
           }
@@ -274,6 +405,8 @@ public class RestClient {
     switch (requestType) {
       case OPERATION:
       case CONTROLLER_STATE_NOTIFICATION:
+      case CONTROLLER_STATE_NOTIFICATION_LOG:
+      case CONTROLLER_STATE_NOTIFICATION_SERVER:
         break;
       case NOTIFY_NODE_ADDITION:
         if (!keyMap.containsKey(KEY_NODE_ID)) {
@@ -329,6 +462,12 @@ public class RestClient {
       case CONTROLLER_STATE_NOTIFICATION:
         uri = "/v1/internal/controller/ec_em/status";
         break;
+      case CONTROLLER_STATE_NOTIFICATION_LOG:
+        uri = "/v1/internal/controller_status_notification/ec_em/log";
+        break;
+      case CONTROLLER_STATE_NOTIFICATION_SERVER:
+        uri = "/v1/internal/controller_status_notification/ec_em/failure";
+        break;
       default:
         logger.debug("Unknown requestType type:" + requestType);
         throw new RestClientException(RestClientException.COMMON_NG);
@@ -360,6 +499,8 @@ public class RestClient {
         break;
       case NOTIFY_NODE_ADDITION:
       case CONTROLLER_STATE_NOTIFICATION:
+      case CONTROLLER_STATE_NOTIFICATION_LOG:
+      case CONTROLLER_STATE_NOTIFICATION_SERVER:
         method = PUT;
         break;
       default:

@@ -1,9 +1,8 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
-
 /**
  * Device Information.
  */
@@ -41,6 +40,9 @@ public class Node {
 
   /** IRB type. */
   private String irbType;
+
+  /** Q-in-Q type. */
+  private String qInQType;
 
   /** Login user name. */
   private String username;
@@ -264,6 +266,25 @@ public class Node {
   }
 
   /**
+   * Getting Q-in-Q type.
+   *
+   * @return Q-in-Q type
+   */
+  public String getqInQType() {
+    return qInQType;
+  }
+
+  /**
+   * Setting Q-in-Q type.
+   *
+   * @param qInQType
+   *          Q-in-Q type
+   */
+  public void setqInQType(String qInQType) {
+    this.qInQType = qInQType;
+  }
+
+  /**
    * Getting login user name.
    *
    * @return login user name
@@ -348,8 +369,8 @@ public class Node {
   public String toString() {
     return "Node [nodeId=" + nodeId + ", equipmentTypeId=" + equipmentTypeId + ", nodeState=" + nodeState
         + ", managementIfAddress=" + managementIfAddress + ", loopbackIfAddress=" + loopbackIfAddress
-        + ", snmpCommunity=" + snmpCommunity + ", hostName=" + hostName + ", macAddr=" + macAddr
-        + ", ntpServerAddress=" + ntpServerAddress + ", vpnType=" + vpnType + ",irbType=" + irbType + ", username="
+        + ", snmpCommunity=" + snmpCommunity + ", hostName=" + hostName + ", macAddr=" + macAddr + ", ntpServerAddress="
+        + ntpServerAddress + ", vpnType=" + vpnType + ", irbType=" + irbType + ", qInQType=" + qInQType + ", username="
         + username + ", password=" + password + ", provisioning=" + provisioning + ", plane=" + plane + "]";
   }
 }

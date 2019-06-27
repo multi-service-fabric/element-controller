@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute;
@@ -8,11 +8,9 @@ import static msf.ecmm.common.CommonDefinitions.*;
 
 import java.util.HashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.ope.control.EcSession;
 import msf.ecmm.ope.control.OperationControlManager;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
@@ -20,7 +18,7 @@ import msf.ecmm.ope.receiver.pojo.AbstractRestMessage;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
 
 /**
-* Operation Class Definition. Executing operation. (Abstract Class)
+ * Operation Class Definition. Executing operation. (Abstract Class)
  *
  */
 public abstract class Operation {
@@ -28,7 +26,7 @@ public abstract class Operation {
   /**
    * Logger
    */
-  protected final static Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  protected final static MsfLogger logger = new MsfLogger();
 
   /** Operation ID. */
   protected EcSession operationId;
@@ -36,15 +34,14 @@ public abstract class Operation {
   /** Input Message. */
   private AbstractRestMessage inData;
 
- /** Operation Type. */
-  private int operationType = OperationType.None; 
+  /** Operation Type. */
+  private int operationType = OperationType.None;
 
   /** URI Key Information. */
   private HashMap<String, String> uriKeyMap;
 
   /** node_id to be operated. */
   protected String nodeId = "";
-
 
   /**
    * Constructor.
@@ -84,8 +81,10 @@ public abstract class Operation {
         if (operationId == null) {
           judge = false;
         } else {
+          // do nothing
         }
       } else {
+        // do nothing
       }
     }
 
@@ -113,7 +112,7 @@ public abstract class Operation {
     logger.trace(CommonDefinitions.START);
 
     try {
-        operationId.close();
+      operationId.close();
     } catch (IllegalArgumentException | InternalError exp) {
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_403042), exp);
       return false;

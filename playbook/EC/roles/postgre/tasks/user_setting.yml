@@ -11,6 +11,8 @@
   - become_user: postgres
     become: yes
     shell: /usr/pgsql-9.3/bin/pg_ctl -D /usr/local/pgsql/9.3/data -l logfile start
+  - name: SLEEP
+    shell: sleep 10
   - become_user: postgres
     become: yes
     shell: psql -c "alter user postgres with password ''"

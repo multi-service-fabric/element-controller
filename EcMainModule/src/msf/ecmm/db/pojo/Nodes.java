@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.pojo;
@@ -48,6 +48,8 @@ public class Nodes implements Serializable {
   private String mac_addr = null;
   /** IRB configuration type. */
   private String irb_type = null;
+  /** Q-in-Q type. */
+  private String q_in_q_type = null;
   /** Model information table. */
   private Equipments equipments;
   /** Device Start-up Notification Information Table. */
@@ -406,6 +408,27 @@ public class Nodes implements Serializable {
     this.irb_type = irb_type;
   }
 
+
+  /**
+   * Getting Q-in-Q type.
+   *
+   * @return Q-in-Q type
+   */
+  public String getQ_in_q_type() {
+    return q_in_q_type;
+  }
+
+  /**
+   * Setting Q-in-Q type.
+   *
+   *
+   * @param q_in_q_type
+   *          Q-in-Q type
+   */
+  public void setQ_in_q_type(String q_in_q_type) {
+    this.q_in_q_type = q_in_q_type;
+  }
+
   /**
    * Acquire model information.
    *
@@ -535,8 +558,8 @@ public class Nodes implements Serializable {
         + ", plane=" + plane + ", vpn_type=" + vpn_type + ", as_number=" + as_number + ", loopback_if_address="
         + loopback_if_address + ", username=" + username + ", password=" + password + ", ntp_server_address="
         + ntp_server_address + ", host_name=" + host_name + ", mac_addr=" + mac_addr + ", irb_type=" + irb_type
-        + ", equipments=" + equipments + ", nodesStartupNotificationList=" + nodesStartupNotificationList
-        + ", physicalIfsList=" + physicalIfsList + ", lagIfsList=" + lagIfsList + "]";
+        + ", q_in_q_type=" + q_in_q_type + ", equipments=" + equipments + ", nodesStartupNotificationList="
+        + nodesStartupNotificationList + ", physicalIfsList=" + physicalIfsList + ", lagIfsList=" + lagIfsList + "]";
   }
 
 }

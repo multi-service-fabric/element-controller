@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl;
@@ -10,12 +10,10 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 
 /**
@@ -25,7 +23,7 @@ public class SyslogController {
   /**
    * logger.
    */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
   /** Self(singleton). */
   private static SyslogController me = new SyslogController();
@@ -83,6 +81,48 @@ public class SyslogController {
       List<String> config = Files.readAllLines(new File(syslogConfig).toPath());
 
       ArrayList<String> rep = replace(false, config, mngAddr, bootCompleteMsg, bootErrorMsgs);
+
+      Files.deleteIfExists(new File(syslogConfig).toPath());
+
+      Files.write(new File(syslogConfig).toPath(), rep);
+
+    } catch (IOException e) {
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_403041, e), e);
+      throw new DevctrlException("rsyslog start fail.");
+    }
+
+    rsyslogReboot(false);
+
+    logger.trace(CommonDefinitions.END);
+
+  }
+
+  /**
+   * Manual for Syslog Monitoring Start.
+   *
+   * @param mngAddr
+   *          device's mamagement IF address
+   * @param bootCompleteMsg
+   *          start-up completion message
+   * @param bootErrorMsgs
+   *          list of start-up failure messages
+   * @param successScript
+   *          start-up completion script name
+   * @param failureScript
+   *          start-up failure script name
+   * @throws DevctrlException
+   *          eeror has occurred in rsyslog operation
+   */
+  public void monitorStart(String mngAddr, String bootCompleteMsg, List<String> bootErrorMsgs, String successScript,
+      String failureScript) throws DevctrlException {
+    logger.debug("syslog monitor start bootCompleteMsg=" + bootCompleteMsg + " bootErrorMsgs=" + bootErrorMsgs);
+
+    String syslogConfig = EcConfiguration.getInstance().get(String.class, EcConfiguration.DEVICE_RSYSLOG_CONFIG);
+
+    try {
+      List<String> config = Files.readAllLines(new File(syslogConfig).toPath());
+
+      ArrayList<String> rep = replace(config, mngAddr, bootCompleteMsg, bootErrorMsgs, successScript, failureScript);
 
       Files.deleteIfExists(new File(syslogConfig).toPath());
 
@@ -168,6 +208,8 @@ public class SyslogController {
    *          start-up succeeded
    * @param bootErrorMsgs
    *          start-up failed
+   * @param del
+   *          delete mode
    * @return created configuration
    */
   private ArrayList<String> replace(boolean del, List<String> lines, String mngAddr, String bootCompleteMsg,
@@ -192,6 +234,48 @@ public class SyslogController {
     ret.add(String.format(SUCCESS_FILTER, bootCompleteMsg, scriptPath));
     for (String msg : bootErrorMsgs) {
       ret.add(String.format(FAILURE_FILTER, msg, scriptPath));
+    }
+    logger.debug("rsyslog.conf : " + ret);
+    return ret;
+  }
+
+  /**
+   * Manual for generating monitor configuration.
+   *
+   * @param lines
+   *          rsyslog.conf contents
+   * @param mngAddr
+   *          device's mamagement IF address
+   * @param bootCompleteMsg
+   *          start-up completion
+   * @param bootErrorMsgs
+   *          start-up failure
+   * @param successScript
+   *          start-up completion script name
+   * @param failureScript
+   *          start-up failure script name
+   * @return  generated configuration
+   */
+  private ArrayList<String> replace(List<String> lines, String mngAddr, String bootCompleteMsg,
+      List<String> bootErrorMsgs, String successScript, String failureScript) {
+
+    String scriptPath = EcConfiguration.getInstance().get(String.class, EcConfiguration.SCRIPT_PATH);
+
+    ArrayList<String> ret = new ArrayList<>();
+    for (String line : lines) {
+      if (line.startsWith(START_PARAGRAPH_KEY) == true)
+        break;
+      ret.add(line);
+    }
+
+    String sccessFilter = ":msg, contains, \"%s\" ^%s/" + successScript + ";hostip";
+    String failureFilter = ":msg, contains, \"%s\"  ^%s/" + failureScript + ";hostip";
+
+    ret.add(START_PARAGRAPH_KEY);
+    ret.add(String.format(IP_FILTER, mngAddr));
+    ret.add(String.format(sccessFilter, bootCompleteMsg, scriptPath));
+    for (String msg : bootErrorMsgs) {
+      ret.add(String.format(failureFilter, msg, scriptPath));
     }
     logger.debug("rsyslog.conf : " + ret);
     return ret;

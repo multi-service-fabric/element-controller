@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.common;
@@ -75,6 +75,8 @@ public class CommonDefinitions {
   public static final String RECV_NG_NOTIFICATION_STRING = "failed";
   /** waiting for notification reception (string). */
   public static final String WAIT_NOTIFICATION_STRING = "cancel";
+  /** notification received（success, string）. */
+  public static final String RECV_OK_NOTIFICATION_STRING_SUCCEEDED = "succeeded";
 
   /** IF status normal. */
   public static final int IF_STATE_OK = 1;
@@ -127,7 +129,6 @@ public class CommonDefinitions {
   /** breakout IF. */
   public static final String IF_TYPE_BREAKOUT_IFS = "breakout-ifs";
 
-
   /** blocked. */
   public static final int EC_BUSY_VALUE = 1;
   /** opened. */
@@ -169,7 +170,6 @@ public class CommonDefinitions {
   public static final String KEY_IF_TYPE = "if_type";
   /** IF ID. */
   public static final String KEY_IF_ID = "if_id";
-
 
   /** normal router (switch fablic). */
   public static final int ROUTER_TYPE_NORMAL = 0;
@@ -271,6 +271,8 @@ public class CommonDefinitions {
   public static final String KEY_END_DATE = "end_date";
   /** acquired info. */
   public static final String KEY_LIMIT_NUMBER = "limit_number";
+ /** host name. */
+  public static final String KEY_HOSTNAME = "hostname";
 
   /** TRUE. */
   public static final String EXPAND_CONF_TRUE = "true";
@@ -296,5 +298,49 @@ public class CommonDefinitions {
   /** speed set deleted（Physical port deleted）. */
   public static final String SPEED_DELETE = "speed_delete";
 
+ /** Q-in-Q only VLAN IF */
+  public static final String Q_IN_Q_ONLY = "q_in_q_only";
+  /** Q-in-Q VLAN IF, nonVLAN IF Both of two  can be set. */
+  public static final String Q_IN_Q_SUPPORT = "q_in_q_support";
+  /** Q-in-Q VLAN IF */
+  public static final String Q_IN_Q_UNSUPPORT = "q_in_q_unsupport";
+  /** Q-in-Q only VLAN IF can be set(as a parameter in EM). */
+  public static final String SELECTABLE_BY_NODE = "selectable_by_node";
+  /** Q-in-Q VLAN, non-Q-in-Q VLAN. Both of two can be set(as a parameter in EM). */
+  public static final String SELECTABLE_BY_VLAN_IF = "selectable_by_vlan_if";
+
+  /** EC ACT. */
+  public static final String EC_ACT = "ec_act";
+  /** EC SBY. */
+  public static final String EC_SBY = "ec_sby";
+  /** EM ACT. */
+  public static final String EM_ACT = "em_act";
+  /** EC SBY. */
+  public static final String EM_SBY = "em_sby";
+  /** EM. **/
+  public static final String EM = "em";
+
+  /** ERROR. */
+  public static final String LOG_LV_ERROR = "ERROR";
+  /** WARNING. */
+  public static final String LOG_LV_WARNING = "WARNING";
+  /** INFO. */
+  public static final String LOG_LV_INFO = "INFO";
+
+  /** OS. */
+  public static final String SYSTEM_TYPE_OS = "operating_system";
+  /** CTL process. */
+  public static final String SYSTEM_TYPE_CTL_PROCESS = "ctl_process";
+
+  /** Internal link. */
+  public static final String LINK_TYPE_INTERNAL_LINK = "internal_link";
+  /** Other than internal link. */
+  public static final String LINK_TYPE_OTHER = "other";
+
+  /** Log output is OK. */
+  public static final boolean OUTPUT_LOG = true;
+
+  /** Log output is NG . */
+  public static final boolean NOT_OUTPUT_LOG = false;
 
 }

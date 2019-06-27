@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -58,6 +58,9 @@ public class VlanIf {
 
   /** IRB instance configuration. */
   private IrbUpdateValue irb = null;
+
+  /** Q-in-Q. */
+  private Boolean qInQ;
 
   /**
    * Getting VLANIF ID.
@@ -363,7 +366,28 @@ public class VlanIf {
     this.irb = irb;
   }
 
-  /* (Non Javadoc)
+  /**
+   * Getting Q-in-Q.
+   *
+   * @return Q-in-Q
+   */
+  public Boolean getqInQ() {
+    return qInQ;
+  }
+
+  /**
+   * Setting Q-in-Q.
+   *
+   * @param qInQ
+   *          Q-in-Q
+   */
+  public void setqInQ(Boolean qInQ) {
+    this.qInQ = qInQ;
+  }
+
+  /*
+   * (non Javadoc)
+   *
    * @see java.lang.Object#toString()
    */
   @Override
@@ -371,6 +395,7 @@ public class VlanIf {
     return "VlanIf [vlanIfId=" + vlanIfId + ", vlanId=" + vlanId + ", ifName=" + ifName + ", ifState=" + ifState
         + ", mtu=" + mtu + ", ipv4Address=" + ipv4Address + ", ipv6Address=" + ipv6Address + ", ipv4Prefix="
         + ipv4Prefix + ", ipv6Prefix=" + ipv6Prefix + ", portMode=" + portMode + ", baseIf=" + baseIf + ", bgp=" + bgp
-        + ", staticRoutes=" + staticRoutes + ", vrrp=" + vrrp + ", qos=" + qos + ", irb=" + irb + "]";
+        + ", staticRoutes=" + staticRoutes + ", vrrp=" + vrrp + ", qos=" + qos + ", irb=" + irb + ", qInQ=" + qInQ
+        + "]";
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -120,9 +120,9 @@ public class NodeRecover extends Operation {
           outAddPhysicalIfsList, outDelPhysicalIfsList, outPhysicalIfNamesMap, outLagIfNamesMap, outVlanIfsList);
       session.updateForRecover(outNodesDb, outAddPhysicalIfsList, outDelPhysicalIfsList, outVlanIfsList);
 
-      boolean notifyEmFlag = true;
+      boolean executeRecoverNodeFlag = true;
       if (equipments.getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
-        notifyEmFlag = false;
+        executeRecoverNodeFlag = false;
       }
 
       AbstractMessage lockKey = new AbstractMessage();
@@ -131,7 +131,7 @@ public class NodeRecover extends Operation {
         entry = EmController.getInstance().lock(lockKey);
         emLockOkFlag = true;
 
-        if (notifyEmFlag) {
+        if (executeRecoverNodeFlag) {
           if (!executeRecoverNode(inputData, outNodesDb, outPhysicalIfNamesMap, outLagIfNamesMap)) {
             logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed. [RecoverNode]"));
             return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080404);
@@ -139,12 +139,13 @@ public class NodeRecover extends Operation {
           em1OkFlag = true;
         }
 
-        if (!executeRecoverService(inputData, inputNodesDb.getEquipments(), outNodesDb, outPhysicalIfNamesMap,
-            outLagIfNamesMap)) {
-          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed. [internalLink]"));
-          return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080406);
+        if (checkExecuteRecoverService()) {
+          if (!executeRecoverService(inputData, inputNodesDb.getEquipments(), outNodesDb, outPhysicalIfNamesMap,
+              outLagIfNamesMap)) {
+            logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Request to EM was failed. [internalLink]"));
+            return makeFailedResponse(RESP_INTERNALSERVERERROR_500, ERROR_CODE_080406);
+          }
         }
-
       } finally {
         if (entry != null) {
           EmController.getInstance().unlock(entry);
@@ -199,8 +200,8 @@ public class NodeRecover extends Operation {
    * @throws IllegalArgumentException
    *           :mapper exception
    */
-  private boolean executeRecoverNode(RecoverNodeService input, Nodes nodes, Map<String, String> physicalIfNamesMap,
-      Map<String, String> lagIfNamesMap) throws EmctrlException, IllegalArgumentException {
+  protected boolean executeRecoverNode(RecoverNodeService input, Nodes nodes, Map<String, String> physicalIfNamesMap,
+      Map<String, String> lagIfNamesMap) throws EmctrlException, IllegalArgumentException, DBAccessException {
     logger.trace(CommonDefinitions.START);
 
     RecoverUpdateNode recoverUpdateNode = EmMapper.toRecoverUpdateNode(input, nodes, physicalIfNamesMap, lagIfNamesMap);
@@ -247,6 +248,18 @@ public class NodeRecover extends Operation {
   protected boolean checkInData() {
     logger.debug("Never called.");
     return false;
+  }
+
+  /**
+   * Confirming whether EMIF service recovery execution is required or not.
+   * @return true：required false：not required
+   */
+  protected boolean checkExecuteRecoverService() {
+    logger.trace(CommonDefinitions.START);
+    boolean ret = true;
+    logger.debug("ret=" + ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
   }
 
 }

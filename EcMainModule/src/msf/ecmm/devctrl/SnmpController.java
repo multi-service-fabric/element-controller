@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl;
@@ -9,9 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
@@ -24,9 +23,9 @@ import org.snmp4j.smi.UdpAddress;
 import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
-import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.db.pojo.Equipments;
 import msf.ecmm.db.pojo.Nodes;
@@ -35,48 +34,48 @@ import msf.ecmm.devctrl.pojo.SnmpIfTraffic;
 import msf.ecmm.ope.receiver.pojo.parts.Varbind;
 
 /**
- * SNMP Related Operations.
+ *  SNMP Related Operations.
  */
 public class SnmpController {
 
   /**
-   * logger.
+   * Logger
    */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
-  /** SNMP Port Number. */
+  /** SNMP port number. */
   private static final int SNMP_PORT = 161;
 
-  /** ifOperStatus */
+  /** ifOperStatus. */
   private static final String OID_ifOperStatus = ".1.3.6.1.2.1.2.2.1.8";
 
-  /** ospfNbrState */
+  /** ospfNbrState. */
   private static final String OID_ospfNbrState = ".1.3.6.1.2.1.14.10.1.6";
 
-  /** ifxEntry */
+  /** ifxEntry. */
   private static final String OID_ifxEntry = ".1.3.6.1.2.1.31.1.1.1";
 
-  /** ifHCInOctets */
+  /** ifHCInOctets. */
   private static final String OID_ifHCInOctets = ".1.3.6.1.2.1.31.1.1.1.6";
 
-  /** ifHCOutOctets */
+  /** ifHCOutOctets. */
   private static final String OID_ifHCOutOctets = ".1.3.6.1.2.1.31.1.1.1.10";
 
-  /** linkDown Trap */
+  /** linkDown Trap. */
   @SuppressWarnings("unused")
   private static final String OID_linkDown = ".1.3.6.1.6.3.1.1.5.3";
 
-  /** linkUp Trap */
+  /** linkUp Trap. */
   @SuppressWarnings("unused")
   private static final String OID_linkUp = ".1.3.6.1.6.3.1.1.5.4";
 
-  /** ifIndex Trap */
+  /** ifIndex Trap. */
   private static final String OID_ifIndex = ".1.3.6.1.2.1.2.2.1.1";
 
-  /** OSPF Neibghbor State Full */
+  /** OSPF Neibghbor State Full. */
   private static final int OSPF_NEIGHBOR_FULL = 8;
 
-  /** ifIndex not found */
+  /** ifIndex not found. */
   public static final int IFINDEX_NOT_FOUND = -1;
 
   private static String OID_HEADER = "2636.3.5.2.1.";
@@ -136,23 +135,31 @@ public class SnmpController {
   }
 
   /**
-   * OSPF Neighbor UP Confirmation.
+   * Getting SNMP Information (IF name).
    *
    * @param eq
    *          model information
    * @param node
    *          device information
    * @param neighbors
-   *          list of neighbors
-   * @return result of UP -> true: UP
+   *          neighbors
+   * @return IF name
    * @throws DevctrlException
    *           error has occurred in SNMP communication
    */
-  public boolean isOspfNeighborFull(Equipments eq, Nodes node, ArrayList<String> neighbors) throws DevctrlException {
+  public Map<String, Integer> isOspfNeighborFull(Equipments eq, Nodes node, ArrayList<String> neighbors)
+      throws DevctrlException {
     logger.debug("start eq=" + eq + " node=" + node + " neighbors=" + neighbors);
 
     int retryNum = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.OSPF_NEIGHBOR_RETRY_NUM);
     int retryInt = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.OSPF_NEIGHBOR_RETRY_INTERVAL);
+
+    Map<String, Integer> result = new HashMap<>();
+    for (String ip : neighbors) {
+      result.put(ip, null);
+    }
+
+    boolean getbulkflag = true;
 
     for (int i = 0; i <= retryNum; i++) {
       @SuppressWarnings("unchecked")
@@ -162,29 +169,40 @@ public class SnmpController {
       try {
         vars = getbulk(eq, node, OID_ospfNbrState);
       } catch (DevctrlException de) {
+        getbulkflag = false;
         logger.debug("getbulk() fail.", de);
         CommonUtil.sleep(retryInt);
         continue;
       }
 
-      for (VariableBinding varbind : vars) {
+      getbulkflag = true;
 
-        if (varbind.getVariable().toInt() == OSPF_NEIGHBOR_FULL) {
-          String addr = varbind.getOid().toString().substring(OID_ospfNbrState.length(),
-              varbind.getOid().toString().length() - 2);
-          chkList.remove(addr);
+      for (VariableBinding varbind : vars) {
+        String addr = varbind.getOid().toString().substring(OID_ospfNbrState.length(),
+            varbind.getOid().toString().length() - 2);
+
+        if (chkList.contains(addr)) {
+          result.put(addr, varbind.getVariable().toInt());
+
+          if (varbind.getVariable().toInt() == OSPF_NEIGHBOR_FULL) {
+            chkList.remove(addr);
+          }
         }
       }
 
       if (chkList.size() == 0) {
         logger.debug("OspfNeighborFull complete.");
-        return true;
+        return result;
       }
 
       CommonUtil.sleep(retryInt);
 
     }
-    return false;
+    if (getbulkflag) {
+      return result;
+    } else {
+      throw new DevctrlException("GetBulk fail.");
+    }
   }
 
   /**
@@ -283,13 +301,13 @@ public class SnmpController {
     target.setAddress(new UdpAddress(node.getManagement_if_address() + "/" + SNMP_PORT));
     target.setCommunity(new OctetString(node.getSnmp_community()));
     target.setTimeout(EcConfiguration.getInstance().get(Integer.class, EcConfiguration.DEVICE_SNMP_TIMEOUT) * 1000);
-    target.setRetries(1);
+    target.setRetries(10);
     target.setVersion(SnmpConstants.version2c);
     return target;
   }
 
   /**
-   * getbulk
+   * getbulk.
    *
    * @param eq
    *          model information.
@@ -391,7 +409,7 @@ public class SnmpController {
   }
 
   /**
-   * get
+   * get.
    *
    * @param node
    *          device information

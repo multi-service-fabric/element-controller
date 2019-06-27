@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.resources.v1;
@@ -22,6 +22,8 @@ import javax.ws.rs.core.Response;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.CreateLagInterface;
+import msf.ecmm.ope.receiver.pojo.IfBlockAndOpenRequest;
+import msf.ecmm.ope.receiver.pojo.UpdateLagInterface;
 import msf.ecmm.ope.receiver.pojo.UpdatePhysicalInterface;
 import msf.ecmm.ope.receiver.resources.BaseResource;
 
@@ -85,6 +87,20 @@ public class Interface extends BaseResource {
   private static final String ERROR_CODE_340201 = "340201";
   /** BreakoutIF Information List Acquisition - other exceptions. */
   private static final String ERROR_CODE_340399 = "340399";
+
+  /** Input parameter check is NG(json NG), in IF opening/closing operation. */
+  private static final String ERROR_CODE_570101 = "570101";
+  /** Operation preparation execution failed, in IF opening/closing operation. */
+  private static final String ERROR_CODE_570301 = "570301";
+  /** Othe exceptions in IF opening/closing operation. */
+  private static final String ERROR_CODE_570499 = "570499";
+
+  /** Input parameter chenk is NG(json NG), in physical IF infomation change operation. */
+  private static final String ERROR_CODE_580101 = "580101";
+  /** Operation preparation execution failed, in LagIF change operation. */
+  private static final String ERROR_CODE_580301 = "580301";
+  /** Othe exceptions in LagIF change operation. */
+  private static final String ERROR_CODE_580499 = "580499";
 
   /**
    * IF Information List Acquisition.
@@ -307,7 +323,6 @@ public class Interface extends BaseResource {
     operationType = OperationType.LagRemove;
 
     setErrorCode("", ERROR_CODE_260301, ERROR_CODE_260499);
-
     HashMap<String, String> uriKeyMap = new HashMap<String, String>();
     uriKeyMap.put(KEY_NODE_ID, nodeId);
     uriKeyMap.put(KEY_LAG_IF_ID, lagIfId);
@@ -372,6 +387,72 @@ public class Interface extends BaseResource {
     uriKeyMap.put(KEY_BREAKOUT_IF_ID, breakoutIfId);
 
     Response response = executeOperation(uriKeyMap, null);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
+  /**
+   * Closing and opening IF.
+   *
+   * @param nodeId
+   *          node ID
+   * @param ifType
+   *          IF type
+   * @param ifId
+   *          IFID
+   * @return REST response
+   */
+  @PUT
+  @Path("{node_id}/interfaces/status/{if_type}/{if_id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response ifBlockAndOpen(@PathParam("node_id") String nodeId, @PathParam("if_type") String ifType,
+      @PathParam("if_id") String ifId) {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.IfBlockAndOpen;
+
+    setErrorCode(ERROR_CODE_570101, ERROR_CODE_570301, ERROR_CODE_570499);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+    uriKeyMap.put(KEY_IF_TYPE, ifType);
+    uriKeyMap.put(KEY_IF_ID, ifId);
+
+    Response response = executeOperation(uriKeyMap, IfBlockAndOpenRequest.class);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
+  /**
+   * LagIF information change
+   *
+   * @param nodeId
+   *          node ID
+   * @param lagIfId
+   *          LagIFID
+   * @return REST response
+   */
+  @PUT
+  @Path("{node_id}/interfaces/lag-ifs/{lag_if_id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response updateLagInterface(@PathParam("node_id") String nodeId, @PathParam("lag_if_id") String lagIfId) {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.LagIfChange;
+
+    setErrorCode(ERROR_CODE_580101, ERROR_CODE_580301, ERROR_CODE_580499);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+    uriKeyMap.put(KEY_NODE_ID, nodeId);
+    uriKeyMap.put(KEY_LAG_IF_ID, lagIfId);
+
+    Response response = executeOperation(uriKeyMap, UpdateLagInterface.class);
 
     logger.trace(CommonDefinitions.END);
     return response;

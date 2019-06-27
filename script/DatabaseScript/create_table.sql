@@ -30,6 +30,8 @@ CREATE TABLE equipments (
     cli_exec_path                                text,
     irb_asymmetric_capability                    boolean,
     irb_symmetric_capability                     boolean,
+    q_in_q_selectable_by_node_capability         boolean,
+    q_in_q_selectable_by_vlan_if_capability      boolean,
     PRIMARY KEY(equipment_type_id)
 );
 
@@ -87,6 +89,7 @@ CREATE TABLE nodes (
     host_name                            text         NOT NULL,
     mac_addr                             varchar(17)  NOT NULL,
     irb_type                             text,
+    q_in_q_type                          text,
     PRIMARY KEY(node_id),
     UNIQUE (mac_addr),
     FOREIGN KEY(equipment_type_id) REFERENCES equipments(equipment_type_id)
@@ -170,6 +173,7 @@ CREATE TABLE vlan_ifs (
     remark_menu                          text,
     egress_queue_menu                    text,
     irb_instance_id                      text,
+    q_in_q                               boolean,
     PRIMARY KEY(node_id, vlan_if_id),
     FOREIGN KEY(node_id, physical_if_id) REFERENCES physical_ifs(node_id, physical_if_id),
     FOREIGN KEY(node_id, lag_if_id)      REFERENCES lag_ifs(node_id, lag_if_id),

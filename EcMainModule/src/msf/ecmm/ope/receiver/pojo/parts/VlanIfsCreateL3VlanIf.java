@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -18,11 +18,11 @@ public class VlanIfsCreateL3VlanIf {
   private String vlanIfId = null;
 
   /** Information of IF in which CP is created. */
-  private BaseIfCreateVlanIf baseIf = null;
+  private BaseIfInfo baseIf = null;
 
   /** CP VLAN ID. */
   private Integer vlanId = null;
-	
+
   /** MTU Value for each CP IF. */
   private Integer mtu = null;
 
@@ -31,7 +31,7 @@ public class VlanIfsCreateL3VlanIf {
 
   /** Accommodated Device IF Address (IPv6). */
   private String ipv6Address = null;
-	
+
   /** Accommodate Device IF Prefix (IPv4). */
   private Integer ipv4Prefix = null;
 
@@ -77,7 +77,7 @@ public class VlanIfsCreateL3VlanIf {
    *
    * @return information of IF in which CP is created
    */
-  public BaseIfCreateVlanIf getBaseIf() {
+  public BaseIfInfo getBaseIf() {
     return baseIf;
   }
 
@@ -87,7 +87,7 @@ public class VlanIfsCreateL3VlanIf {
    * @param baseIf
    *          information of IF in which CP is created
    */
-  public void setBaseIf(BaseIfCreateVlanIf baseIf) {
+  public void setBaseIf(BaseIfInfo baseIf) {
     this.baseIf = baseIf;
   }
 

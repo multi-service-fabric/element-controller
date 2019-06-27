@@ -1,13 +1,11 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.control;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.log.MsfLogger;
 
 /**
  * Operation ID Retention Class Definition. Retaining operation ID.
@@ -18,9 +16,9 @@ public class EcSession implements AutoCloseable {
   /**
    * Logger
    */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
-  /** Operation ID */
+  /** Operation ID  */
   private int operationId;
 
   /**

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.traffic;
@@ -12,10 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.db.pojo.Equipments;
 import msf.ecmm.db.pojo.Nodes;
@@ -31,7 +29,7 @@ public class GatheringExecuterWatchDog extends Thread {
   /**
    * Logger
    */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /** Traffic Information Map */
   private ConcurrentHashMap<NodeKeySet, ArrayList<SnmpIfTraffic>> trafficData;
@@ -90,13 +88,13 @@ public class GatheringExecuterWatchDog extends Thread {
    * Processing the collected traffic information into acquirable format.
    *
    * @param nodeMap
-	*          node information list (for core router).
+   *          node information list (for core router).
    */
   private void calcTrafficData(Map<Equipments, List<Nodes>> nodeMap) {
 
     logger.trace(CommonDefinitions.START);
 
-    HashMap<NodeKeySet, ArrayList<TrafficData>> calcdTd = new HashMap<NodeKeySet, ArrayList<TrafficData>>();
+    HashMap<NodeKeySet, HashMap<String, TrafficData>> calcdTd = new HashMap<NodeKeySet, HashMap<String, TrafficData>>();
 
     ConcurrentHashMap<NodeKeySet, ArrayList<SnmpIfTraffic>> lastTrafficData = TrafficDataGatheringManager.getInstance()
         .getTrafficRawData();
@@ -114,7 +112,7 @@ public class GatheringExecuterWatchDog extends Thread {
     for (NodeKeySet tdl : trafficData.keySet()) {
 
       if (lastTrafficData.get(tdl) != null) {
-        calcdTd.put(tdl, new ArrayList<TrafficData>());
+        calcdTd.put(tdl, new HashMap<String, TrafficData>());
 
         if (trafficData.get(tdl) != null) {
           for (SnmpIfTraffic td : trafficData.get(tdl)) {
@@ -143,7 +141,7 @@ public class GatheringExecuterWatchDog extends Thread {
                 calc.setIfHclnOctets(inOct / ((double) getheringCycle));
                 calc.setIfHcOutOctets(outOct / ((double) getheringCycle));
 
-                calcdTd.get(tdl).add(calc);
+                calcdTd.get(tdl).put(td.getIfName(),calc);
                 break;
               } else {
               }
@@ -153,7 +151,7 @@ public class GatheringExecuterWatchDog extends Thread {
           if (!calcdTd.get(tdl).isEmpty()) {
             for (SnmpIfTraffic td : trafficData.get(tdl)) {
               boolean existFlug = false;
-              for (TrafficData tdc : calcdTd.get(tdl)) {
+              for (TrafficData tdc : calcdTd.get(tdl).values()) {
                 if (td.getIfName().equals(tdc.getIfname())) {
                   existFlug = true;
                   break;
@@ -167,14 +165,14 @@ public class GatheringExecuterWatchDog extends Thread {
                 calc.setIfHclnOctets(0.0);
                 calc.setIfHcOutOctets(0.0);
 
-                calcdTd.get(tdl).add(calc);
+                calcdTd.get(tdl).put(td.getIfName(),calc);
               } else {
               }
             }
 
             for (SnmpIfTraffic td : lastTrafficData.get(tdl)) {
               boolean existFlug = false;
-              for (TrafficData tdc : calcdTd.get(tdl)) {
+              for (TrafficData tdc : calcdTd.get(tdl).values()) {
                 if (td.getIfName().equals(tdc.getIfname())) {
                   existFlug = true;
                   break;
@@ -188,7 +186,7 @@ public class GatheringExecuterWatchDog extends Thread {
                 calc.setIfHclnOctets(0.0);
                 calc.setIfHcOutOctets(0.0);
 
-                calcdTd.get(tdl).add(calc);
+                calcdTd.get(tdl).put(td.getIfName(),calc);
               } else {
               }
             }
@@ -203,7 +201,7 @@ public class GatheringExecuterWatchDog extends Thread {
 
     if (nodeMap != null) {
       NodeKeySet tmp = null;
-      ArrayList<TrafficData> tmpList = null;
+      HashMap<String, TrafficData> tmpList = null;
       for (NodeKeySet nodeKey : trafficData.keySet()) {
         tmp = nodeKey;
         tmpList = calcdTd.get(tmp);

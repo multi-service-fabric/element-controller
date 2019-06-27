@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl;
@@ -22,20 +22,17 @@ import msf.ecmm.fcctrl.RestClient;
 import msf.ecmm.fcctrl.RestClientException;
 import msf.ecmm.fcctrl.pojo.CommonResponseFromFc;
 
-
-
 /**
  * REST Client.
  */
 public class RestClientToEm extends RestClient {
 
-
   /** Gettin controller Status. */
   public static final int CONTROLLER_STATE = 0;
   /** Getting controller log. */
   public static final int CONTROLLER_LOG = 1;
-
-
+  /** Getting Config-Audit. */
+  public static final int CONFIG_AUDIT = 2;
 
   @Override
   protected String getPortKey() {
@@ -48,18 +45,18 @@ public class RestClientToEm extends RestClient {
   }
 
   @Override
-  protected Response doPost(ClientConfig clientConfig, String url ,String uri ,String jsonImage){
-    throw new ProcessingException("GET method not support.");
+  protected Response doPost(ClientConfig clientConfig, String url, String uri, String jsonImage) {
+    throw new ProcessingException("POST method not support.");
   }
 
   @Override
-  protected Response doPut(ClientConfig clientConfig, String url ,String uri ,String jsonImage){
-    throw new ProcessingException("GET method not support.");
+  protected Response doPut(ClientConfig clientConfig, String url, String uri, String jsonImage) {
+    throw new ProcessingException("PUT method not support.");
   }
 
   @Override
-  protected Response doGet(ClientConfig clientConfig, String url ,String uri,
-      String jsonImage,HashMap<String, String> keyMap){
+  protected Response doGet(ClientConfig clientConfig, String url, String uri, String jsonImage,
+      HashMap<String, String> keyMap) {
     WebTarget webTarget = ClientBuilder.newClient(clientConfig).target(url).path(uri);
     for (Map.Entry<String, String> queryParam : keyMap.entrySet()) {
       if (queryParam.getValue() != null) {
@@ -69,12 +66,8 @@ public class RestClientToEm extends RestClient {
     return webTarget.request().get(); 
   }
 
-
-
-
   @Override
-  protected void checkKeyMap(int requestType, HashMap<String, String> keyMap)
-      throws RestClientException {
+  protected void checkKeyMap(int requestType, HashMap<String, String> keyMap) throws RestClientException {
     logger.trace(CommonDefinitions.START);
 
 
@@ -92,6 +85,12 @@ public class RestClientToEm extends RestClient {
           throw new RestClientException(RestClientException.COMMON_NG);
         }
         break;
+      case CONFIG_AUDIT:
+        if (!keyMap.containsKey(KEY_HOSTNAME)) {
+          logger.debug("Not found key");
+          throw new RestClientException(RestClientException.COMMON_NG);
+        }
+        break;
       default:
         logger.debug("Unknown requestType type:" + requestType);
         throw new RestClientException(RestClientException.COMMON_NG);
@@ -100,11 +99,8 @@ public class RestClientToEm extends RestClient {
     logger.trace(CommonDefinitions.END);
   }
 
-
-
   @Override
-  protected String createUri(int requestType, HashMap<String, String> keyMap)
-      throws RestClientException {
+  protected String createUri(int requestType, HashMap<String, String> keyMap) throws RestClientException {
     logger.trace(CommonDefinitions.START);
 
     String uri = "";
@@ -115,20 +111,20 @@ public class RestClientToEm extends RestClient {
       case CONTROLLER_LOG:
         uri = "/v1/internal/em_ctrl/log";
         break;
+      case CONFIG_AUDIT:
+        uri = "/v1/internal/node_ctrl/" + keyMap.get(KEY_HOSTNAME) + "/neconfigaudit";
+        break;
       default:
         logger.debug("Unknown requestType type:" + requestType);
         throw new RestClientException(RestClientException.COMMON_NG);
     }
 
     logger.trace(CommonDefinitions.END);
-    return uri ;
+    return uri;
   }
 
-
-
-
   @Override
-protected int getMethod(int requestType) throws RestClientException {
+  protected int getMethod(int requestType) throws RestClientException {
     logger.trace(CommonDefinitions.START);
 
     int method = 0;
@@ -136,6 +132,7 @@ protected int getMethod(int requestType) throws RestClientException {
     switch (requestType) {
       case CONTROLLER_STATE:
       case CONTROLLER_LOG:
+      case CONFIG_AUDIT:
         method = RestClient.GET;
         break;
       default:
@@ -148,13 +145,11 @@ protected int getMethod(int requestType) throws RestClientException {
     return method;
   }
 
-
-
   @Override
   protected boolean needRetry(int requestType, String responseBody) {
     logger.trace(CommonDefinitions.START);
     boolean retry = false;
-    if (requestType == CONTROLLER_STATE || requestType == CONTROLLER_LOG) {
+    if (requestType == CONTROLLER_STATE || requestType == CONTROLLER_LOG || requestType == CONFIG_AUDIT) {
       try {
         CommonResponseFromFc resp = jsonParser.fromJson(responseBody, CommonResponseFromFc.class);
         if (resp.getErrorCode().equals(NEED_RETRY)) {
@@ -167,6 +162,5 @@ protected int getMethod(int requestType) throws RestClientException {
     logger.trace(CommonDefinitions.END);
     return retry;
   }
-
 
 }

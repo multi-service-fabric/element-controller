@@ -26,7 +26,7 @@ file_list:
   - file_name: 'perl-Encode-2.51-7.el7.x86_64.rpm'
     url: 'http://ftp.ksu.edu.tw/FTP/CentOS/7/os/x86_64/Packages/perl-Encode-2.51-7.el7.x86_64.rpm'
   - file_name: 'perl-Exporter-5.68-3.el7.noarch.rpm'
-    url: 'https://www.rpmfind.net/linux/centos/7.5.1804/os/x86_64/Packages/perl-Exporter-5.68-3.el7.noarch.rpm'
+    url: 'http://mirror.centos.org/centos/7/os/x86_64/Packages/perl-Exporter-5.68-3.el7.noarch.rpm'
   - file_name: 'perl-File-Path-2.09-2.el7.noarch.rpm'
     url: 'http://mirror.centos.org/centos/7/os/x86_64/Packages/perl-File-Path-2.09-2.el7.noarch.rpm'
   - file_name: 'perl-File-Temp-0.23.01-3.el7.noarch.rpm'

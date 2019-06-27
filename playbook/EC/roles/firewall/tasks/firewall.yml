@@ -25,6 +25,8 @@
     shell: firewall-cmd --permanent --add-service=http
   - name: httpd service register
     shell: cp -p /usr/lib/firewalld/services/http.xml /etc/firewalld/services/
+  - name: chrony service allow
+    shell: firewall-cmd --permanent --add-service=ntp
   - name: firewall-cmd reload
     shell: firewall-cmd --reload
   - name: firewall reload

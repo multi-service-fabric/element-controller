@@ -1,32 +1,32 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.common;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import msf.ecmm.common.log.MsfLogger;
 
 /**
- * Common Utility
+ * Common Utility 
  */
 public class CommonUtil {
 
   /** logger. */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /**
    * load mitigation of loop or SpinLocks.
    */
   public static void sleep() {
-    sleep(50); 
+    sleep(50); // 50msec
   }
 
   /**
@@ -47,10 +47,10 @@ public class CommonUtil {
    * Deep Copy.
    *
    * @param obj
-   *          copy source instance
+   *          copy source instance 
    * @return copy instance
    * @throws IllegalArgumentException
-   *           fail
+   *           fail 
    */
   public static Object deepCopy(Serializable obj) throws IllegalArgumentException {
     try {
@@ -70,13 +70,30 @@ public class CommonUtil {
   }
 
   /**
-   * Padding with zero.
-   * @param input target character string
-   * @param length the entire length
-   * @return target character string padded with zero
+   * Padding with zero. 
+   * @param input target character string 
+   * @param length the entire length 
+   * @return target character string padded with zero 
    */
   public static String zeroPadding(String input, int length) {
     return String.format("%" + length + "s", input).replace(" ", "0");
   }
 
+  /**
+   * Checking file exestence.
+   *
+   * @param filename
+   *          file to be checked
+   * @return true：file exsist, false：file not exsist
+   */
+  public static boolean isFile(String filename) {
+    boolean ret = false;
+    File file = new File(filename);
+    if (file.exists()) {
+      if (!file.isDirectory()) {
+        ret = true;
+      }
+    }
+    return ret;
+  }
 }

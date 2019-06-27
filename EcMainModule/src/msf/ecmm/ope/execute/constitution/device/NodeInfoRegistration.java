@@ -1,5 +1,6 @@
+
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -55,6 +56,8 @@ public class NodeInfoRegistration extends Operation {
   private static final String ERROR_CODE_080102 = "080102";
   /** Detected unexpected unused physical IF ID or physical IF ID which is not registered in the model information. */
   private static final String ERROR_CODE_080104 = "080104";
+  /** In case Q-in-Q check result is NG. */
+  private static final String ERROR_CODE_080105 = "080105";
   /** In case the device information to be registered already exists (incl. duplication of management IF address). */
   private static final String ERROR_CODE_080304 = "080304";
   /** DHCP start-up failed. */
@@ -96,7 +99,7 @@ public class NodeInfoRegistration extends Operation {
     AddNode addNode = (AddNode) getInData();
 
     boolean dhcpOkFlag = false;
-    boolean needCleanUpFlag = true; 
+    boolean needCleanUpFlag = true;
     boolean createInitialConfigOkFlag = false;
     boolean xinetdOkFlag = false;
     boolean startSyslogOkFlag = false;
@@ -128,6 +131,28 @@ public class NodeInfoRegistration extends Operation {
           return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080104);
         }
       }
+
+      if ((null != equipments.getQ_in_q_selectable_by_node_capability()
+          && equipments.getQ_in_q_selectable_by_node_capability())
+          && (null == equipments.getQ_in_q_selectable_by_vlan_if_capability()
+          || !equipments.getQ_in_q_selectable_by_vlan_if_capability())) {
+        if (addNode.getCreateNode().getqInQType() != null
+            && !addNode.getCreateNode().getqInQType().equals(CommonDefinitions.Q_IN_Q_ONLY)
+            && !addNode.getCreateNode().getqInQType().equals(CommonDefinitions.Q_IN_Q_UNSUPPORT)) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "QinQ Type is different."));
+          return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080105);
+        }
+      } else if ((null == equipments.getQ_in_q_selectable_by_node_capability()
+          || !equipments.getQ_in_q_selectable_by_node_capability())
+          && (null == equipments.getQ_in_q_selectable_by_vlan_if_capability()
+          || !equipments.getQ_in_q_selectable_by_vlan_if_capability())) {
+        if (addNode.getCreateNode().getqInQType() != null
+            && !addNode.getCreateNode().getqInQType().equals(CommonDefinitions.Q_IN_Q_UNSUPPORT)) {
+          logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "QinQ Type is different."));
+          return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_080105);
+        }
+      }
+
       if (addNode.getCreateNode().getProvisioning() == true) {
 
         if (checkPhysicalIfIdUnuse(equipments) == false) {
@@ -247,7 +272,7 @@ public class NodeInfoRegistration extends Operation {
     Set<String> eqIfIds = new HashSet<>();
 
     for (EquipmentIfs eqIfs : equipments.getEquipmentIfsList()) {
-      eqIfIds.add(eqIfs.getPhysical_if_id()); 
+      eqIfIds.add(eqIfs.getPhysical_if_id());
     }
 
     for (BreakoutBaseIf boIfs : addNode.getCreateNode().getIfInfo().getBreakoutBaseIfs()) {
@@ -309,10 +334,10 @@ public class NodeInfoRegistration extends Operation {
   private DhcpInfo createDhcpInfo(Equipments equipments) {
     logger.trace(CommonDefinitions.START);
 
-    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode();
     DhcpInfo dhcpInfo = new DhcpInfo(equipments.getDhcp_template(), equipments.getInitial_config(),
-        nodeInfo.getHostname(), nodeInfo.getMacAddress(), "", nodeInfo.getNtpServerAddress(), nodeInfo
-            .getManagementInterface().getAddress(), nodeInfo.getManagementInterface().getPrefix());
+        nodeInfo.getHostname(), nodeInfo.getMacAddress(), "", nodeInfo.getNtpServerAddress(),
+        nodeInfo.getManagementInterface().getAddress(), nodeInfo.getManagementInterface().getPrefix());
 
     logger.trace(CommonDefinitions.END);
     return dhcpInfo;
@@ -328,7 +353,7 @@ public class NodeInfoRegistration extends Operation {
    */
   private void startSyslogWatch(Equipments equipments) throws DevctrlException {
     logger.trace(CommonDefinitions.START);
-    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode();
 
     List<String> bootErrorMessages = new ArrayList<>();
     for (BootErrorMessages message : equipments.getBootErrorMessagesList()) {
@@ -366,7 +391,7 @@ public class NodeInfoRegistration extends Operation {
    */
   private InitialDeviceConfig createInitialDeviceConfig(Equipments equipments) throws DevctrlException {
     logger.trace(CommonDefinitions.START);
-    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode(); 
+    CreateNode nodeInfo = ((AddNode) getInData()).getCreateNode();
 
     if (nodeInfo.getVpn() == null) {
       InitialDeviceConfig initialDeviceConfigInfo = new InitialDeviceConfig(equipments.getConfig_template(),
@@ -378,16 +403,16 @@ public class NodeInfoRegistration extends Operation {
     if (nodeInfo.getVpn().getVpnType().equals("l2")) {
       InitialDeviceConfig initialDeviceConfigInfo = new InitialDeviceConfig(equipments.getConfig_template(),
           equipments.getInitial_config(), nodeInfo.getManagementInterface().getAddress(),
-          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL2vpn().getBgp().getCommunityWildcard(), nodeInfo
-              .getVpn().getL2vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
+          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL2vpn().getBgp().getCommunityWildcard(),
+          nodeInfo.getVpn().getL2vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
       logger.trace(CommonDefinitions.END);
       return initialDeviceConfigInfo;
     }
     if (nodeInfo.getVpn().getVpnType().equals("l3")) {
       InitialDeviceConfig initialDeviceConfigInfo = new InitialDeviceConfig(equipments.getConfig_template(),
           equipments.getInitial_config(), nodeInfo.getManagementInterface().getAddress(),
-          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL3vpn().getBgp().getCommunityWildcard(), nodeInfo
-              .getVpn().getL3vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
+          nodeInfo.getNtpServerAddress(), nodeInfo.getVpn().getL3vpn().getBgp().getCommunityWildcard(),
+          nodeInfo.getVpn().getL3vpn().getBgp().getCommunity(), nodeInfo.getManagementInterface().getPrefix());
       logger.trace(CommonDefinitions.END);
       return initialDeviceConfigInfo;
     } else {

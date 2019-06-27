@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.common;
@@ -7,8 +7,7 @@ package msf.ecmm.common;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import msf.ecmm.common.log.MsfLogger;
 
 /**
  * Command execution class.
@@ -16,18 +15,18 @@ import org.apache.logging.log4j.Logger;
 public class CommandExecutor {
 
   /** Logger. */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /**
-   * Commend execution method.
+   * Commend execution method. 
    *
    * @param params
-   *          text array includes execution command parameters
+   *          text array includes execution command parameters 
    * @param stdList
-   *          standard output acquisition list
+   *          standard output acquisition list 
    * @param errList
-   *          error output acquisition list
-   * @return execution result 0:success, Others:error
+   *          error output acquisition list 
+   * @return execution result 0:success, Others:error 
    */
   public static int exec(String[] params, List<String> stdList, List<String> errList) {
 
@@ -89,13 +88,13 @@ public class CommandExecutor {
   }
 
   /**
-   * searching for a keyword in text strings.
+   * searching for a keyword in text strings. 
    *
    * @param strs
-   *          standard output
+   *          standard output 
    * @param key
-   *          keyword
-   * @return true: the text contains specified keyword
+   *          keyword 
+   * @return true: the text contains specified keyword 
    */
   public static boolean contain(List<String> strs, String key) {
     for (String str : strs) {

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.emctrl.pojo.parts;
@@ -68,6 +68,10 @@ public class Cp {
 
   /** IRB setting. */
   private Irb irb = null;
+
+  /** Q-in-Q . */
+  @XmlElement(name = "q-in-q")
+  private String qInQ;
 
   /** VRRP setting information (used only for L3VLAN IF batch generaiton). */
   private Vrrp vrrp = null;
@@ -452,13 +456,27 @@ public class Cp {
     return irb;
   }
 
+  /**
+   * Adding Q-in-Q.
+   */
+  public void addQInQ() {
+    this.qInQ = new String("");
+  }
+
+  /**
+   * Deleting Q-in-Q.
+   */
+  public void delQInQ() {
+    this.qInQ = null;
+  }
+
   @Override
   public String toString() {
     return "Cp [operation=" + operation + ", name=" + name + ", vlanId=" + vlanId + ", portMode=" + portMode + ", vni="
         + vni + ", multicastGroup=" + multicastGroup + ", esi=" + esi + ", esiAttr=" + esiAttr + ", systemId="
         + systemId + ", sysIdAttr=" + sysIdAttr + ", ceInterface=" + ceInterface + ", clagId=" + clagId + ", speed="
-        + speed + ", qos=" + qos + ", irb=" + irb + ", vrrp=" + vrrp + ", l3SliceBgp=" + l3SliceBgp + ", l3SliceStatic="
-        + l3SliceStatic + ", l3SliceOspf=" + l3SliceOspf + "]";
+        + speed + ", qos=" + qos + ", irb=" + irb + ", qInQ=" + qInQ + ", vrrp=" + vrrp + ", l3SliceBgp=" + l3SliceBgp
+        + ", l3SliceStatic=" + l3SliceStatic + ", l3SliceOspf=" + l3SliceOspf + "]";
   }
 
 }

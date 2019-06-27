@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -56,9 +56,8 @@ public class AcceptNodeRecover extends Operation {
   private static final String ERROR_CODE_460201 = "460201";
   /** In case error has occurred in DB access. */
   private static final String ERROR_CODE_460401 = "460401";
-  /** dhcpd、rsyslog、xinetd、httpd failed. */
+  /** dhcpd, rsyslog, xinetd, httpd failed. */
   private static final String ERROR_CODE_460402 = "460402";
-
   /**
    * Constructor.
    *
@@ -113,8 +112,9 @@ public class AcceptNodeRecover extends Operation {
         return makeFailedResponse(RESP_BADREQUEST_400, ERROR_CODE_460102);
       }
 
-      if (outEquipments.getRouter_type() != CommonDefinitions.ROUTER_TYPE_COREROUTER) {
+      setUnspecifiedInfo(inputNodesDb);
 
+      if (needZtp(outEquipments)) {
         InitialDeviceConfig initialDeviceConfg = createInitialDeviceConfig(inputNodesDb, outEquipments);
         CreateInitialDeviceConfig.getInstance().create(initialDeviceConfg);
         createInitialConfigOkFlag = true;
@@ -142,12 +142,12 @@ public class AcceptNodeRecover extends Operation {
 
       OperationControlManager.getInstance().setRecoverExecution(true);
 
-      NodeAdditionThread nodeAdditionThread = new NodeAdditionThread();
+      NodeAdditionThread nodeAdditionThread = createNodeAdditionThread();
       nodeAdditionThread.setRecoverNodeInfo((RecoverNodeService) getInData());
       nodeAdditionThread.setRecoverNodeUriKeyMap(getUriKeyMap());
       OperationControlManager.getInstance().registerNodeAdditionInfo(nodeAdditionThread);
 
-      if (outEquipments.getRouter_type() == CommonDefinitions.ROUTER_TYPE_COREROUTER) {
+      if (!needZtp(outEquipments)) {
         needCleanUpFlag = false;
         nodeAdditionThread = OperationControlManager.getInstance().getNodeAdditionInfo();
         nodeAdditionThread.notifyNodeBoot(true);
@@ -207,16 +207,38 @@ public class AcceptNodeRecover extends Operation {
       }
     }
 
-    RecoverNodeService inputData = (RecoverNodeService) getInData();
-    try {
-      inputData.check(new OperationType(getOperationType()));
-    } catch (CheckDataException cde) {
-      logger.warn("check error :", cde);
-      checkResult = false;
-    }
+    if (checkResult) {
+      try {
+        RecoverNodeService inputData = (RecoverNodeService) getInData();
+        inputData.check(new OperationType(getOperationType()));
 
+        baseCheck();
+
+      } catch (CheckDataException cde) {
+        logger.warn("check error :", cde);
+        checkResult = false;
+      }
+    }
     logger.trace(CommonDefinitions.END);
     return checkResult;
+  }
+
+  protected void baseCheck() throws CheckDataException {
+    logger.trace(CommonDefinitions.START);
+    RecoverNodeService inputData = (RecoverNodeService) getInData();
+    if (inputData.getNode().getNodeType().equals(CommonDefinitions.NODETYPE_SPINE)) {
+      throw new CheckDataException();
+    }
+    if (inputData.getNode().getUsername() == null) {
+      throw new CheckDataException();
+    }
+    if (inputData.getNode().getPassword() == null) {
+      throw new CheckDataException();
+    }
+    if (inputData.getNode().getMacAddr() == null) {
+      throw new CheckDataException();
+    }
+    logger.trace(CommonDefinitions.END);
   }
 
   /**
@@ -229,6 +251,7 @@ public class AcceptNodeRecover extends Operation {
    * @return possible：true／impossible：false
    */
   private boolean judgeRecoverPermission(Nodes inNodes, Equipments outEquipments) {
+    logger.trace(CommonDefinitions.START);
 
     List<Integer> inUsePhysiIfIdList = new ArrayList<Integer>();
     if (inNodes.getPhysicalIfsList() == null) {
@@ -309,6 +332,28 @@ public class AcceptNodeRecover extends Operation {
       }
     }
 
+    if (!vpnCheck(inNodes, outEquipments)) {
+      return false;
+    }
+
+    if (inNodes.getEquipments().getRouter_type() != outEquipments.getRouter_type()) {
+      logger.debug("Router type mismatch.");
+      return false;
+    }
+    logger.trace(CommonDefinitions.END);
+    return true;
+  }
+
+  /**
+   * Jugde VPN.
+   *
+   * @param inNodes
+   *          node information before recovery
+   * @param outEquipments
+   *          Equipment information  in node after recovery
+   * @return  recovery is possible.：true recovery is impossible：false
+   */
+  protected boolean vpnCheck(Nodes inNodes, Equipments outEquipments) {
     if (inNodes.getVpn_type() == null) {
       logger.debug("No VPN type specification. vpnType=null");
       return false;
@@ -325,11 +370,6 @@ public class AcceptNodeRecover extends Operation {
       }
     } else {
       logger.debug("VPN type is invalid. vpnType=" + inNodes.getVpn_type());
-      return false;
-    }
-
-    if (inNodes.getEquipments().getRouter_type() != outEquipments.getRouter_type()) {
-      logger.debug("Router type mismatch.");
       return false;
     }
 
@@ -354,6 +394,17 @@ public class AcceptNodeRecover extends Operation {
       }
     }
     return ret;
+  }
+
+  /**
+   * Padding the unset information.
+   *
+   * @param nodes
+   *          DB node information
+   */
+  protected void setUnspecifiedInfo(Nodes nodes) {
+    logger.trace(CommonDefinitions.START);
+    logger.trace(CommonDefinitions.END);
   }
 
   /**
@@ -426,4 +477,32 @@ public class AcceptNodeRecover extends Operation {
 
   }
 
+  /**
+   * Judginf whether ZTP exection  is requred or not..
+   *
+   * @param eq
+   *          Equipment infomation
+   * @return true：required  false：not required
+   */
+  protected boolean needZtp(Equipments eq) {
+    logger.trace(CommonDefinitions.START);
+    boolean ret;
+    if (eq.getRouter_type() != CommonDefinitions.ROUTER_TYPE_COREROUTER) {
+      ret = true;
+    } else {
+      ret = false;
+    }
+    logger.debug("ret=" + ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * NodeAdditionThread Creating a intance.
+   *
+   * @return NodeAdditionThread instance
+   */
+  protected NodeAdditionThread createNodeAdditionThread() {
+    return new NodeAdditionThread();
+  }
 }

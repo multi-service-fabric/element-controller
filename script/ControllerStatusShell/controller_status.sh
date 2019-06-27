@@ -4,8 +4,10 @@
 ##
 ## Shell script which acquires the controller status information of whom calling and returns it
 ##
-## Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+## Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
 ##
+
+#D=`date +"%Y-%m-%d %H:%M:%S.%3N"`
 
 ## Character Code Configuration
 LANG=C
@@ -33,8 +35,11 @@ controllerPid=$6
 ## top Command Execution
 function topCommand() {
     top_result=".top_result_$$"
-    top -b -n 1 -p $1 | sed -e "s/,/, /g" | sed -e "s/:/: /g" > ${top_result}
-
+    if [ $1 = "0" ]; then
+      top -b -n 1 | sed -e "s/,/, /g" | sed -e "s/:/: /g" > ${top_result}
+    else
+      top -b -n 1 -p $1 | sed -e "s/,/, /g" | sed -e "s/:/: /g" > ${top_result}
+    fi
 
     id=`cat ${top_result}|grep %Cpu|awk '{print $8}'`
     if [ "${id}" = "" ] ; then
@@ -45,16 +50,19 @@ function topCommand() {
     if [ "${free}" = "" ] ; then
         free=0
     fi
+    free=`checkMem $free`
 
     used=`cat ${top_result}|grep buff/cache|awk '{print $8}'`
     if [ "${used}" = "" ] ; then
         used=0
     fi
+    used=`checkMem $used`
 
     buffers=`cat ${top_result}|grep buff/cache|awk '{print $10}'`
     if [ "${buffers}" = "" ] ; then
         buffers=0
     fi
+    buffers=`checkMem $buffers`
 
     swapused=`cat ${top_result}|grep Swap|awk '{print $7}'`
     if [ "${swapused}" = "" ] ; then
@@ -89,7 +97,6 @@ function nprocCommand() {
 function dfCommand() {
 
     dfdata=(`df -k|grep -v 1K-blocks`)
-
 
     dfalllist=()
     dfcount=1
@@ -139,6 +146,16 @@ function hostnameCommand() {
     hostnamedata=`hostname`
 }
 
+function checkMem() {
+  memsize=$1
+  if [ `echo $memsize | grep 'm'` ] ; then
+    echo `expr ${memsize:0:-1} \* 1024`
+  elif [ `echo $memsize | grep 'g'` ] ; then
+    echo `expr ${memsize:0:-1} \* 1024 \* 1024`
+  else
+    echo $memsize
+  fi
+}
 ## Main
 
 if [ "${topExecution}" -ne "0" ]; then
@@ -170,6 +187,11 @@ fi
 if [ "${hosutnameExecution}" -ne "0" ]; then
     hostnameCommand
 fi
+
+free=`checkMem $free`
+used=`checkMem $used`
+buffers=`checkMem $buffers`
+swapused=`checkMem $swapused`
 
 ## Aggregating Command Execution Results in json Format
 responsejson=` echo '{"top":{"id":'"${id}"',"free":'"${free}"',"used":'"${used}"',"buffers":'"${buffers}"',"swapused":'"${swapused}"',"res":'"${res}"',"cpu":'"${cpu}"'},"nproc":'"${nprocdata}"',

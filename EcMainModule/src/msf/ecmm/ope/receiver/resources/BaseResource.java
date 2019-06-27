@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.resources;
@@ -16,8 +16,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -26,6 +24,7 @@ import com.google.gson.JsonSyntaxException;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.ExpandOperation;
 import msf.ecmm.ope.control.RestRequestCount;
 import msf.ecmm.ope.execute.Operation;
@@ -41,9 +40,9 @@ import msf.ecmm.ope.receiver.pojo.CommonResponse;
 public abstract class BaseResource {
 
   /**
-   * Logger
+   * Logger.
    */
-  protected static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  protected static final MsfLogger logger = new MsfLogger();
 
   /**
    * REST Request
@@ -83,7 +82,6 @@ public abstract class BaseResource {
    * Extension function operation name.
    */
   protected String expandOperationName = "";
-
 
   /**
    * Operation Execution
@@ -137,7 +135,7 @@ public abstract class BaseResource {
     } catch (JsonSyntaxException e) {
       response = createIllegalJsonErrorResponse();
       logger.debug("Json decode error", e);
-    } catch (Throwable e) { 
+    } catch (Throwable e) {
       response = createUnexpectedErrorResponse();
       logger.debug("Execute operation error", e);
     } finally {
@@ -184,7 +182,7 @@ public abstract class BaseResource {
       try {
         operation.close();
       } catch (Throwable e) {
-        ; 
+        ;
       }
     }
 
@@ -256,10 +254,10 @@ public abstract class BaseResource {
     ResponseBuilder responseBuilder = null;
     if (getData instanceof CommonResponse) {
       if (!((CommonResponse) getData).getErrorCode().isEmpty()) {
-        isBody = true; 
+        isBody = true;
       }
     } else {
-      isBody = true; 
+      isBody = true;
     }
     if (isBody) {
       responseBuilder = Response.status(responseCode).entity(jsonImage);

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,11 +9,11 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.pojo.Nodes;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * Device Information DAO Class.
@@ -24,7 +24,7 @@ public class NodesDAO extends BaseDAO {
    * Device Information Class Constructor.
    *
    * @param session
-   *          data base session
+   *          database session
    */
   public NodesDAO(Session session) {
     this.session = session;
@@ -62,7 +62,7 @@ public class NodesDAO extends BaseDAO {
    * @param node_state
    *          device status
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateState(String node_id, int node_state) throws DBAccessException {
     try {
@@ -73,6 +73,35 @@ public class NodesDAO extends BaseDAO {
         Query query = session.getNamedQuery("updateNodeState");
         query.setString("key1", node_id);
         query.setInteger("key2", node_state);
+        query.executeUpdate();
+      }
+    } catch (DBAccessException e1) {
+      throw e1;
+    } catch (Throwable e2) {
+      logger.debug("nodes update failed.", e2);
+      this.errorMessage(UPDATE_FAILURE, NODES, e2);
+    }
+  }
+
+  /**
+   * Device Information Table UPDATE (device status only).
+   *
+   * @param node_id
+   *          device ID (primary key 1)
+   * @param equipment_type_id
+   *          model ID
+   * @throws DBAccessException
+   *           database exception
+   */
+  public void updateEquipment(String node_id, String equipment_type_id) throws DBAccessException {
+    try {
+      Nodes regNodes = this.search(node_id, null);
+      if (regNodes == null) {
+        this.errorMessage(NO_UPDATE_TARGET, NODES, null);
+      } else {
+        Query query = session.getNamedQuery("updateNodeEquipment");
+        query.setString("key1", node_id);
+        query.setString("key2", equipment_type_id);
         query.executeUpdate();
       }
     } catch (DBAccessException e1) {
@@ -148,7 +177,7 @@ public class NodesDAO extends BaseDAO {
    *
    * @return nodesList device information list
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public List<Nodes> getList() throws DBAccessException {
@@ -158,9 +187,6 @@ public class NodesDAO extends BaseDAO {
       nodesList = query.list();
       for (Nodes nodes : nodesList) {
         nodes.setNode_id(nodes.getNode_id());
-        nodes.toString(); 
-        session.flush();
-        session.evict(nodes);
       }
     } catch (Throwable e1) {
       logger.debug("nodes select failed.", e1);
@@ -204,7 +230,7 @@ public class NodesDAO extends BaseDAO {
    *          management IF address (NULL is permitted)
    * @return nodes device information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public Nodes search(String node_id, String management_if_address) throws DBAccessException {
@@ -234,5 +260,4 @@ public class NodesDAO extends BaseDAO {
     }
     return nodes;
   }
-
 }

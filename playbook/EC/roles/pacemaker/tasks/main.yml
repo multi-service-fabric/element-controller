@@ -1,39 +1,39 @@
 # Setting pacemaker
   - include: getrpm.yml
     when: download_flag
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/psmisc-22.20-9.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libqb-1.0-1.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libyaml-0.1.4-11.el7_0.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/perl*  
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libtool-ltdl-2.4.2-21.el7_2.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/cluster-glue-libs-1.0.12-2.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/net-snmp-libs-5.7.2-24.el7_2.1.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/corosync-2.3.5-1.el7.x86_64.rpm {{ rpm_path }}/{{ folder_name }}/corosynclib-2.3.5-1.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/libxslt-1.1.28-5.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-libs-1.1.14-1.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-cluster-libs-1.1.14-1.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/resource-agents-3.9.7-1.2.6f56.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/OpenIPMI-modalias-2.0.19-11.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/lm_sensors-libs-3.3.4-11.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/OpenIPMI-libs-2.0.19-11.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/openhpi-libs-3.4.0-2.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/perl-TimeDate-2.30-2.el7.noarch.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/cluster-glue-1.0.12-2.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/net-snmp-agent-libs-5.7.2-24.el7_2.1.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-cli-1.1.14-1.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-1.1.14-1.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/nano-2.3.1-10.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/python-lxml-3.2.1-4.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pm_extras-2.2-1.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/ipmitool-1.8.13-9.el7_2.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pm_diskd-2.2-1.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/python-dateutil-1.5-7.el7.noarch.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pm_crmgen-2.1-1.el7.noarch.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pssh-2.3.1-5.el7.noarch.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/python-lxml-3.2.1-4.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/crmsh-2.1.5-1.el7.x86_64.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pm_logconv-cs-2.2-1.el7.noarch.rpm
-  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/pacemaker-all-1.1.14-1.1.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/psmisc-22.20-9.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/libqb-1.0-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/libyaml-0.1.4-11.el7_0.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/perl*  
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/libtool-ltdl-2.4.2-21.el7_2.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/cluster-glue-libs-1.0.12-2.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/net-snmp-libs-5.7.2-24.el7_2.1.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/corosync-2.3.5-1.el7.x86_64.rpm {{ rpm_path }}/installer/{{ folder_name }}/corosynclib-2.3.5-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/libxslt-1.1.28-5.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pacemaker-libs-1.1.14-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pacemaker-cluster-libs-1.1.14-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/resource-agents-3.9.7-1.2.6f56.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/OpenIPMI-modalias-2.0.19-11.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/lm_sensors-libs-3.3.4-11.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/OpenIPMI-libs-2.0.19-11.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/openhpi-libs-3.4.0-2.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/perl-TimeDate-2.30-2.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/cluster-glue-1.0.12-2.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/net-snmp-agent-libs-5.7.2-24.el7_2.1.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pacemaker-cli-1.1.14-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pacemaker-1.1.14-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/nano-2.3.1-10.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/python-lxml-3.2.1-4.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pm_extras-2.2-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/ipmitool-1.8.13-9.el7_2.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pm_diskd-2.2-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/python-dateutil-1.5-7.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pm_crmgen-2.1-1.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pssh-2.3.1-5.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/python-lxml-3.2.1-4.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/crmsh-2.1.5-1.el7.x86_64.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pm_logconv-cs-2.2-1.el7.noarch.rpm
+  - shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/pacemaker-all-1.1.14-1.1.el7.noarch.rpm
   - name: check before add setting 1
     find: paths=/etc/hosts
           patterns='{{ act_address }}  {{ act_node_name }}'
@@ -48,6 +48,8 @@
       dest=/etc/hosts
       line='{{ act_address }}  {{ act_node_name }}'
     when: found_files1.matched == 0
+  - name: rm corosync.conf
+    shell: rm -rf /etc/corosync/corosync.conf
   - name: touch corosync.conf
     shell: touch /etc/corosync/corosync.conf
   - name: check before add setting 2
@@ -88,6 +90,15 @@
         }
     when: found_files2.matched == 0
   - shell: systemctl start pacemaker
+  - name: SLEEP
+    shell: sleep 10
+  - name: get first node
+    shell: crm_node -N 1
+    register: first_node
+  - name: get me
+    shell: crm_node -n
+    register: me
   - shell: crm configure property stonith-enabled="false"
+    when: first_node.stdout == me.stdout
   - shell: systemctl enable pacemaker
   - shell: systemctl enable corosync

@@ -1,6 +1,7 @@
 # Before installing
-  - name: mkdir data
-    shell: mkdir -p {{ rpm_path }}
-  - name: copy data
-    copy: src="{{ rpm_path }}/" dest={{ rpm_path }}
-    when: download_flag == false
+  - name: get target dir name
+    local_action: command basename {{ rpm_path }}
+    register: target
+  - name: archive
+    local_action: command tar cvf {{ rpm_path }}.tar -C {{ rpm_path }}/../ {{ target.stdout }}
+

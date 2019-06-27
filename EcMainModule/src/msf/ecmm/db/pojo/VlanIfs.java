@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.pojo;
@@ -51,9 +51,11 @@ public class VlanIfs implements Serializable {
   /** Remark menu. */
   private String remark_menu;
   /** Egress queue menu. */
-  private String irb_instance_id;
-  /** IRB instance ID. */
   private String egress_queue_menu;
+  /** IRB instance ID. */
+  private String irb_instance_id;
+  /** Q-in-Q information. */
+  private Boolean q_in_q;
   /** BGP Option List. */
   private Set<BGPOptions> bgpOptionsList;
   /** Static Route Information List. */
@@ -468,6 +470,25 @@ public class VlanIfs implements Serializable {
   }
 
   /**
+   * Getting Q-in-Q information.
+   *
+   * @return Q-in-Q information
+   */
+  public Boolean getQ_in_q() {
+    return q_in_q;
+  }
+
+  /**
+   * Setting Q-in-Q information.
+   *
+   * @param q_in_q
+   *          Q-in-Q information
+   */
+  public void setQ_in_q(Boolean q_in_q) {
+    this.q_in_q = q_in_q;
+  }
+
+  /**
    * Acquire BGP Option list.
    *
    * @return BGP option list
@@ -581,8 +602,9 @@ public class VlanIfs implements Serializable {
         + ", ipv6_address=" + ipv6_address + ", ipv6_prefix=" + ipv6_prefix + ", mtu=" + mtu + ", port_mode="
         + port_mode + ", bgp_id=" + bgp_id + ", vrrp_id=" + vrrp_id + ", inflow_shaping_rate=" + inflow_shaping_rate
         + ", outflow_shaping_rate=" + outflow_shaping_rate + ", remark_menu=" + remark_menu + ", egress_queue_menu="
-        + egress_queue_menu + ", irb_instance_id=" + irb_instance_id + ", bgpOptionsList=" + bgpOptionsList
-        + ", staticRouteOptionsList=" + staticRouteOptionsList + ", vrrpOptionsList=" + vrrpOptionsList + "]";
+        + egress_queue_menu + ", irb_instance_id=" + irb_instance_id + ", q_in_q=" + q_in_q + ", bgpOptionsList="
+        + bgpOptionsList + ", staticRouteOptionsList=" + staticRouteOptionsList + ", vrrpOptionsList=" + vrrpOptionsList
+        + "]";
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,12 +9,12 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.PhysicalIfs;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
-
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.PhysicalIfs;
 
 /**
  * Physical IF Information DAO Class.
@@ -25,7 +25,7 @@ public class PhysicalIfsDAO extends BaseDAO {
    * Physical IF Information Class Constructor.
    *
    * @param session
-   *          data base session
+   *          database session
    */
   public PhysicalIfsDAO(Session session) {
     this.session = session;
@@ -37,7 +37,7 @@ public class PhysicalIfsDAO extends BaseDAO {
    * @param physicalIfs
    *          physical IF informatio to be registered
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void save(PhysicalIfs physicalIfs) throws DBAccessException {
     try {
@@ -61,21 +61,19 @@ public class PhysicalIfsDAO extends BaseDAO {
    * @param physicalIfs
    *          physical IF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void update(PhysicalIfs physicalIfs) throws DBAccessException {
     try {
-      PhysicalIfs regPhysicalIfs = this.search(physicalIfs.getNode_id(), physicalIfs.getPhysical_if_id());
-      if (regPhysicalIfs == null) {
-        this.errorMessage(NO_UPDATE_TARGET, PHYSICAL_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updatePhysicalIfs");
-        query.setString("key1", physicalIfs.getNode_id());
-        query.setString("key2", physicalIfs.getPhysical_if_id());
-        query.setString("key3", physicalIfs.getIf_speed());
-        query.setString("key4", physicalIfs.getIf_name());
+      Query query = session.getNamedQuery("updatePhysicalIfs");
+      query.setString("key1", physicalIfs.getNode_id());
+      query.setString("key2", physicalIfs.getPhysical_if_id());
+      query.setString("key3", physicalIfs.getIf_speed());
+      query.setString("key4", physicalIfs.getIf_name());
 
-        query.executeUpdate();
+      int count = query.executeUpdate();
+      if (count == 0) {
+        this.errorMessage(NO_UPDATE_TARGET, PHYSICAL_IFS, null);
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -91,19 +89,17 @@ public class PhysicalIfsDAO extends BaseDAO {
    * @param physicalIfs
    *          physical IF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateState(PhysicalIfs physicalIfs) throws DBAccessException {
     try {
-      PhysicalIfs regPhysicalIfs = this.search(physicalIfs.getNode_id(), physicalIfs.getPhysical_if_id());
-      if (regPhysicalIfs == null) {
+      Query query = session.getNamedQuery("updatePhysicalIfsState");
+      query.setString("key1", physicalIfs.getNode_id());
+      query.setString("key2", physicalIfs.getPhysical_if_id());
+      query.setParameter("key3", physicalIfs.getIf_status(), StandardBasicTypes.INTEGER);
+      int count = query.executeUpdate();
+      if (count == 0) {
         this.errorMessage(NO_UPDATE_TARGET, PHYSICAL_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updatePhysicalIfsState");
-        query.setString("key1", physicalIfs.getNode_id());
-        query.setString("key2", physicalIfs.getPhysical_if_id());
-        query.setParameter("key3", physicalIfs.getIf_status(), StandardBasicTypes.INTEGER);
-        query.executeUpdate();
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -119,21 +115,19 @@ public class PhysicalIfsDAO extends BaseDAO {
    * @param physicalIfs
    *          physical IF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateIP(PhysicalIfs physicalIfs) throws DBAccessException {
     try {
-      PhysicalIfs regPhysicalIfs = this.search(physicalIfs.getNode_id(), physicalIfs.getPhysical_if_id());
-      if (regPhysicalIfs == null) {
-        this.errorMessage(NO_UPDATE_TARGET, PHYSICAL_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updatePhysicalIfsIP");
-        query.setString("key1", physicalIfs.getNode_id());
-        query.setString("key2", physicalIfs.getPhysical_if_id());
-        query.setString("key3", physicalIfs.getIpv4_address());
-        query.setParameter("key4", physicalIfs.getIpv4_prefix(), StandardBasicTypes.INTEGER);
+      Query query = session.getNamedQuery("updatePhysicalIfsIP");
+      query.setString("key1", physicalIfs.getNode_id());
+      query.setString("key2", physicalIfs.getPhysical_if_id());
+      query.setString("key3", physicalIfs.getIpv4_address());
+      query.setParameter("key4", physicalIfs.getIpv4_prefix(), StandardBasicTypes.INTEGER);
 
-        query.executeUpdate();
+      int count = query.executeUpdate();
+      if (count == 0) {
+        this.errorMessage(NO_UPDATE_TARGET, PHYSICAL_IFS, null);
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -149,24 +143,22 @@ public class PhysicalIfsDAO extends BaseDAO {
    * @param physicalIfs
    *          physical IF information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void updateAll(PhysicalIfs physicalIfs) throws DBAccessException {
     try {
-      PhysicalIfs regPhysicalIfs = this.search(physicalIfs.getNode_id(), physicalIfs.getPhysical_if_id());
-      if (regPhysicalIfs == null) {
-        this.errorMessage(NO_UPDATE_TARGET, PHYSICAL_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updatePhysicalIfsAll");
-        query.setString("key1", physicalIfs.getNode_id());
-        query.setString("key2", physicalIfs.getPhysical_if_id());
-        query.setString("key3", physicalIfs.getIf_name());
-        query.setString("key4", physicalIfs.getIf_speed());
-        query.setParameter("key5", physicalIfs.getIf_status(), StandardBasicTypes.INTEGER);
-        query.setString("key6", physicalIfs.getIpv4_address());
-        query.setParameter("key7", physicalIfs.getIpv4_prefix(), StandardBasicTypes.INTEGER);
+      Query query = session.getNamedQuery("updatePhysicalIfsAll");
+      query.setString("key1", physicalIfs.getNode_id());
+      query.setString("key2", physicalIfs.getPhysical_if_id());
+      query.setString("key3", physicalIfs.getIf_name());
+      query.setString("key4", physicalIfs.getIf_speed());
+      query.setParameter("key5", physicalIfs.getIf_status(), StandardBasicTypes.INTEGER);
+      query.setString("key6", physicalIfs.getIpv4_address());
+      query.setParameter("key7", physicalIfs.getIpv4_prefix(), StandardBasicTypes.INTEGER);
 
-        query.executeUpdate();
+      int count = query.executeUpdate();
+      if (count == 0) {
+        this.errorMessage(NO_UPDATE_TARGET, PHYSICAL_IFS, null);
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -184,7 +176,7 @@ public class PhysicalIfsDAO extends BaseDAO {
    * @param check
    *          Whether is it a target to be deleted from the other relations or not?
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void deleteAll(String node_id, boolean check) throws DBAccessException {
     try {
@@ -216,7 +208,7 @@ public class PhysicalIfsDAO extends BaseDAO {
    * @param physicalIfId
    *          physical IF (primary key)
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   public void delete(String nodeId, String physicalIfId) throws DBAccessException {
     try {
@@ -247,7 +239,7 @@ public class PhysicalIfsDAO extends BaseDAO {
    *          device ID (primary key)
    * @return physicalIfsList search result
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public List<PhysicalIfs> getList(String node_id) throws DBAccessException {
@@ -275,7 +267,7 @@ public class PhysicalIfsDAO extends BaseDAO {
    *          physical IF ID (primary key 2)
    * @return system status information
    * @throws DBAccessException
-   *           data base exception
+   *           database exception
    */
   @SuppressWarnings("unchecked")
   public PhysicalIfs search(String node_id, String physical_if_id) throws DBAccessException {

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.convert.LogicalPhysicalConverter;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
@@ -19,24 +20,22 @@ import msf.ecmm.db.pojo.PhysicalIfs;
 import msf.ecmm.ope.receiver.pojo.DeleteNode;
 import msf.ecmm.ope.receiver.pojo.parts.OppositeNodesDeleteNode;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
- * ACL Utility Class (Device).
+ * ACL utility Class(Device).
  */
 public class AclUtilityDevice {
 
   /** Logger. */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
-  /**
-   * Judging whether removal is possible or impossible at using ACL.
-   * @param nodes  Information of the device to be removed
-   * @param deleteNodeRest  Removal request（REST）
-   * @return  Judgment Results
-   * @throws DBAccessException  In case abnormality has occurred in DB
-   */
+  /** 
+   * Judging whether removal is possible or impossible at using ACL. 
+   * @param nodes  Information of the device to be removed 
+   * @param deleteNodeRest  Removal request（REST） 
+   * @return  Judgment Results 
+   * @throws DBAccessException  In case abnormality has occurred in DB 
+   */ 
+
   protected static boolean checkRemoveNode(DeleteNode deleteNodeRest, Nodes nodes) throws DBAccessException {
     logger.trace(CommonDefinitions.START);
     boolean ret = false;

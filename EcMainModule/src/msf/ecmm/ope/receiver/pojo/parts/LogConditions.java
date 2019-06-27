@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -20,12 +20,14 @@ public class LogConditions {
   private String end_date;
 
   /**
-	* Upper limit of the number of acquiring logs (lines)
+   * Upper limit of the number of acquiring logs (lines)
    */
   private Integer limit_number;
 
+
   /**
    * Getting start date of log acquisiotion period.
+   *
    * @return start date of log acquisiotion period
    */
   public String getStart_date() {
@@ -34,7 +36,9 @@ public class LogConditions {
 
   /**
    * Setting start date of log acquisiotion period
-   * @param start_date start date of log acquisiotion period
+   *
+   * @param start_date
+   *           start date of log acquisiotion period
    */
   public void setStart_date(String start_date) {
     this.start_date = start_date;
@@ -42,22 +46,27 @@ public class LogConditions {
 
   /**
    * Getting end date of log acquisition period.
+   *
    * @return end date of log acquisition period
    */
   public String getEnd_date() {
     return end_date;
   }
 
+
   /**
    * Setting end date of log acquisition period
-   * @param end_date end date of log acquisition period
+   *
+   * @param end_date
+   *            end date of log acquisition period
    */
   public void setEnd_date(String end_date) {
     this.end_date = end_date;
   }
 
   /**
-	* Getting upper limit of the number of logs (lines).
+   * Getting upper limit of the number of logs (lines).
+   *
    * @return upper limit of the number of logs (lines)
    */
   public Integer getLimit_number() {
@@ -66,10 +75,18 @@ public class LogConditions {
 
   /**
    * Setting upper limit of the number of logs (lines).
-   * @param limit_number upper limit of the number of logs (lines)
+   *
+   * @param limit_number
+   *            upper limit of the number of logs (lines)
    */
   public void setLimit_number(Integer limit_number) {
     this.limit_number = limit_number;
+  }
+
+  @Override
+  public String toString() {
+    return "LogConditions [start_date=" + start_date + ", end_date=" + end_date + ", limit_number=" + limit_number
+        + "]";
   }
 
 }

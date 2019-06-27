@@ -1,14 +1,24 @@
-- hosts: EC
+- hosts: localhost
+  gather_facts: no
   become: true
   vars_files:
-    - vars/{{group_names[1]}}.yml
+    - vars/common.yml
   roles:
     - before
+
+- hosts: EC
+  gather_facts: no
+  become: true
+  vars_files:
+    - vars/common.yml
+    - vars/{{group_names[1]}}.yml
+  roles:
+    - transfer
     - firewall
     - java
     - net-snmp
     - rsyslog
-    - ntp
+    - chrony
     - dhcp
     - tftp
     - httpd
@@ -20,15 +30,22 @@
     - { role: ra-ec, when: "ha_flag"}
 
 - hosts: DB
+  gather_facts: no
   become: true
   vars_files:
+    - vars/common.yml
     - vars/{{group_names[1]}}.yml
   roles:
-    - before
+    - transfer
     - { role: postgre, when: "install_flag"}
-    - { role: pacemaker, when: "ha_flag"}
     - db-ec
     - firewall
 
-
+- hosts: localhost
+  gather_facts: no
+  become: true
+  vars_files:
+    - vars/common.yml
+  roles:
+    - after
 

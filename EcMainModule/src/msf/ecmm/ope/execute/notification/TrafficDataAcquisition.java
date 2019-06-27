@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.notification;
@@ -30,7 +30,7 @@ import msf.ecmm.traffic.pojo.NodeKeySet;
 import msf.ecmm.traffic.pojo.TrafficData;
 
 /**
- * Traffic Information Acquisition.
+ * Traffic Information Acquisition. 
  */
 public class TrafficDataAcquisition extends Operation {
 
@@ -44,9 +44,9 @@ public class TrafficDataAcquisition extends Operation {
    * Constructor.
    *
    * @param idt
-   *          input data
+   *          input data 
    * @param ukm
-   *          URI key information
+   *          URI key information 
    */
   public TrafficDataAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
     super(idt, ukm);
@@ -70,7 +70,7 @@ public class TrafficDataAcquisition extends Operation {
       nodeKey.setEquipmentsType(nodes.getEquipments());
       vlanIfsTable.add(session.getVlanIfsList(nodes.getNode_id()));
 
-      HashMap<NodeKeySet, ArrayList<TrafficData>> trafficDataMap = TrafficDataGatheringManager.getInstance()
+      HashMap<NodeKeySet, HashMap<String, TrafficData>> trafficDataMap = TrafficDataGatheringManager.getInstance()
           .getTrafficData();
       Timestamp time = TrafficDataGatheringManager.getInstance().getLastGathering();
       int cycle = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.TRAFFIC_MIB_INTERVAL);

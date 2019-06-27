@@ -1,0 +1,9 @@
+# Getting fileupdate
+  - name: wget fileupdate
+    shell: wget --no-check-certificate --no-cookies {{ item.url }} -O {{ folder_name_fup }}/{{ item.file_name }}
+    with_items:
+      - "{{ file_update_list }}"
+
+
+
+    

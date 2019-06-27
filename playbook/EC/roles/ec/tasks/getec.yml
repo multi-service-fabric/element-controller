@@ -10,11 +10,9 @@
     when: download_flag
   - shell: cp {{ rpm_path }}/element-controller-master/jar_create.sh  {{ ec_path }}
     when: download_flag
-  - name: copy src
-    copy: src={{ installing_ec_path }}/msf dest={{ ec_path }}
+  - shell: cp -r {{ installing_ec_path }}/msf {{ ec_path }}
     when: download_flag == false
-  - name: copy jar_create.sh
-    copy: src={{ installing_ec_path }}/jar_create.sh dest={{ ec_path }}
+  - shell: cp {{ installing_ec_path }}/jar_create.sh {{ ec_path }}
     when: download_flag == false
   - name: make jar
     shell: sh jar_create.sh

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.resources.v1;
@@ -23,6 +23,8 @@ import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.execute.ecstate.ECMainStopper;
 import msf.ecmm.ope.receiver.pojo.EmControllerReceiveStatus;
+import msf.ecmm.ope.receiver.pojo.NotifyEmStatusLog;
+import msf.ecmm.ope.receiver.pojo.NotifyEmStatusServer;
 import msf.ecmm.ope.receiver.pojo.NotifyNodeStartUp;
 import msf.ecmm.ope.receiver.pojo.NotifyReceiveSnmpTrap;
 import msf.ecmm.ope.receiver.resources.BaseResource;
@@ -57,15 +59,30 @@ public class EcMainModule extends BaseResource {
   /** Device Start-up Notification - other exceptions. */
   private static final String ERROR_CODE_290499 = "290499";
 
-  /** Controller Status Acquisition - operation execution preparation failure.. */
+  /** Controller Status Acquisition - operation execution preparation failure. */
   private static final String ERROR_CODE_310201 = "310201";
   /** Controller Status Acquisition - other exceptions. */
   private static final String ERROR_CODE_310399 = "310399";
 
-  /** Controller Log Acquisition - operation execution preparation failure.. */
+  /** Controller Log Acquisition - operation execution preparation failure. */
   private static final String ERROR_CODE_430201 = "430201";
   /** Controller Log Acquisition - other exceptions. */
   private static final String ERROR_CODE_430299 = "430299";
+
+  /** Contoller Status Notification(switch-over) - operation execution preparation failure. */
+  private static final String ERROR_CODE_450201 = "450201";
+  /** Contoller Status Notification(switch-over) - other exceptions.. */
+  private static final String ERROR_CODE_450399 = "450399";
+
+  /** Contoller Status Notification(log) - operation execution preparation failure. */
+  private static final String ERROR_CODE_640201 = "640201";
+  /** Contoller Status Notification(log) -- other exceptions. */
+  private static final String ERROR_CODE_640399 = "640399";
+
+  /** Contoller Status Notification(server) - operation execution preparation failure. */
+  private static final String ERROR_CODE_650201 = "650201";
+  /** Contoller Status Notification(server) - other exceptions. */
+  private static final String ERROR_CODE_650399 = "650399";
 
   /**
    * EC Stop
@@ -99,7 +116,7 @@ public class EcMainModule extends BaseResource {
   }
 
   /**
-   *  EC Blockage Status Change
+   * EC Blockage Status Change
    *
    * @param instructionType
    *          instruction type
@@ -265,11 +282,63 @@ public class EcMainModule extends BaseResource {
 
     operationType = OperationType.ControllerStateSendNotification;
 
-    setErrorCode("", ERROR_CODE_310201, ERROR_CODE_310399);
+    setErrorCode("", ERROR_CODE_450201, ERROR_CODE_450399);
 
     HashMap<String, String> uriKeyMap = new HashMap<String, String>();
 
     Response response = executeOperation(uriKeyMap, EmControllerReceiveStatus.class);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
+  /**
+   * Controller Status Notification(log).
+   *
+   * @return REST response
+   */
+
+  @PUT
+  @Path("ec_ctrl/logstatusnotify")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response requestEmStatusLog() {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.ControllerStateSendNotificationLog;
+
+    setErrorCode("", ERROR_CODE_640201, ERROR_CODE_640399);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+
+    Response response = executeOperation(uriKeyMap, NotifyEmStatusLog.class);
+
+    logger.trace(CommonDefinitions.END);
+    return response;
+  }
+
+  /**
+   * Controller Status Notification(server).
+   *
+   * @return REST response
+   */
+
+  @PUT
+  @Path("ec_ctrl/serverstatusnotify")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response requestEmStatusServer() {
+
+    logger.trace(CommonDefinitions.START);
+
+    operationType = OperationType.ControllerStateSendNotificationServer;
+
+    setErrorCode("", ERROR_CODE_650201, ERROR_CODE_650399);
+
+    HashMap<String, String> uriKeyMap = new HashMap<String, String>();
+
+    Response response = executeOperation(uriKeyMap, NotifyEmStatusServer.class);
 
     logger.trace(CommonDefinitions.END);
     return response;

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.traffic;
@@ -13,11 +13,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.convert.RestMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
@@ -42,7 +40,7 @@ public class DataGatheringExecutor extends Thread {
   /**
    * Logger
    */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
   /** Traffic Information. */
   private ArrayList<SnmpIfTraffic> trafficData;
@@ -50,10 +48,10 @@ public class DataGatheringExecutor extends Thread {
   /** getBulk Max. Value. */
   private int maxGetBulk;
 
-  /** Device Information Set. */
+  /** Device Information set. */
   private NodeKeySet deviceDetail;
 
-  /** All Nodes Information (for core router). */
+  /** All node information(for core router). */
   private Map<Equipments, List<Nodes>> nodeMap;
 
   /** Device Status: Running. */

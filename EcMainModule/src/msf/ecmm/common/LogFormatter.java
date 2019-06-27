@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.common;
@@ -7,7 +7,7 @@ package msf.ecmm.common;
 import java.util.HashMap;
 
 /**
- * format for log output.
+ * * format for log output.
  */
 public class LogFormatter {
 
@@ -197,9 +197,9 @@ public class LogFormatter {
   /** Failed to collect the traffic data from the device by using traffic information collection shell script.Target device is Node ID=[%s] Model ID=[%s]. */
   public static final int MSG_407095 = 407095;
   /** Traffic information collection shell script execution error. Model information table, the value of li_exec_path =[%s]. */
-  public static final int MSG_407096 = 407096;
+  public static final int MSG_505096 = 505096;
   /** Traffic information collection shell script has failed in SSH connection.Connection destination IP address=[%s]. */
-  public static final int MSG_407097 = 407097;
+  public static final int MSG_405097 = 405097;
   /** The data you tried to register had already been registered in the dummy VLANIF information table and resulted in an error. */
   public static final int MSG_509081 = 509081;
   /** The data you tried to register had already been registered in the IRB instance information table and resulted in an error. */
@@ -220,6 +220,50 @@ public class LogFormatter {
   public static final int MSG_509089 = 509089;
   /** The data you want to delete does not exist in the ACL configuration details information, and resulted in an error. */
   public static final int MSG_509090 = 509090;
+   /** No script =[%s] for getting SBY controller status in defined config exists. */
+  public static final int MSG_403123 = 403123;
+  /** OSPF neighbor monitoring has failed failed node ID =[%s]. */
+  public static final int MSG_403109 = 403109;
+  /** OS upgrade has been started . */
+  public static final int MSG_303111 = 303111;
+  /** OS upgrade has been failed. */
+  public static final int MSG_503112 = 503112;
+  /** EC switch-over has been  failed. */
+  public static final int MSG_403115 = 403115;
+  /** EC switch-over has been started. */
+  public static final int MSG_303116 = 303116;
+  /** Periodic execution of resource monitoring has failed. */
+  public static final int MSG_403117 = 403117;
+  /** Resource monitoring has duplicately has been intiated. */
+  public static final int MSG_303118 = 303118;
+  /** Resource monitoring has started. */
+  public static final int MSG_303119 = 303119;
+  /** Resource monitoring has been running. */
+  public static final int MSG_403120 = 403120;
+  /** Failed to initiate periodic scheduler for resource monitoring */
+  public static final int MSG_503121 = 503121;
+  /** Failed to stop periodic scheduler for resource monitoring */
+  public static final int MSG_403122 = 403122;
+  /** Failed to stop periodic execution for Config-Audit monitoring */
+  public static final int MSG_404103 = 404103;
+  /** Config-Audit monitoring has duplicately has been intiated. */
+  public static final int MSG_304104 = 304104;
+  /** Config-Audit has been started. */
+  public static final int MSG_304105 = 304105;
+  /** Config-Audit monitoring has been running. */
+  public static final int MSG_404106 = 404106;
+  /** Failed to initiate periodic execution for Config-Audit monitoring. */
+  public static final int MSG_504107 = 504107;
+  /** Failed to stop periodic scheduler for Config-Audit monitoring. */
+  public static final int MSG_404108 = 404108;
+  /** Failed to initiate extended function configuration class %s is extended function configuration class FQCN. */
+  public static final int MSG_508124 = 508124;
+  /** Process after EC-switch-over has failed. */
+  public static final int MSG_403124 = 403124;
+  /** Execution of EC-switch-over command has been finished. But pacemaker status is required to confirm. */
+  public static final int MSG_503125 = 503125;
+  /** Swich-over has been successed. */
+  public static final int MSG_303126 = 303126;
 
   /** Log Message Map. */
   private static HashMap<Integer, String> dictionary = new HashMap<Integer, String>() {
@@ -315,8 +359,8 @@ public class LogFormatter {
       put(MSG_503102, "Unknown expandOperationClass:[%s]");
       put(MSG_407094, "Fail getting traffic data by extend MIB : nodeId= [%s], equipmentTypeId= [%s]");
       put(MSG_407095, "Fail getting traffic data with CLI script : nodeId= [%s], equipmentTypeId= [%s]");
-      put(MSG_407096, "Script execution failure : Path= [%s]");
-      put(MSG_407097, "SSH connection error : IP= [%s]");
+      put(MSG_505096, "Script execution failure : Path= [%s]");
+      put(MSG_405097, "SSH connection error : IP= [%s]");
       put(MSG_509081, "Register error:duplicate registration[dummy_vlan_ifs_info]");
       put(MSG_509082, "Register error:duplicate registration[irb_instance_info]");
       put(MSG_509083, "Register error:duplicate registration[acl_info]");
@@ -327,7 +371,28 @@ public class LogFormatter {
       put(MSG_509088, "Delete error：not found delete[irb_instance_info]");
       put(MSG_509089, "Delete error：not found delete[acl_info]");
       put(MSG_509090, "Delete error：not found delete[acl_detail_info]");
-
+      put(MSG_403123, "StandbyControllerStatus Script not found : Path =[%s]");
+      put(MSG_403109, "Fail getting OspfNeighbor :  nodeId= [%s]");
+      put(MSG_303111, "Node OS upgrade start");
+      put(MSG_503112, "Node OS upgrade fail");
+      put(MSG_403115, "EC switchover fail.");
+      put(MSG_303116, "EC switchover start.");
+      put(MSG_403117, "Resource check failed.");
+      put(MSG_303118, "ResourceCheckCycleManager is already started.");
+      put(MSG_303119, "Start Resource check.");
+      put(MSG_403120, "Resource check is already started.");
+      put(MSG_503121, "Resource check execute scheduler start error.");
+      put(MSG_403122, "Resource check execute scheduler stop error.");
+      put(MSG_404103, "Config audit failed.");
+      put(MSG_304104, "ConfigAuditCycleManager is already started.");
+      put(MSG_304105, "Start ConfigAudit.");
+      put(MSG_404106, "Config audit is already started.");
+      put(MSG_504107, "Config audit execute scheduler start error.");
+      put(MSG_404108, "Config audit execute scheduler stop error.");
+      put(MSG_508124, "Unknown expandConfigClass:[%s]");
+      put(MSG_403124, "Post processing of EC system change over is failed. ");
+      put(MSG_503125, "Check the state of the EC. System switchover is not over");
+      put(MSG_303126, "System switchover is over.");
     }
   };
 

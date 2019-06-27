@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -16,15 +16,15 @@ import msf.ecmm.ope.receiver.pojo.DeleteNode;
 /**
  * Spine Device Removal(ACL).
  */
-public class SpineRemoveAcl extends LeafRemove {
+public class SpineRemoveAcl extends SpineRemove {
 
   /**
    * Constructor.
    *
    * @param idt
-   *          Input Data
+   *          Input data
    * @param ukm
-   *          URI Key Information
+   *          URI key information
    */
   public SpineRemoveAcl(AbstractRestMessage idt, HashMap<String, String> ukm) {
     super(idt, ukm);

@@ -7,24 +7,63 @@
     shell: mkdir -p {{ ec_path }}/bin
   - name: make ec log folder
     shell: mkdir -p {{ ec_path }}/{{ log_path }}
+  - name: make file update folder
+    shell: mkdir -p {{ folder_name_fup }}
   - include: getrpm.yml
     when: download_flag
-  - copy: src={{ installing_ec_path }}/lib/ dest={{ ec_path }}/lib
+  - shell: cp {{ installing_ec_path }}/lib/* {{ ec_path }}/lib
     when: download_flag == false
   - include: getconf.yml
     when: download_flag
-  - copy: src={{ installing_ec_path }}/conf/ dest={{ ec_path }}/conf
+  - shell: cp -rf {{ installing_ec_path }}/conf/* {{ ec_path }}/conf
     when: download_flag == false
   - shell: mv {{ ec_path }}/conf/extend_operation.conf {{ ec_path }}/lib
+  - shell: rm -rf {{ ec_path }}/bin/*
   - include: getbin.yml
     when: download_flag
-  - copy: src={{ installing_ec_path }}/bin/ dest={{ ec_path }}/bin
+  - shell: cp {{ installing_ec_path }}/bin/* {{ ec_path }}/bin
     when: download_flag == false
   - shell: chmod 755 {{ ec_path }}/bin/*
-  - shell: rm -rf {{ ec_path }}/bin/boot_fail.sh
-  - shell: rm -rf {{ ec_path }}/bin/boot_success.sh
   - shell: ln -s {{ ec_path }}/bin/boot.sh {{ ec_path }}/bin/boot_fail.sh
   - shell: ln -s {{ ec_path }}/bin/boot.sh {{ ec_path }}/bin/boot_success.sh
+
+  - shell: mkdir -p {{ ec_path }}/bin/extended_script/ping_script
+  - shell: mv {{ ec_path }}/bin/cisco_ping.sh {{ ec_path }}/bin/extended_script/ping_script
+  - shell: mv {{ ec_path }}/bin/cumulus_ping.sh {{ ec_path }}/bin/extended_script/ping_script
+  - shell: mv {{ ec_path }}/bin/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script
+  - shell: chmod a+x {{ ec_path }}/bin/extended_script/ping_script/*sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/cisco_ping.sh {{ ec_path }}/bin/extended_script/ping_script/NCS5011\(GS\)_CiscoIOSXRSoftware_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/cisco_ping.sh {{ ec_path }}/bin/extended_script/ping_script/NCS5001\(IL\)_CiscoIOSXRSoftware_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/cisco_ping.sh {{ ec_path }}/bin/extended_script/ping_script/NCS5501-SE\(IL\)_iox-lnx-049_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/cisco_ping.sh {{ ec_path }}/bin/extended_script/ping_script/NCS5501-SE\(BL\)_iox-lnx-049_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/cumulus_ping.sh {{ ec_path }}/bin/extended_script/ping_script/AS5812\(EL\)_Cumulus_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/cumulus_ping.sh {{ ec_path }}/bin/extended_script/ping_script/DellS6000_Cumulus_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/cumulus_ping.sh {{ ec_path }}/bin/extended_script/ping_script/AS5812\(EL\)_QinQ_Cumulus_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5100-48S\(EL\)_JUNOS_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5100-48S\(IL\)_JUNOS_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5100-24Q\(GS\)_JUNOS_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5200-32C\(IL\)_JUNOS_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5200-32C\(BL\)_JUNOS_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5200-32C\(GS\)_JUNOS_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5100-48S\(BL\)_JUNOS_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5100-48S\(GS\)_JUNOS_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5110-48S\(EL\)_IRB_JUNOS_ping_command.sh
+  - shell: ln -s {{ ec_path }}/bin/extended_script/ping_script/juniper_ping.sh {{ ec_path }}/bin/extended_script/ping_script/QFX5110-48S\(EL\)_JUNOS_ping_command.sh
+
+  - shell: mkdir -p {{ ec_path }}/bin/extended_script/node_os_upgrade
+  - shell: mv {{ ec_path }}/bin/cisco_NCS5011.sh {{ ec_path }}/bin/extended_script/node_os_upgrade
+  - shell: mv {{ ec_path }}/bin/cisco_NCS5501.sh {{ ec_path }}/bin/extended_script/node_os_upgrade
+  - shell: mv {{ ec_path }}/bin/cumulus_AS5812.sh {{ ec_path }}/bin/extended_script/node_os_upgrade
+  - shell: mv {{ ec_path }}/bin/juniper_QFX5100.sh {{ ec_path }}/bin/extended_script/node_os_upgrade
+  - shell: mv {{ ec_path }}/bin/juniper_QFX5110.sh {{ ec_path }}/bin/extended_script/node_os_upgrade
+  - shell: chmod a+x {{ ec_path }}/bin/extended_script/node_os_upgrade/*sh
+  - shell: ln -s {{ ec_path }}/bin/boot.sh {{ ec_path }}/bin/os_update_fail.sh
+  - shell: ln -s {{ ec_path }}/bin/boot.sh {{ ec_path }}/bin/os_update_success.sh
+
+  - shell: mkdir -p {{ ec_path }}/bin/extended_script/switch_script
+  - shell: mv {{ ec_path }}/bin/controller_switch.sh {{ ec_path }}/bin/extended_script/switch_script
+  - shell: chmod a+x {{ ec_path }}/bin/extended_script/switch_script/*sh
+
   - name: check path setting
     find: paths=/etc/profile
           patterns='{{ ec_path }}/bin'
@@ -55,7 +94,7 @@
       state=present
       backrefs=yes
       regexp='rest_server_address.*'
-      line='rest_server_address={{ ec_rest_address }}'
+      line='rest_server_address={{ ec_listening_address }}'
   - name: ec_main.conf data set 2
     lineinfile: >-
       dest='{{ ec_path }}/conf/ec_main.conf'
@@ -126,13 +165,52 @@
       backrefs=yes
       regexp='log_file_path.*'
       line='log_file_path={{ ec_path }}/{{ log_path }}'
+  - name: ec_main.conf data set 12
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='device_ec_management_if.*'
+      line='device_ec_management_if={{ ec_listening_address }}'
+  - name: ec_main.conf data set 13
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='sby_ip_address.*'
+      line='sby_ip_address={{ oppo_login_address }}'
+    when: ha_flag
+  - name: ec_main.conf data set 14
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='sby_ip_address.*'
+      line='sby_ip_address='
+    when: ha_flag == false
+  - name: ec_main.conf data set 15
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='sby_usrname.*'
+      line='sby_usrname={{ oppo_usrname }}'
+    when: ha_flag
+  - name: ec_main.conf data set 16
+    lineinfile: >-
+      dest='{{ ec_path }}/conf/ec_main.conf'
+      state=present
+      backrefs=yes
+      regexp='sby_password.*'
+      line='sby_password={{ oppo_password }}'
+    when: ha_flag
   - name: boot.sh data set 1
     lineinfile: >-
       dest='{{ ec_path }}/bin/boot.sh'
       state=present
       backrefs=yes
       regexp='^HOST=.*'
-      line='HOST="{{ ec_rest_address }}"'
+      line='HOST="{{ ec_listening_address }}"'
   - name: boot.sh data set 2
     lineinfile: >-
       dest='{{ ec_path }}/bin/boot.sh'
@@ -146,7 +224,7 @@
       state=present
       backrefs=yes
       regexp='^HOST=.*'
-      line='HOST="{{ ec_rest_address }}"'
+      line='HOST="{{ ec_listening_address }}"'
   - name: linkdown.sh data set 2
     lineinfile: >-
       dest='{{ ec_path }}/bin/linkdown.sh'
@@ -160,7 +238,7 @@
       state=present
       backrefs=yes
       regexp='^HOST=.*'
-      line='HOST="{{ ec_rest_address }}"'
+      line='HOST="{{ ec_listening_address }}"'
   - name: linkup.sh data set 2
     lineinfile: >-
       dest='{{ ec_path }}/bin/linkup.sh'
@@ -174,7 +252,7 @@
       state=present
       backrefs=yes
       regexp='^HOST=.*'
-      line='HOST="{{ ec_rest_address }}"'
+      line='HOST="{{ ec_listening_address }}"'
   - name: ec_ctl.sh data set 2
     lineinfile: >-
       dest='{{ ec_path }}/bin/ec_ctl.sh'
@@ -232,3 +310,7 @@
       regexp='for name in .*'
       line='for name in `ls {{ ec_path }}/lib/*.jar`; do'
   - include: getec.yml
+  - include: getfileupdate.yml
+    when: download_flag
+  - shell: cp {{ installing_ec_path }}/file_update/* {{ folder_name_fup }}
+    when: download_flag == false

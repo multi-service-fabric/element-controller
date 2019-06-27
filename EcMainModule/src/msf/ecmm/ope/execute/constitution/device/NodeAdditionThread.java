@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.device;
@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.fcctrl.RestClient;
@@ -27,15 +28,12 @@ import msf.ecmm.ope.receiver.pojo.AddNode;
 import msf.ecmm.ope.receiver.pojo.CommonResponse;
 import msf.ecmm.ope.receiver.pojo.RecoverNodeService;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Device Extention Thread Class.
  */
 public class NodeAdditionThread {
 
-  protected static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  protected static final MsfLogger logger = new MsfLogger();
 
   /** EM request "recover node" disconnection or connection timeout has occurred. */
   private static final String ERROR_CODE_080403 = "080403";
@@ -243,7 +241,6 @@ public class NodeAdditionThread {
   private AbstractResponseMessage executeOperation() {
     logger.trace(CommonDefinitions.START);
 
-
     AbstractResponseMessage executeResponse = null;
     Operation operation = null;
     if (!OperationControlManager.getInstance().getRecoverExecution()) {
@@ -252,7 +249,7 @@ public class NodeAdditionThread {
         operationType = OperationType.SpineAddition;
       } else if (addNodeInfo.getCreateNode().getNodeType().equals(CommonDefinitions.NODETYPE_LEAF)) {
         operationType = OperationType.LeafAddition;
-      } else { 
+      } else {
         operationType = OperationType.BLeafAddition;
       }
 
@@ -302,7 +299,8 @@ public class NodeAdditionThread {
    * @throws AddNodeException
    *           REST request failure
    */
-  private String notifyAddNodeResult(boolean bootStatus, boolean executeResult, String nodeId) throws AddNodeException {
+  protected String notifyAddNodeResult(boolean bootStatus, boolean executeResult, String nodeId)
+      throws AddNodeException {
 
     logger.trace(CommonDefinitions.START);
     logger.debug("bootStatus = " + bootStatus);

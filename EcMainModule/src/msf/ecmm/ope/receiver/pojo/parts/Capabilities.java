@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -20,6 +20,9 @@ public class Capabilities {
 
   /** IRB Configurability. */
   private IrbCapabilities irb = null;
+
+  /** Q-in-Q Configurability.. */
+  private QInQCapabilities qInQ = null;
 
   /**
    * Getting L2VPN configurability.
@@ -79,14 +82,13 @@ public class Capabilities {
   }
 
   /**
-   * Stringizing Instance.
+   * Getting IRB configurability.
    *
-   * @return IRB Configurability
+   * @return configurability
    */
   public IrbCapabilities getIrb() {
     return irb;
   }
-
 
   /**
    * Setting IRB configurability.
@@ -98,6 +100,24 @@ public class Capabilities {
     this.irb = irb;
   }
 
+  /**
+   * Getting Q-in-Q configurability.
+   *
+   * @return Q-in-Q configurability
+   */
+  public QInQCapabilities getqInQ() {
+    return qInQ;
+  }
+
+  /**
+   * Setting Q-in-Q configurability.
+   *
+   * @param qInQ
+   *          Q-in-Q configurability
+   */
+  public void setqInQ(QInQCapabilities qInQ) {
+    this.qInQ = qInQ;
+  }
 
   /**
    * Stringizing instance.
@@ -106,6 +126,7 @@ public class Capabilities {
    */
   @Override
   public String toString() {
-    return "Capabilities [l2vpn=" + l2vpn + ", l3vpn=" + l3vpn + ", evpn=" + evpn + ", irb=" + irb + "]";
+    return "Capabilities [l2vpn=" + l2vpn + ", l3vpn=" + l3vpn + ", evpn=" + evpn + ", irb=" + irb + ", qInQ=" + qInQ
+        + "]";
   }
 }

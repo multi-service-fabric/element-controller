@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.control;
@@ -12,10 +12,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.config.ExpandOperation;
 import msf.ecmm.config.ExpandOperationDetailInfo;
@@ -32,9 +34,6 @@ import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.execute.constitution.device.NodeAdditionThread;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Operation Management Class Definition. Managing the operations.
  */
@@ -43,7 +42,7 @@ public class OperationControlManager {
   /**
    * logger.
    */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /** Running Operation List. */
   private HashMap<EcSession, Operation> executeOperationHolder;
@@ -84,8 +83,17 @@ public class OperationControlManager {
   /** Operation ID Min. Value. */
   private static final int MIN_OPERATION_ID = 0;
 
+  /** Extended information. */
+  private ConcurrentHashMap<String, Object> operationInfo = new ConcurrentHashMap<>();
+
+  /** Flag indicating Config-Audit is running. */
+  private boolean configAuditExecution;
+
+  /**  Flag indicating Resource-monitoring is running. */
+  private boolean resourceCheckExecution;
+
   /**
-   * Constructor.
+   *  Constructor.
    */
   private OperationControlManager() {
     logger.debug("OperationControlManager initialize member.");
@@ -94,15 +102,62 @@ public class OperationControlManager {
     ecMainState = ECMainState.Stop;
     ecMainObstruction = false;
     ifIntegrityExecution = false;
+    configAuditExecution = false;
+    resourceCheckExecution = false;
     lastOperationId = MIN_OPERATION_ID;
     queueMap = new HashMap<AbstractQueueEntryKey, LinkedList<OperationQueueEntry>>();
   }
 
   /**
-   * Initialization. Initializing the operation management functional part.
+   * Getting operation information.
+   *
+   * @param key
+   *         key
+   * @return extended information
+   */
+  public Object getOperationInfo(String key) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("key=" + key);
+    Object ret = operationInfo.get(key);
+    logger.debug("ret=" + ret);
+    logger.trace(CommonDefinitions.END);
+    return ret;
+  }
+
+  /**
+   * Setting operation information.
+   *
+   * @param key
+   *          key
+   * @param value
+   *          extended information
+   */
+  public void setOperationInfo(String key, Object value) {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("key=" + key + " value=" + value);
+    operationInfo.put(key, value);
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Deleting operation information..
+   *
+   * @param key
+   *          key
+   */
+  public void clearOperationInfo(String key) {
+    logger.trace(CommonDefinitions.START);
+    if (operationInfo.containsKey(key)) {
+      operationInfo.remove(key);
+    }
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Initializing operation management function.
    *
    * @throws DBAccessException
-   *           DB access error
+   *           DB Access Error
    */
   private void initialize() throws DBAccessException {
     logger.trace(CommonDefinitions.START);
@@ -230,7 +285,7 @@ public class OperationControlManager {
 
     logger.trace(CommonDefinitions.START);
 
-    if (executeOperationHolder.containsKey(opeId)) { 
+    if (executeOperationHolder.containsKey(opeId)) {
       executeOperationHolder.remove(opeId);
 
       synchronized (queueMap) {
@@ -269,7 +324,7 @@ public class OperationControlManager {
    *          whether chage the DB value or not
    * @param state
    *          EC status
-   * @return chnage success/fail
+   * @return change success/fail
    * @throws DBAccessException
    *           DB access error
    */
@@ -411,6 +466,12 @@ public class OperationControlManager {
       if (operationType == OperationType.IFStateIntegrity) { 
         logger.debug("IF state integrity check.");
         return !(OperationControlManager.getInstance().isIfIntegrityExecution());
+      } else if (operationType == OperationType.ConfigAuditNotification) { 
+        logger.debug("Config Audit notification check.");
+        return !(OperationControlManager.getInstance().isConfigAudit());
+      } else if (operationType == OperationType.MonitoringResource) { 
+        logger.debug("Monitoring Resource check.");
+        return !(OperationControlManager.getInstance().isResourceCheckExecution());
       } else if (OperationControlManager.getInstance().getEcMainState(false) == ECMainState.Stop) { 
 
         logger.debug("EC main state is stop.");
@@ -448,6 +509,7 @@ public class OperationControlManager {
           case LagCreate:
           case LagInfoAcquisition:
           case LagRemove:
+          case LagIfChange:
           case AllDeviceTypeInfoAcquisition:
           case AllIfInfoAcquisition:
           case AllPhysicalIfInfoAcquisition:
@@ -459,6 +521,7 @@ public class OperationControlManager {
           case NodeInfoAcquisition:
           case NodeInfoRegistration:
           case AcceptNodeRecover:
+          case NodeUpdate:
           case LeafChange:
           case BreakoutIfCreate:
           case BreakoutIfDelete:
@@ -466,12 +529,16 @@ public class OperationControlManager {
           case BetweenClustersLinkDelete:
           case VlanIfInfoAcquisition:
           case BreakoutIfInfoAcquisition:
+          case IfBlockAndOpen:
           case AllVlanIfInfoAcquisition:
           case AllBreakoutIfInfoAcquisition:
           case AllDeviceInfoAcquisition:
           case ECMainLogAcquisition:
           case ControllerStateSendNotification:
+          case ControllerStateSendNotificationLog:
+          case ControllerStateSendNotificationServer:
           case TrafficDataAllAcquisition:
+
           case __ExpandNormalOperation:
 
             logger.debug("Normal operation");
@@ -584,7 +651,7 @@ public class OperationControlManager {
               }
               terminateOperation(oid);
               logger.debug("timeout.");
-              return null; 
+              return null; // T.O
             }
 
             synchronized (queueMap) {
@@ -651,9 +718,11 @@ public class OperationControlManager {
       case NodeAddedNotification:
       case AcceptNodeRecover:
       case NodeRecover:
+      case NodeUpdate:
       case PhysicalIfInfoChange:
       case LagCreate:
       case LagRemove:
+      case LagIfChange:
       case TrafficDataGathering:
       case IFStateIntegrity:
       case BLeafAddition:
@@ -664,6 +733,7 @@ public class OperationControlManager {
       case BetweenClustersLinkDelete:
       case BreakoutIfCreate:
       case BreakoutIfDelete:
+      case IfBlockAndOpen:
       case __ExpandNeedLockOperation:
         return true;
       default:
@@ -771,7 +841,7 @@ public class OperationControlManager {
       logger.trace(CommonDefinitions.END);
 
       return instance;
-    } else { 
+    } else {
       logger.warn(LogFormatter.out.format(LogFormatter.MSG_402056));
       return null;
     }
@@ -926,7 +996,8 @@ public class OperationControlManager {
         + ", lastOperationId=" + lastOperationId + ", queueMap=" + queueMap
         + ", unsentNodeStateNotificationSendingState=" + unsentNodeStateNotificationSendingState
         + ", nodeStateNotificationSenderHolder=" + nodeStateNotificationSenderHolder + ", nodeAdditionThread="
-        + nodeAdditionThread + "]";
+        + nodeAdditionThread + ", recoverExecutionFlag=" + recoverExecutionFlag + ", operationInfo=" + operationInfo
+        + ", configAuditExecution=" + configAuditExecution + "]";
   }
 
   /**
@@ -958,7 +1029,6 @@ public class OperationControlManager {
   public NodeAdditionThread getNodeAdditionInfo() {
     logger.trace(CommonDefinitions.START);
     NodeAdditionThread ret = this.nodeAdditionThread;
-    logger.debug(ret);
     logger.trace(CommonDefinitions.END);
     return ret;
   }
@@ -982,7 +1052,6 @@ public class OperationControlManager {
    */
   public void registerNodeAdditionInfo(NodeAdditionThread nodeAdditionThread) {
     logger.trace(CommonDefinitions.START);
-    logger.debug(nodeAdditionThread);
 
     if (this.nodeAdditionThread != null) {
       logger.debug("already registered. overwrite. " + this.nodeAdditionThread);
@@ -1028,4 +1097,89 @@ public class OperationControlManager {
   public void setRecoverExecution(boolean recoverExecutionFlag) {
     this.recoverExecutionFlag = recoverExecutionFlag;
   }
+
+  /**
+   * Config-Audit start-up Notification.
+   *
+   * @return start-up pssibility
+   */
+  public boolean startConfigAudit() {
+
+    logger.trace(CommonDefinitions.START);
+
+    if (judgeExecution(OperationType.ConfigAuditNotification)) {
+      configAuditExecution = true;
+
+      logger.trace(CommonDefinitions.END + "result=true");
+      return true;
+
+    } else {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_404106));
+      logger.trace(CommonDefinitions.END + "result=false");
+      return false;
+    }
+  }
+
+  /**
+   * Config-Audit termination Notification.
+   */
+  public void endConfigAudit() {
+    logger.trace(CommonDefinitions.START);
+
+    configAuditExecution = false;
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Config-Audit start-up status Acquisition.
+   *
+   * @return Config-Audi  start-up status
+   */
+  public boolean isConfigAudit() {
+    return configAuditExecution;
+  }
+
+  /**
+   * Resource monitoring start-up Notification.
+   *
+   * @return start-up possiblity
+   */
+  public boolean startResourceCheck() {
+
+    logger.trace(CommonDefinitions.START);
+
+    if (judgeExecution(OperationType.MonitoringResource)) {
+      resourceCheckExecution = true;
+
+      logger.trace(CommonDefinitions.END + "result=true");
+      return true;
+
+    } else {
+      logger.warn(LogFormatter.out.format(LogFormatter.MSG_403120));
+      logger.trace(CommonDefinitions.END + "result=false");
+      return false;
+    }
+  }
+
+  /**
+   * Resource monitoring termination Notification
+   */
+  public void endResourceCheck() {
+    logger.trace(CommonDefinitions.START);
+
+    resourceCheckExecution = false;
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * Resource monitoring start-up status Acquisition.
+   *
+   * @return  Resource monitoring start-up status
+   */
+  public boolean isResourceCheckExecution() {
+    return resourceCheckExecution;
+  }
+
 }

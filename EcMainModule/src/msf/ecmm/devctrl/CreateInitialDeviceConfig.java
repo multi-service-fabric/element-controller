@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl;
@@ -16,23 +16,20 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.devctrl.pojo.InitialDeviceConfig;
 import msf.ecmm.ope.receiver.pojo.parts.Ztp;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Device initial config file creation.
  */
 public class CreateInitialDeviceConfig {
   /**
-   * logger.
+   * Logger.
    */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
   /** Self(singleton) */
   private static CreateInitialDeviceConfig me = new CreateInitialDeviceConfig();
@@ -58,7 +55,6 @@ public class CreateInitialDeviceConfig {
   /** Template Replacement Keyword  BGP Master / Slave community value. */
   private static final String TEMPLATE_KEYWORD_BELONGINGSIDEMEMBERS = "$$BELONGINGSIDEMEMBERS$$";
 
-
   /**
    * Constructor.
    */
@@ -67,9 +63,9 @@ public class CreateInitialDeviceConfig {
   }
 
   /**
-   * Getting instance.
+   * Getting instance. 
    *
-   * @return self
+   * @return self 
    */
   public static CreateInitialDeviceConfig getInstance() {
     return me;
@@ -101,7 +97,6 @@ public class CreateInitialDeviceConfig {
         replaceKeys.put(TEMPLATE_KEYWORD_COMMUNITYMEMBERS, info.getCommmunityMembers());
         replaceKeys.put(TEMPLATE_KEYWORD_BELONGINGSIDEMEMBERS, info.getBelongingSideMembers());
       }
-
 
       File template = new File(info.getConfigTemplate());
       if (template.exists() && template.isFile()) {

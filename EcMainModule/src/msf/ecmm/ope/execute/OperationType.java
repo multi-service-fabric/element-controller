@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute;
@@ -18,8 +18,7 @@ public class OperationType {
   /** Not classified. */
   public static int None = 0;
 
-
- /** EC Start-up. */
+  /** EC Start-up. */
   public static final int ECMainStarter = 1;
   /** EC Termination. */
   public static final int ECMainStopper = 2;
@@ -31,6 +30,10 @@ public class OperationType {
   public static final int ECMainLogAcquisition = 5;
   /** Controller Status Notification. */
   public static final int ControllerStateSendNotification = 6;
+  /** Controller Status Notification(log). */
+  public static final int ControllerStateSendNotificationLog = 7;
+  /** Controller Status Notification(server). */
+  public static final int ControllerStateSendNotificationServer = 8;
 
   /** VLAN IF Change. */
   public static final int VlanIfChange = 1001;
@@ -40,16 +43,16 @@ public class OperationType {
   public static final int AllL2VlanIfCreate = 1003;
   /** L3VLAN IF Batch Deletion. */
   public static final int AllL3VlanIfRemove = 1004;
-   /** L2VLAN IF Batch Deletion/Change. */
+  /** L2VLAN IF Batch Deletion/Change. */
   public static final int AllL2VlanIfRemove = 1005;
- /** L3VLAN IF Batch Change. */
+  /** L3VLAN IF Batch Change. */
   public static final int AllL3VlanIfChange = 1006;
   /** L2VLAN IF Batch Change. */
   public static final int AllL2VlanIfChange = 1007;
 
-   /** SNMPTrap Reception Notification. */
+  /** SNMPTrap Reception Notification. */
   public static final int SNMPTrapSignalRecieveNotification = 2001;
- /** Traffic Information Acquisition. */
+  /** Traffic Information Acquisition. */
   public static final int TrafficDataAcquisition = 2002;
   /** Traffic Information List Acquisition. */
   public static final int TrafficDataAllAcquisition = 2003;
@@ -60,7 +63,7 @@ public class OperationType {
   public static final int DeviceInfoAcquisition = 3002;
   /** Model Information Deletion. */
   public static final int DeviceInfoRemove = 3003;
-   /** Leaf Device Extention. */
+  /** Leaf Device Extention. */
   public static final int LeafAddition = 3008;
   /** Spine Device Extention. */
   public static final int SpineAddition = 3009;
@@ -74,20 +77,22 @@ public class OperationType {
   public static final int BLeafAddition = 3015;
   /** B-Leaf Device Removal. */
   public static final int BLeafRemove = 3016;
-   /** Device Information Acquisition. */
+  /** Device Information Acquisition. */
   public static final int NodeInfoAcquisition = 3017;
   /** Device Extention/Change. */
   public static final int NodeInfoRegistration = 3018;
   /** Device Change. */
   public static final int LeafChange = 3019;
-   /** Additional service recovery. */
+  /** Additional service recovery. */
   public static final int NodeRecover = 3020;
- /** Acception Additional service recovery. */
+  /** Acception Additional service recovery. */
   public static final int AcceptNodeRecover = 3021;
+  /** Node Information Update. */
+  public static final int NodeUpdate = 3022;
 
   /** Physical IF Information Acquisition. */
   public static final int PhysicalIfInfoAcquisition = 3101;
- /** Physical IF Information Change. */
+  /** Physical IF Information Change. */
   public static final int PhysicalIfInfoChange = 3102;
   /** LagIF Generation. */
   public static final int LagCreate = 3104;
@@ -105,18 +110,22 @@ public class OperationType {
   public static final int BetweenClustersLinkDelete = 3110;
   /** VLANIF Information Acquisition. */
   public static final int VlanIfInfoAcquisition = 3112;
-   /** BreakoutIF Information Acquisition. */
+  /** BreakoutIF Information Acquisition. */
   public static final int BreakoutIfInfoAcquisition = 3113;
+  /** IF Block and Open. */
+  public static final int IfBlockAndOpen = 3114;
+  /** LagIF Change. */
+  public static final int LagIfChange = 3115;
 
-   /** Model List Information Acqisition. */
+  /** Model List Information Acqisition. */
   public static final int AllDeviceTypeInfoAcquisition = 3301;
   /** Device Information List Acquisition. */
   public static final int AllDeviceInfoAcquisition = 3302;
   /** IF Information List Acquisition. */
   public static final int AllIfInfoAcquisition = 3305;
- /** Physical IF Information List Acquisition. */
+  /** Physical IF Information List Acquisition. */
   public static final int AllPhysicalIfInfoAcquisition = 3306;
-   /** LagIF Information List Acquisition. */
+  /** LagIF Information List Acquisition. */
   public static final int AllLagInfoAcquisition = 3308;
   /** VLANIF Information List Acquisition. */
   public static final int AllVlanIfInfoAcquisition = 3309;
@@ -127,6 +136,10 @@ public class OperationType {
   public static final int TrafficDataGathering = 4001;
   /** IF Status Integration Periodic Execution. */
   public static final int IFStateIntegrity = 4002;
+  /** Config-Audit Moitoring Periodic Execution */
+  public static final int ConfigAuditNotification = 4003;
+  /** Resource Moitoring Periodic Execution. */
+  public static final int MonitoringResource = 4004;
 
   /** Extension operation (priority). */
   public static final int __ExpandPrimaryOperation = -1;
@@ -160,6 +173,8 @@ public class OperationType {
     data.put(ObstructionStateController, "ObstructionStateController");
     data.put(ECMainLogAcquisition, "ECMainLogAcquisition");
     data.put(ControllerStateSendNotification, "ControllerStateSendNotification");
+    data.put(ControllerStateSendNotificationLog, "ControllerStateSendNotificationLog");
+    data.put(ControllerStateSendNotificationServer, "ControllerStateSendNotificationServer");
     data.put(VlanIfChange, "VlanIfChange");
     data.put(AllL3VlanIfCreate, "AllL3VlanIfCreate");
     data.put(AllL2VlanIfCreate, "AllL2VlanIfCreate");
@@ -185,6 +200,7 @@ public class OperationType {
     data.put(LeafChange, "LeafChange");
     data.put(NodeRecover, "NodeRecover");
     data.put(AcceptNodeRecover, "AcceptNodeRecover");
+    data.put(NodeUpdate, "NodeUpdate");
     data.put(PhysicalIfInfoAcquisition, "PhysicalIfInfoAcquisition");
     data.put(PhysicalIfInfoChange, "PhysicalIfInfoChange");
     data.put(LagCreate, "LagCreate");
@@ -196,6 +212,7 @@ public class OperationType {
     data.put(BetweenClustersLinkDelete, "BetweenClustersLinkDelete");
     data.put(VlanIfInfoAcquisition, "VlanIfInfoAcquisition");
     data.put(BreakoutIfInfoAcquisition, "BreakoutIfInfoAcquisition");
+    data.put(IfBlockAndOpen, "IfBlockAndOpen");
     data.put(AllDeviceTypeInfoAcquisition, "AllDeviceTypeInfoAcquisition");
     data.put(AllDeviceInfoAcquisition, "AllDeviceInfoAcquisition");
     data.put(AllIfInfoAcquisition, "AllIfInfoAcquisition");
@@ -205,6 +222,9 @@ public class OperationType {
     data.put(AllBreakoutIfInfoAcquisition, "AllBreakoutIfInfoAcquisition");
     data.put(TrafficDataGathering, "TrafficDataGathering");
     data.put(IFStateIntegrity, "IFStateIntegrity");
+    data.put(ConfigAuditNotification, "ConfigAuditNotification");
+    data.put(LagIfChange, "LagIfInfoChange");
+    data.put(MonitoringResource, "MonitoringResource");
 
     for (String expandOpeName : ExpandOperation.getInstance().getExpandOperationList()) {
       ExpandOperationDetailInfo expandOpe = ExpandOperation.getInstance().get(expandOpeName);

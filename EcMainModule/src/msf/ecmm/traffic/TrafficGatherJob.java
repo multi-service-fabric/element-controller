@@ -1,17 +1,15 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.traffic;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 
 /**
  * Traffic Information Collection Periodic Execution Job Class Definition. Class which defines periodic execution job of traffic information collection.
@@ -21,7 +19,7 @@ public class TrafficGatherJob implements Job {
   /**
    * Logger
    */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   @Override
   public void execute(JobExecutionContext arg0) throws JobExecutionException {

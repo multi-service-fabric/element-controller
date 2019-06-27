@@ -2,20 +2,41 @@
   - include: getrpm.yml
     when: download_flag
   - name: net-snmp install 1
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/glibc-common-2.17-105.el7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/glibc-common-2.17-105.el7.x86_64.rpm
   - name: net-snmp install 2
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/glibc-2.17-105.el7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/glibc-2.17-105.el7.x86_64.rpm
   - name: net-snmp install 3
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/perl-*
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/perl-*
   - name: net-snmp install 4
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/openssl098e-0.9.8e-29.el7.centos.3.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/openssl098e-0.9.8e-29.el7.centos.3.x86_64.rpm
   - name: net-snmp install 5
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/net-snmp-libs-5.7.2-24.el7_2.1.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/net-snmp-libs-5.7.2-24.el7_2.1.x86_64.rpm
   - name: net-snmp install 6
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/lm_sensors-libs-3.3.4-11.el7.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/lm_sensors-libs-3.3.4-11.el7.x86_64.rpm
   - name: net-snmp install 7
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/net-snmp-agent-libs-5.7.2-24.el7_2.1.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/net-snmp-agent-libs-5.7.2-24.el7_2.1.x86_64.rpm
   - name: net-snmp install 8
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/net-snmp-5.7.2-24.el7_2.1.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/net-snmp-5.7.2-24.el7_2.1.x86_64.rpm
+  - name: check before add setting
+    find: paths=/etc/snmp/snmptrapd.conf
+          patterns='^disableauthorization yes'
+    register: found_files
+  - name: add snmptrapd setting 1
+    lineinfile:
+      dest=/etc/snmp/snmptrapd.conf
+      insertafter='my_great_script cold'
+      line={{ item }}
+    with_items:
+      - 'traphandle .1.3.6.1.6.3.1.1.5.4 {{ ec_path }}/bin/linkup.sh'
+      - 'traphandle .1.3.6.1.6.3.1.1.5.3 {{ ec_path }}/bin/linkdown.sh'
+      - 'disableauthorization yes'
+    when: found_files.matched == 0
   - name: replace net-snmp setting 1
     replace: dest=/usr/lib/systemd/system/snmptrapd.service regexp='ExecStart=/usr/sbin/snmptrapd \$OPTIONS -f' replace='ExecStart=/usr/sbin/snmptrapd -On $OPTIONS -f'
+  - name: restart snmptrapd
+    shell: systemctl restart snmptrapd.service
+    when: ha_flag == false
+  - name: register snmptrapd
+    shell: systemctl enable snmptrapd.service
+    when: ha_flag == false
+

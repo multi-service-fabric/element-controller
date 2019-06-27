@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.pojo;
@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 /**
- * Model Information Table POJO Class.
+ *  * Model Information Table POJO Class.
  */
 public class Equipments implements Serializable {
 
@@ -74,6 +74,10 @@ public class Equipments implements Serializable {
   private Boolean irb_asymmetric_capability;
   /** IRB Symmetric setting feasibility. */
   private Boolean irb_symmetric_capability;
+  /** Q-in-Q setting capability in each node. */
+  private Boolean q_in_q_selectable_by_node_capability;
+  /** Q-in-Q setting capability in each VLAN IF. */
+  private Boolean q_in_q_selectable_by_vlan_if_capability;
   /** Model IF information list. */
   private Set<EquipmentIfs> equipmentIfsList;
   /** Physical IF Naming Convention Information. */
@@ -566,7 +570,7 @@ public class Equipments implements Serializable {
    */
   public void setSame_vlan_number_traffic_total_value_flag(Boolean same_vlan_number_traffic_total_value_flag) {
     this.same_vlan_number_traffic_total_value_flag = same_vlan_number_traffic_total_value_flag;
-  }
+  } 
 
   /**
    * Getting VLAN traffic information acquisition method.
@@ -682,6 +686,44 @@ public class Equipments implements Serializable {
     this.irb_symmetric_capability = irb_symmetric_capability;
   }
 
+  /**
+   * Getting Q-in-Q setting capability in each node.
+   *
+   * @return Q-in-Q setting capability in each node
+   */
+  public Boolean getQ_in_q_selectable_by_node_capability() {
+    return q_in_q_selectable_by_node_capability;
+  }
+
+  /**
+   * Getting Q-in-Q setting capability in each node.
+   *
+   * @param q_in_q_selectable_by_node_capability
+   *          Q-in-Q setting capability in each node
+   */
+  public void setQ_in_q_selectable_by_node_capability(Boolean q_in_q_selectable_by_node_capability) {
+    this.q_in_q_selectable_by_node_capability = q_in_q_selectable_by_node_capability;
+  }
+
+  /**
+   * Getting Q-in-Q setting capability in each VLAN IF. 
+   *
+   * @return Q-in-Q setting capability in each VLAN IF
+   */
+  public Boolean getQ_in_q_selectable_by_vlan_if_capability() {
+    return q_in_q_selectable_by_vlan_if_capability;
+  }
+
+  /**
+   * Setting Q-in-Q setting capability in each VLAN IF.
+   *
+   * @param q_in_q_selectable_by_vlan_if_capability
+   *          Q-in-Q setting capability in each VLAN IF
+   */
+  public void setQ_in_q_selectable_by_vlan_if_capability(Boolean q_in_q_selectable_by_vlan_if_capability) {
+    this.q_in_q_selectable_by_vlan_if_capability = q_in_q_selectable_by_vlan_if_capability;
+  }
+	
   /**
    * Getting model IF information list.
    *
@@ -819,7 +861,7 @@ public class Equipments implements Serializable {
   }
 
   /*
-   * (Non-Javadoc)
+   *  Stringizing Instance.
    *
    * @see java.lang.Object#toString()
    */
@@ -840,8 +882,9 @@ public class Equipments implements Serializable {
         + ", vlan_traffic_counter_name_mib_oid=" + vlan_traffic_counter_name_mib_oid
         + ", vlan_traffic_counter_value_mib_oid=" + vlan_traffic_counter_value_mib_oid + ", cli_exec_path="
         + cli_exec_path + ", irb_asymmetric_capability=" + irb_asymmetric_capability + ", irb_symmetric_capability="
-        + irb_symmetric_capability + ", equipmentIfsList=" + equipmentIfsList + ", ifNameRulesList=" + ifNameRulesList
-        + ", bootErrorMessagesList=" + bootErrorMessagesList + ", remarkMenusList=" + remarkMenusList
-        + ", egressQueueMenusList=" + egressQueueMenusList + "]";
+        + irb_symmetric_capability + ", q_in_q_selectable_by_node_capability=" + q_in_q_selectable_by_node_capability
+        + ", q_in_q_selectable_by_vlan_if_capability=" + q_in_q_selectable_by_vlan_if_capability + ", equipmentIfsList="
+        + equipmentIfsList + ", ifNameRulesList=" + ifNameRulesList + ", bootErrorMessagesList=" + bootErrorMessagesList
+        + ", remarkMenusList=" + remarkMenusList + ", egressQueueMenusList=" + egressQueueMenusList + "]";
   }
 }

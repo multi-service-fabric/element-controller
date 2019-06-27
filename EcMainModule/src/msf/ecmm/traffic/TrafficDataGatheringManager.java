@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.traffic;
@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -26,6 +24,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.db.DBAccessManager;
 import msf.ecmm.db.pojo.BreakoutIfs;
@@ -39,20 +38,20 @@ import msf.ecmm.traffic.pojo.NodeKeySet;
 import msf.ecmm.traffic.pojo.TrafficData;
 
 /**
- * Traffic Information Collection Management Class Definition .Managing the Traffic Information Collection。and retaining Traffic Information.
+ * Traffic Information Collection Management Class Definition .Managing the Traffic Information Collection and retaining Traffic Information.
  */
 public class TrafficDataGatheringManager {
 
   /**
    * Logger
    */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /** Running Thread  List */
   private ConcurrentHashMap<NodeKeySet, DataGatheringExecutor> executeThreadHolder;
 
   /** Traffic Information */
-  private HashMap<NodeKeySet, ArrayList<TrafficData>> trafficData;
+  private HashMap<NodeKeySet, HashMap<String, TrafficData>> trafficData;
 
   /** Traffic Information(Before conversion) */
   private ConcurrentHashMap<NodeKeySet, ArrayList<SnmpIfTraffic>> TrafficRawData;
@@ -77,7 +76,7 @@ public class TrafficDataGatheringManager {
    */
   private TrafficDataGatheringManager() {
     this.executeThreadHolder = new ConcurrentHashMap<NodeKeySet, DataGatheringExecutor>();
-    this.trafficData = new HashMap<NodeKeySet, ArrayList<TrafficData>>();
+    this.trafficData = new HashMap<NodeKeySet, HashMap<String, TrafficData>>();
     this.TrafficRawData = new ConcurrentHashMap<NodeKeySet, ArrayList<SnmpIfTraffic>>();
     this.lastGathering = new Timestamp((new Date()).getTime());
     this.stopFlug = false;
@@ -115,7 +114,7 @@ public class TrafficDataGatheringManager {
             }
             for (LagIfs lf : node.getLagIfsList()) {
               for (LagMembers lm : lf.getLagMembersList()) {
-                 lm.toString();
+                lm.toString();
               }
             }
           }
@@ -200,6 +199,7 @@ public class TrafficDataGatheringManager {
     logger.trace(CommonDefinitions.END);
   }
 
+
   /**
    *  Traffic Information Collection Monitoring Thread Instance acquisition
    *
@@ -215,7 +215,7 @@ public class TrafficDataGatheringManager {
    *
    * @return traffic information
    */
-  public HashMap<NodeKeySet, ArrayList<TrafficData>> getTrafficData() {
+  public HashMap<NodeKeySet, HashMap<String, TrafficData>> getTrafficData() {
     return this.trafficData;
   }
 
@@ -248,9 +248,9 @@ public class TrafficDataGatheringManager {
   }
 
   /**
-   *  Getting Traffic Information Collection Monitoring Thread Instance
+   * Getting Traffic Information(Before conversion).
    *
-   * @return Traffic Information Collection Monitoring Thread Instance
+   * @return Traffic Information(Before conversion)
    */
   public static TrafficDataGatheringManager getInstance() {
     return instance;
@@ -262,7 +262,7 @@ public class TrafficDataGatheringManager {
    * @param trafficData
    *          traffic information
    */
-  protected void setTrafficData(HashMap<NodeKeySet, ArrayList<TrafficData>> trafficData) {
+  protected void setTrafficData(HashMap<NodeKeySet, HashMap<String, TrafficData>> trafficData) {
     this.trafficData = trafficData;
   }
 
@@ -323,7 +323,7 @@ public class TrafficDataGatheringManager {
 
   /**
    * Traffic Information Collection Function Start <br>
-   *  Starting traffic information collection function 
+   * Starting traffic information collection function 
    *
    * @return Success/fail of start 
    */

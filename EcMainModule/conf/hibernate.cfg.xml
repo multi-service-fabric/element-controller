@@ -7,9 +7,9 @@
     <session-factory>
         <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
         <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
-        <property name="connection.url">jdbc:postgresql://10.34.131.64:5432/msf_inhouse2</property>
+        <property name="connection.url">jdbc:postgresql://10.34.131.64:5432/2019_msf_inhouse</property>
         <property name="hibernate.connection.username">root</property>
-        <property name="hibernate.connection.password"></property>
+        <property name="hibernate.connection.password">admin123</property>
         <property name="hibernate.connection.pool_size">200</property>
         <property name="hibernate.temp.use_jdbc_metadata_defaults">false</property>
 

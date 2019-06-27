@@ -2,7 +2,7 @@
   - include: getrpm.yml
     when: download_flag
   - name: dhcp install 1
-    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/{{ folder_name }}/dhcp-4.2.5-42.el7.centos.x86_64.rpm
+    shell: rpm -Uvh --replacepkgs {{ rpm_path }}/installer/{{ folder_name }}/dhcp-4.2.5-42.el7.centos.x86_64.rpm
   - name: add dhcp setting file
     shell: cp -p /usr/lib/systemd/system/dhcpd.service /etc/systemd/system/
   - name: add dhcp setting 1

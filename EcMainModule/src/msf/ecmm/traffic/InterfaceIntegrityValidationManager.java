@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.traffic;
@@ -7,8 +7,6 @@ package msf.ecmm.traffic;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -21,8 +19,10 @@ import org.quartz.impl.StdSchedulerFactory;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 import msf.ecmm.ope.control.OperationControlManager;
+
 
 /**
  * IF Status Integrity Execution Management Class Definition. Manage the periodic execution of IF status integrity.
@@ -32,7 +32,7 @@ public class InterfaceIntegrityValidationManager {
   /**
    * Logger
    */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /** Running Thread List */
   private List<IntegrityExecutor> executeThreadHolder;

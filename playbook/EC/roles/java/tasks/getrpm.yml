@@ -1,11 +1,8 @@
 # Getting java rpm
-- shell: mkdir -p {{ rpm_path }}/{{ folder_name }}
+- shell: mkdir -p {{ rpm_path }}/installer/{{ folder_name }}
+### Can not get old version java.
 ###- name: wget rpm
-###  shell: wget --no-check-certificate --no-cookies {{ item.url }} -O {{ rpm_path }}/{{ folder_name }}/{{ item.file_name }}
+###  shell: wget --no-check-certificate --no-cookies {{ item.url }} -O {{ rpm_path }}/installer/{{ folder_name }}/{{ item.file_name }}
 ###  with_items:
 ###    - "{{ file_list }}"
-- name: copy java
-  copy: src="{{ rpm_path }}/{{ folder_name }}/{{ item.file_name }}" dest="{{ rpm_path }}/{{ folder_name }}"
-  with_items:
-    - "{{ file_list }}"
 

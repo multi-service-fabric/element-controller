@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -17,6 +17,7 @@ public class EcStatus {
 
   /**
    * Getting service start-up status.
+   *
    * @return service start-up status
    */
   public String getStatus() {
@@ -25,7 +26,9 @@ public class EcStatus {
 
   /**
    * Setting service start-up status.
-   * @param status service start-up status
+   *
+   * @param status
+   *           service start-up status
    */
   public void setStatus(String status) {
     this.status = status;
@@ -33,6 +36,7 @@ public class EcStatus {
 
   /**
    * Getting maintenance blockage status.
+   *
    * @return maintenance blockage status
    */
   public String getBusy() {
@@ -41,11 +45,17 @@ public class EcStatus {
 
   /**
    * Setting maintenance blockage status.
-   * @param busy maintenance blockage status
+   *
+   * @param busy
+   *           maintenance blockage status
    */
   public void setBusy(String busy) {
     this.busy = busy;
   }
 
+  @Override
+  public String toString() {
+    return "EcStatus [status=" + status + ", busy=" + busy + "]";
+  }
 
 }

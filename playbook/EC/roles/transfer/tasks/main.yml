@@ -1,0 +1,10 @@
+# Transfer archive
+  - name: mkdir data
+    shell: mkdir -p {{ rpm_path }}
+  - name: copy data
+    copy: src="{{ rpm_path }}.tar" dest={{ rpm_path }}.tar
+  - name: unpack
+    shell: tar xvf "{{ rpm_path }}.tar" -C {{ rpm_path }}/../
+  - name: delete archive
+    shell: rm -rf {{ rpm_path }}.tar
+

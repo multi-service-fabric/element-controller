@@ -10,16 +10,37 @@
             <PatternLayout pattern="%d{yyy/MM/dd HH:mm:ss.SSS} %-5p [%t] %C#%M (%F:%L) %msg%n"/>
         </Console>
 
-        <RollingFile name="ApplicationLogger"
+        <RollingFile name="ApplicationLogger1"
                      fileName="${log-path}/application.log"
-                     filePattern="${log-path}/application-%d{yyyy-MM-dd}-%i.log">
+                     filePattern="${log-path}/application-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout>
-                <pattern>[%d{yyy/MM/dd HH:mm:ss.SSS}] [%-5p] [tid=%t] (%C{1}::%M():%L):%msg%n</pattern>
+                <pattern>%msg%n</pattern>
             </PatternLayout>
             <Policies>
-                <OnStartupTriggeringPolicy />
                 <TimeBasedTriggeringPolicy />
             </Policies>
+            <DefaultRolloverStrategy compressionLevel="9">
+                <Delete basePath="${log-path}" maxDepth="1">
+                    <IfFileName glob="application*.log.gz" />
+                    <IfAccumulatedFileCount exceeds="30" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <RollingFile name="ApplicationLogger2"
+                     fileName="${log-path}/application_info.log"
+                     filePattern="${log-path}/application_info-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <pattern>%msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${log-path}" maxDepth="1">
+                    <IfFileName glob="application_info-*.log" />
+                    <IfAccumulatedFileCount exceeds="30" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
     </Appenders>
 
@@ -28,10 +49,10 @@
             <AppenderRef ref="Console"/>
         </Root>
 
-        <Logger name="ApplicationLogger" level="debug" additivity="false">
-            <AppenderRef ref="ApplicationLogger"/>
+        <Logger name="ApplicationLogger" level="trace" additivity="false">
+            <AppenderRef ref="ApplicationLogger1" level="debug"/>
+            <AppenderRef ref="ApplicationLogger2" level="info"/>
         </Logger>
     </Loggers>
 
 </Configuration>
-

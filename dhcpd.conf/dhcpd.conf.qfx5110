@@ -19,7 +19,8 @@ option QFX-encapsulation code 43 = encapsulate QFX;
     next-server $$TFTPHOSTNAME$$;
     option host-name "$$HOSTNAME$$";
     option tftp-server-name "$$TFTPHOSTNAME$$";
-    option QFX.transfer-mode "tftp";
+    option QFX.transfer-mode "http";
+    option QFX.alt-image-file-name "/junos-conf/jinstall-host-qfx-5e-flex-x86-64-18.2R1.9-secure-signed.tgz";
     option QFX.config-file-name "$$INITIALCONFIG$$";
 }
 

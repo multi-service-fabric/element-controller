@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -10,12 +10,13 @@ package msf.ecmm.ope.receiver.pojo.parts;
 public class LogData {
 
   /**
-   * Log Message
+   *  Log Message
    */
   private String message;
 
   /**
    * Getting log message.
+   *
    * @return log message
    */
   public String getMessage() {
@@ -24,10 +25,17 @@ public class LogData {
 
   /**
    * Setting log message.
-   * @param message log message
+   *
+   * @param message
+   *           log message
    */
   public void setMessage(String message) {
     this.message = message;
+  }
+
+  @Override
+  public String toString() {
+    return "LogData [message=" + message + "]";
   }
 
 }

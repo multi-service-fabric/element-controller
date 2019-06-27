@@ -1,6 +1,7 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
+
 package msf.ecmm.ope.receiver.pojo.parts;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class Disk {
 
   /**
    * Getting information for each device.
+   *
    * @return information for each device
    */
   public ArrayList<DeviceInfo> getDevices() {
@@ -25,10 +27,17 @@ public class Disk {
 
   /**
    * Setting information for each device
-   * @param devices information for each device
+   *
+   * @param devices
+   *            information for each device
    */
   public void setDevices(ArrayList<DeviceInfo> devices) {
     this.devices = devices;
+  }
+
+  @Override
+  public String toString() {
+    return "Disk [devices=" + devices + "]";
   }
 
 }

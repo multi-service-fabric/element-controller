@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.devctrl;
@@ -9,9 +9,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -19,6 +16,7 @@ import com.google.gson.reflect.TypeToken;
 import msf.ecmm.common.CommandExecutor;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.db.pojo.Equipments;
 import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.devctrl.pojo.SnmpIfTraffic;
@@ -30,9 +28,9 @@ public class ScriptController {
   /**
    * logger.
    */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
 
-  private static final String SHELL_ERROR_SSH = ".*SSH connection error*.";
+  private static final String SHELL_ERROR_SSH = ".*SSH connection error.*";
 
   /**
    * Traffic information acquisition.
@@ -57,13 +55,13 @@ public class ScriptController {
     int ret = CommandExecutor.exec(params, stdList, errList);
     if (ret != 0) {
       if (stdList.toString().matches(SHELL_ERROR_SSH)) {
-        logger.warn(LogFormatter.out.format(LogFormatter.MSG_407097, host));
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_405097, host));
       }
       File file = new File(eq.getCli_exec_path());
       if (!file.exists()) {
         logger.debug("Script file not found.");
       }
-      logger.warn(LogFormatter.out.format(LogFormatter.MSG_407096, eq.getCli_exec_path()));
+      logger.error(LogFormatter.out.format(LogFormatter.MSG_505096, eq.getCli_exec_path()));
       throw new DevctrlException("Script execution failure.");
     } else {
       Gson gson = new Gson();

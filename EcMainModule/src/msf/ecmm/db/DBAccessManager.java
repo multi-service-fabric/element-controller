@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db;
@@ -10,12 +10,11 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import msf.ecmm.common.CommonDefinitions;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.db.dao.AclConfDAO;
 import msf.ecmm.db.dao.BGPOptionsDAO;
 import msf.ecmm.db.dao.BaseDAO;
@@ -58,7 +57,7 @@ import msf.ecmm.db.pojo.VlanIfs;
 public class DBAccessManager implements AutoCloseable {
 
   /** logger instance. */
-  private final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private final MsfLogger logger = new MsfLogger();
   /** session instance. */
   protected Session session;
   /** transaction instance. */
@@ -234,7 +233,6 @@ public class DBAccessManager implements AutoCloseable {
 
     logger.trace(CommonDefinitions.END);
   }
-
 
 
   /**
@@ -603,6 +601,38 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
+   * Changing LagIF.
+   *
+   * @param lagIfs
+   *          Lag IF
+   * @param addFlg
+   *          Lag-addition flag
+   * @throws DBAccessException
+   *           database exceptions
+   */
+  public void updateLagIfs(LagIfs lagIfs, boolean addFlg) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("lagIfs:" + lagIfs + ", addFlg:" + addFlg);
+
+    LagIfsDAO lagIfsDao = new LagIfsDAO(session);
+    LagMembersDAO lagMembersDao = new LagMembersDAO(session);
+
+    lagIfsDao.updateMinLinkNum(lagIfs);
+
+    if (addFlg) {
+      for (LagMembers lagMembers : lagIfs.getLagMembersList()) {
+        lagMembersDao.save(lagMembers);
+      }
+    } else {
+      for (LagMembers lagMembers : lagIfs.getLagMembersList()) {
+        lagMembersDao.delete(lagMembers);
+      }
+    }
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
    * LagIFinformation Deletion.
    *
    * @param node_id
@@ -764,7 +794,6 @@ public class DBAccessManager implements AutoCloseable {
     logger.trace(CommonDefinitions.END);
   }
 
-
   /**
    * breakoutIf registration.
    *
@@ -849,7 +878,6 @@ public class DBAccessManager implements AutoCloseable {
     logger.trace(CommonDefinitions.END);
   }
 
-
   /**
    * System status information registration.
    *
@@ -906,7 +934,6 @@ public class DBAccessManager implements AutoCloseable {
 
     logger.trace(CommonDefinitions.END);
   }
-
 
   /**
    * Device start-up notification registration.
@@ -1003,6 +1030,26 @@ public class DBAccessManager implements AutoCloseable {
 
     NodesDAO nodeStateDao = new NodesDAO(session);
     nodeStateDao.updateState(node_id, node_state);
+
+    logger.trace(CommonDefinitions.END);
+  }
+
+  /**
+   * node information updates（node ID）.
+   *
+   * @param node_id
+   *          node ID
+   * @param equipment_type_id
+   *          equipment_type_id
+   * @throws DBAccessException
+   *          database exceptions
+   */
+  public void updateNodeEquipment(String node_id, String equipment_type_id) throws DBAccessException {
+    logger.trace(CommonDefinitions.START);
+    logger.debug("node_id:" + node_id + ", equipment_type_id:" + equipment_type_id);
+
+    NodesDAO nodeStateDao = new NodesDAO(session);
+    nodeStateDao.updateEquipment(node_id, equipment_type_id);
 
     logger.trace(CommonDefinitions.END);
   }
@@ -1187,7 +1234,7 @@ public class DBAccessManager implements AutoCloseable {
   }
 
   /**
-   * VLAN IF information。ハQoS。ヒupdate.
+   * VLAN IF information (QoS) update.
    *
    * @param vlanIfs
    *          VLAN IFinformation

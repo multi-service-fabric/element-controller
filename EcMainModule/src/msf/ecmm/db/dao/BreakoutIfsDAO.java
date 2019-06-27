@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.db.dao;
@@ -9,12 +9,12 @@ import static msf.ecmm.db.DBAccessException.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import msf.ecmm.db.DBAccessException;
+import msf.ecmm.db.pojo.BreakoutIfs;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.type.StandardBasicTypes;
-
-import msf.ecmm.db.DBAccessException;
-import msf.ecmm.db.pojo.BreakoutIfs;
 
 /**
  * The Class in which breakoutIF information related DB process is performed.
@@ -61,7 +61,7 @@ public class BreakoutIfsDAO extends BaseDAO {
     }
   }
 
-  /**
+ /**
    * breakoutIF information table DELETE.
    *
    * @param node_id
@@ -169,16 +169,14 @@ public class BreakoutIfsDAO extends BaseDAO {
    */
   public void updateState(BreakoutIfs breakoutIfs) throws DBAccessException {
     try {
-      BreakoutIfs regBreakoutIfs = this.search(breakoutIfs.getNode_id(), breakoutIfs.getBreakout_if_id());
-      if (regBreakoutIfs == null) {
-        this.errorMessage(NO_UPDATE_TARGET, BREAKOUT_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updateBreakoutIfsStatus");
-        query.setString("key1", breakoutIfs.getNode_id());
-        query.setString("key2", breakoutIfs.getBreakout_if_id());
-        query.setParameter("key3", breakoutIfs.getIf_status(), StandardBasicTypes.INTEGER);
+      Query query = session.getNamedQuery("updateBreakoutIfsStatus");
+      query.setString("key1", breakoutIfs.getNode_id());
+      query.setString("key2", breakoutIfs.getBreakout_if_id());
+      query.setParameter("key3", breakoutIfs.getIf_status(), StandardBasicTypes.INTEGER);
 
-        query.executeUpdate();
+      int count = query.executeUpdate();
+      if (count == 0) {
+        this.errorMessage(NO_UPDATE_TARGET, BREAKOUT_IFS, null);
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -196,18 +194,17 @@ public class BreakoutIfsDAO extends BaseDAO {
    * @throws DBAccessException
    *           database exception
    */
+
   public void updateIP(BreakoutIfs breakoutIfs) throws DBAccessException {
     try {
-      BreakoutIfs regBreakoutIfs = this.search(breakoutIfs.getNode_id(), breakoutIfs.getBreakout_if_id());
-      if (regBreakoutIfs == null) {
+      Query query = session.getNamedQuery("updateBreakoutIfsIP");
+      query.setString("key1", breakoutIfs.getNode_id());
+      query.setString("key2", breakoutIfs.getBreakout_if_id());
+      query.setString("key3", breakoutIfs.getIpv4_address());
+      query.setParameter("key4", breakoutIfs.getIpv4_prefix(), StandardBasicTypes.INTEGER);
+      int count = query.executeUpdate();
+      if (count == 0) {
         this.errorMessage(NO_UPDATE_TARGET, BREAKOUT_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updateBreakoutIfsIP");
-        query.setString("key1", breakoutIfs.getNode_id());
-        query.setString("key2", breakoutIfs.getBreakout_if_id());
-        query.setString("key3", breakoutIfs.getIpv4_address());
-        query.setParameter("key4", breakoutIfs.getIpv4_prefix(), StandardBasicTypes.INTEGER);
-        query.executeUpdate();
       }
     } catch (DBAccessException e1) {
       throw e1;
@@ -227,16 +224,14 @@ public class BreakoutIfsDAO extends BaseDAO {
    */
   public void updateIfName(BreakoutIfs breakoutIfs) throws DBAccessException {
     try {
-      BreakoutIfs regBreakoutIfs = this.search(breakoutIfs.getNode_id(), breakoutIfs.getBreakout_if_id());
-      if (regBreakoutIfs == null) {
-        this.errorMessage(NO_UPDATE_TARGET, BREAKOUT_IFS, null);
-      } else {
-        Query query = session.getNamedQuery("updateBreakoutIfName");
-        query.setString("key1", breakoutIfs.getNode_id());
-        query.setString("key2", breakoutIfs.getBreakout_if_id());
-        query.setString("key3", breakoutIfs.getIf_name());
+      Query query = session.getNamedQuery("updateBreakoutIfName");
+      query.setString("key1", breakoutIfs.getNode_id());
+      query.setString("key2", breakoutIfs.getBreakout_if_id());
+      query.setString("key3", breakoutIfs.getIf_name());
 
-        query.executeUpdate();
+      int count = query.executeUpdate();
+      if (count == 0) {
+        this.errorMessage(NO_UPDATE_TARGET, BREAKOUT_IFS, null);
       }
     } catch (DBAccessException e1) {
       throw e1;

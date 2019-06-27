@@ -32,7 +32,7 @@ host QFX5100 {
   fixed-address $$MANAGEMENTADDRESS$$;
   next-server $$TFTPHOSTNAME$$;
   option tftp-server-name "$$TFTPHOSTNAME$$";
-  option QFX.transfer-mode "tftp";
+  option QFX.transfer-mode "http";
   option QFX.config-file-name "$$INITIALCONFIG$$";
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver.pojo.parts;
@@ -14,6 +14,7 @@ public class EmStatus {
 
   /**
    * Getting service start-up status.
+   *
    * @return service start-up status
    */
   public String getStatus() {
@@ -22,10 +23,17 @@ public class EmStatus {
 
   /**
    * Setting service start-up status.
-   * @param status service start-up status
+   *
+   * @param status
+   *           service start-up status
    */
   public void setStatus(String status) {
     this.status = status;
+  }
+
+  @Override
+  public String toString() {
+    return "EmStatus [status=" + status + "]";
   }
 
 }

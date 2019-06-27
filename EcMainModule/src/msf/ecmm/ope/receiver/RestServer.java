@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.receiver;
@@ -7,8 +7,6 @@ package msf.ecmm.ope.receiver;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -19,6 +17,7 @@ import org.eclipse.jetty.util.thread.ThreadPool;
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.CommonUtil;
 import msf.ecmm.common.LogFormatter;
+import msf.ecmm.common.log.MsfLogger;
 import msf.ecmm.config.EcConfiguration;
 
 /**
@@ -29,7 +28,7 @@ public class RestServer {
   /**
    * Logger
    */
-  private static final Logger logger = LogManager.getLogger(CommonDefinitions.EC_LOGGER);
+  private static final MsfLogger logger = new MsfLogger();
 
   /**
    * Server Instance
@@ -64,7 +63,7 @@ public class RestServer {
     jettyServer = new Server(inetSocketAddress);
 
     ThreadPool threadPool = jettyServer.getThreadPool();
-    int executeThreadNumMax = restThreadMax + 3;
+    int executeThreadNumMax = restThreadMax + 3;/* 3 : receiving thread x 1 wating thread x2  */
     ((QueuedThreadPool) threadPool).setMaxThreads(executeThreadNumMax);
 
     ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.constitution.interfaces;
@@ -8,14 +8,19 @@ import static msf.ecmm.common.CommonDefinitions.*;
 import static msf.ecmm.ope.receiver.ReceiverDefinitions.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 import msf.ecmm.common.CommonDefinitions;
 import msf.ecmm.common.LogFormatter;
 import msf.ecmm.convert.DbMapper;
 import msf.ecmm.db.DBAccessException;
 import msf.ecmm.db.DBAccessManager;
+import msf.ecmm.db.pojo.BreakoutIfs;
+import msf.ecmm.db.pojo.LagIfs;
+import msf.ecmm.db.pojo.LagMembers;
 import msf.ecmm.db.pojo.Nodes;
 import msf.ecmm.db.pojo.PhysicalIfs;
+import msf.ecmm.db.pojo.VlanIfs;
 import msf.ecmm.ope.execute.Operation;
 import msf.ecmm.ope.execute.OperationType;
 import msf.ecmm.ope.receiver.pojo.AbstractResponseMessage;
@@ -25,7 +30,7 @@ import msf.ecmm.ope.receiver.pojo.CommonResponse;
 import msf.ecmm.ope.receiver.pojo.UpdatePhysicalInterface;
 
 /**
- * Physical IF Information Change.
+ * Physical IF Information Change
  */
 public class PhysicalIfInfoChange extends Operation {
 
@@ -40,6 +45,9 @@ public class PhysicalIfInfoChange extends Operation {
 
   /** In case speed configuration deletion has been configured in target physical IF, and if speed configuration deletion cannot be done. */
   private static final String ERROR_CODE_200302 = "200302";
+
+  /** In case speed cofiguration cannot be deleted because it is used in other IF. */
+  private static final String ERROR_CODE_200303 = "200303";
 
   /** In case error has occurred in DB access. */
   private static final String ERROR_CODE_200401 = "200401";
@@ -78,6 +86,50 @@ public class PhysicalIfInfoChange extends Operation {
       if (physicalIfs == null) {
         logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "Not found data. [PhysicalIfs]"));
         return makeFailedResponse(RESP_NOTFOUND_404, ERROR_CODE_200201);
+      }
+
+      boolean inUseFlg = false;
+      if (physicalIfs.getIpv4_address() != null) {
+        inUseFlg = true;
+      }
+      List<BreakoutIfs> breakoutIfsList = session.getBreakoutIfsList(nodeId);
+      if (breakoutIfsList != null) {
+        for (BreakoutIfs breakoutIfs : breakoutIfsList) {
+          if (breakoutIfs.getPhysical_if_id().equals(physicalIfId)) {
+            inUseFlg = true;
+            break;
+          }
+        }
+      }
+      List<VlanIfs> vlanIfList = session.getVlanIfsList(nodeId);
+      if (vlanIfList != null) {
+        for (VlanIfs vlanIfs : vlanIfList) {
+          if (vlanIfs.getPhysical_if_id() != null) {
+            if (vlanIfs.getPhysical_if_id().equals(physicalIfId)) {
+              inUseFlg = true;
+              break;
+            }
+          }
+        }
+      }
+      List<LagIfs> lagIfsList = session.getLagIfsList(nodeId);
+      if (lagIfsList != null) {
+        lagCheck: for (LagIfs lagIfs : lagIfsList) {
+          if (lagIfs.getLagMembersList() != null) {
+            for (LagMembers lagMembers : lagIfs.getLagMembersList()) {
+              if (lagMembers.getPhysical_if_id() != null) {
+                if (lagMembers.getPhysical_if_id().equals(physicalIfId)) {
+                  inUseFlg = true;
+                  break lagCheck;
+                }
+              }
+            }
+          }
+        }
+      }
+      if (inUseFlg) {
+        logger.warn(LogFormatter.out.format(LogFormatter.MSG_403041, "This physicalIFID is already being used."));
+        return makeFailedResponse(RESP_CONFLICT_409, ERROR_CODE_200303);
       }
 
       if (!checkExpand(physicalIfs)) {
@@ -160,7 +212,8 @@ public class PhysicalIfInfoChange extends Operation {
    * @param physicalIfs
    *          Target physical IF information
    * @return check result
-   * @throws DBAccessException In case abormality occurred in DB
+   * @throws DBAccessException
+   *          In case abormality occurred in DB
    */
   protected boolean checkExpand(PhysicalIfs physicalIfs) throws DBAccessException {
     return true;

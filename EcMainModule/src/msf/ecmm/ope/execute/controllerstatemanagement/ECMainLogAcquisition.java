@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.controllerstatemanagement;
@@ -75,7 +75,7 @@ public class ECMainLogAcquisition extends Operation {
   private static final String LINUX_COMMAND_CONTROLLER = "ec";
 
   /** log File Name. */
-  private static final String LOG_FILE_NAME = "application.log";
+  private static final String LOG_FILE_NAME = "application_info.log";
 
   /**
    * Constructor.
@@ -133,7 +133,7 @@ public class ECMainLogAcquisition extends Operation {
           Collections.reverse(fileNameList);
           for (String filename : fileNameList) {
 
-            if (!filename.startsWith("application")) {
+            if (!filename.startsWith("application_info")) {
               continue;
             }
 
@@ -274,10 +274,10 @@ public class ECMainLogAcquisition extends Operation {
 
     boolean result = true;
 
-    if (!getUriKeyMap().containsKey(KEY_CONTROLLER)) { 
+    if (!getUriKeyMap().containsKey(KEY_CONTROLLER)) {
       result = false;
     }
-    if (result && !getUriKeyMap().containsKey(KEY_START_DATE)) { 
+    if (result && !getUriKeyMap().containsKey(KEY_START_DATE)) {
       result = false;
     } else {
       String keyStartDate = getUriKeyMap().get(KEY_START_DATE);
@@ -287,7 +287,7 @@ public class ECMainLogAcquisition extends Operation {
         result = false;
       }
     }
-    if (result && !getUriKeyMap().containsKey(KEY_END_DATE)) { 
+    if (result && !getUriKeyMap().containsKey(KEY_END_DATE)) {
       result = false;
     } else {
       String keyEndDate = getUriKeyMap().get(KEY_END_DATE);
@@ -297,7 +297,7 @@ public class ECMainLogAcquisition extends Operation {
         result = false;
       }
     }
-    if (result && !getUriKeyMap().containsKey(KEY_LIMIT_NUMBER)) { 
+    if (result && !getUriKeyMap().containsKey(KEY_LIMIT_NUMBER)) {
       result = false;
     } else {
       String limitNumber = getUriKeyMap().get(KEY_LIMIT_NUMBER);

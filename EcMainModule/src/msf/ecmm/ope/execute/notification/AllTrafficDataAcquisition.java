@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+ * Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
  */
 
 package msf.ecmm.ope.execute.notification;
@@ -44,9 +44,9 @@ public class AllTrafficDataAcquisition extends Operation {
    * Constructor.
    *
    * @param idt
-   *          input data
+   *          input data 
    * @param ukm
-   *          URI key information
+   *          URI key information 
    */
   public AllTrafficDataAcquisition(AbstractRestMessage idt, HashMap<String, String> ukm) {
     super(idt, ukm);
@@ -81,7 +81,7 @@ public class AllTrafficDataAcquisition extends Operation {
         }
       }
 
-      HashMap<NodeKeySet, ArrayList<TrafficData>> trafficDataMap = TrafficDataGatheringManager.getInstance()
+      HashMap<NodeKeySet, HashMap<String, TrafficData>> trafficDataMap = TrafficDataGatheringManager.getInstance()
           .getTrafficData();
       Timestamp time = TrafficDataGatheringManager.getInstance().getLastGathering();
       int cycle = EcConfiguration.getInstance().get(Integer.class, EcConfiguration.TRAFFIC_MIB_INTERVAL);

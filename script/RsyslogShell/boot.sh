@@ -6,7 +6,7 @@
 ## and does REST interface notification to EC.
 ## (URI parameters are in JSON format)
 ##
-## Copyright(c) 2018 Nippon Telegraph and Telephone Corporation
+## Copyright(c) 2019 Nippon Telegraph and Telephone Corporation
 ##
 
 ## Environment Definition
@@ -31,11 +31,12 @@ function creSendMsg() {
 function postSend() {
 
     result=$1
-    sendText=$2
+    uri=$2
+    sendText=$3
 
     sleep 30s
 
-    curl -sS --connect-timeout 5 -m 60 -w ' resultCode:%{http_code}' -H "Accept: application/json" -H "Content-type: application/json" -g -d "${sendText}" -X POST ${HOST}:${PORT}/v1/internal/node_boot/"${result}" 2>&1
+    curl -sS --connect-timeout 5 -m 60 -w ' resultCode:%{http_code}' -H "Accept: application/json" -H "Content-type: application/json" -g -d "${sendText}" -X POST ${HOST}:${PORT}${uri}"${result}" 2>&1
 
 }
 
@@ -48,7 +49,6 @@ function chkResponse() {
 
     err=`echo "${response}" | grep -c "resultCode\:000"`
     if [ "${err}" -eq 0 ]; then
-
         resultCode=`echo ${response} | sed -e "s/.*resultCode://"`
 
         if [ "${resultCode}" != "200" ]; then
@@ -80,8 +80,16 @@ if [ $# = 1 ]; then
 
     if [ "${name}" = "boot_fail.sh" ]; then
         RESULT="failed"
+        URI="/v1/internal/node_boot/"
     elif [ "${name}" = "boot_success.sh" ]; then
         RESULT="success"
+        URI="/v1/internal/node_boot/"
+    elif [ "${name}" = "os_update_fail.sh" ]; then
+        RESULT="falied"
+        URI="/v1/internal/notify_upgrade/"
+    elif [ "${name}" = "os_update_success.sh" ]; then
+        RESULT="success"
+        URI="/v1/internal/notify_upgrade/"
     else
         echo "<error> call script illegal ("$0")."
         logger -t EcMainModule "<error> call script illegal ("$0")."
@@ -97,7 +105,7 @@ fi
 msg=`creSendMsg "${IF_ADDRESS}"`
 
 ## REST Message Send
-res=`postSend "${RESULT}" "${msg}"`
+res=`postSend "${RESULT}" "${URI}" "${msg}"`
 echo ${res}
 
 ## Response Analysis
